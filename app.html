@@ -378,6 +378,33 @@
   .tier.cur .tgo{background:var(--ink);color:var(--snow);pointer-events:none}
   .price-use{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:20px 40px;font-size:13px;color:var(--dim)}
   .price-use b{color:var(--ink);font-weight:650}
+  /* usage analytics modal */
+  .stats{position:fixed;inset:0;z-index:135;display:none;align-items:flex-start;justify-content:center;padding:6vh 20px 20px;background:rgba(23,20,15,.4);backdrop-filter:blur(6px);overflow-y:auto}
+  .stats.show{display:flex;animation:palBg .2s var(--ease)}
+  .stats-box{width:100%;max-width:720px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--pop);padding:32px 32px 28px;animation:palIn .28s var(--ease)}
+  .stats-hd{display:flex;align-items:flex-end;gap:12px;margin-bottom:4px}
+  .stats-hd b{font-family:var(--body);font-style:italic;font-weight:500;font-size:25px}
+  .stats-hd .x{margin-left:auto;color:var(--mute);font-size:20px;padding:4px 8px;border-radius:8px}
+  .stats-hd .x:hover{color:var(--ink);background:var(--soft)}
+  .stats-note{font-size:12.5px;color:var(--mute);line-height:1.6;margin-bottom:18px}
+  .rate-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+  .rate-f{display:flex;flex-direction:column;gap:5px}
+  .rate-f label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+  .rate-f input{width:140px;border:1px solid var(--line2);border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--app);outline:none}
+  .rate-f input:focus{border-color:var(--ink)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+  @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+  .kpi{background:var(--app);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+  .kpi .kn{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+  .kpi .kv{font-size:22px;font-weight:750;letter-spacing:-.02em;margin-top:5px}
+  .kpi .kv small{font-size:12px;font-weight:500;color:var(--mute)}
+  .st-tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .st-tbl th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500;padding:8px 10px 8px 0;border-bottom:1px solid var(--line2)}
+  .st-tbl td{padding:10px 10px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .st-tbl td.num,.st-tbl th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .st-tbl .marg{font-weight:700}
+  .st-tbl .marg.good{color:#3e7a5e}.st-tbl .marg.thin{color:var(--cin-d)}
+  .st-h2{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:22px 0 8px}
   .r-foot .who{cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .r-foot .who:hover{color:#cdcac2;text-decoration:underline;text-underline-offset:2px}
 
@@ -552,6 +579,21 @@
     <div class="price-use" id="priceUse"></div>
   </div>
 </div>
+<div class="stats" id="statsView" onclick="if(event.target===this)closeStats()">
+  <div class="stats-box">
+    <div class="stats-hd"><b>สถิติการใช้ & ต้นทุน</b><button class="x" onclick="closeStats()" aria-label="ปิด">✕</button></div>
+    <div class="stats-note">วัดต้นทุนจริงต่อเอกสารเพื่อจูนราคาแผน · ใส่ <b>เรทจริง (บาท/1M token รวม in+out)</b> จากบิล Anthropic ของคุณ · เริ่มนับตั้งแต่ติดตั้งฟีเจอร์นี้ — ใช้งานจริง 1–2 สัปดาห์ให้ข้อมูลนิ่งก่อนตั้งราคา</div>
+    <div class="rate-row">
+      <div class="rate-f"><label>Opus 4.8 · บาท/1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>Fable 5 · บาท/1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
+    </div>
+    <div class="kpis" id="statsKpis"></div>
+    <div class="st-h2">ราคาแผน vs ต้นทุนจริง (ประมาณต่อเดือน)</div>
+    <div style="overflow-x:auto"><table class="st-tbl" id="statsPlans"></table></div>
+    <div class="st-h2">ต้นทุนรายเอกสาร (สูงสุด 12)</div>
+    <div style="overflow-x:auto"><table class="st-tbl" id="statsDocs"></table></div>
+  </div>
+</div>
 <div class="snap" id="snapView" onclick="if(event.target===this)closeSnap()">
   <div class="snap-box">
     <div class="snap-hd"><b>เวอร์ชันที่บันทึก</b><button class="save" onclick="saveSnapshot()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> บันทึกตอนนี้</button></div>
@@ -697,10 +739,10 @@
   /* ═══ credit meter ═══ */
   /* ═══ plans & credit ═══ */
   const PLANS={
-    solo:   {label:'Solo',   wk:10,  moTok:1.5e6, price:'฿590',  blurb:'~10 เอกสาร/สัปดาห์ · Refined ไม่จำกัด · 1 seat'},
-    studio: {label:'Studio', wk:40,  moTok:6e6,   price:'฿1,900',blurb:'~40 เอกสาร/สัปดาห์ · 3 seats · reference library · แชร์ลิงก์'},
-    agency: {label:'Agency', wk:200, moTok:25e6,  price:'฿5,900',blurb:'ไม่จำกัดจริง (fair-use) · หลาย seat · priority'},
-    internal:{label:'ORIONS',wk:0,   moTok:0,     price:'ทีมภายใน',blurb:'ไม่จำกัด — เครื่องมือของสตูดิโอ'},
+    solo:   {label:'Solo',   wk:10,  moTok:1.5e6, baht:590,  price:'฿590',  blurb:'~10 เอกสาร/สัปดาห์ · Refined ไม่จำกัด · 1 seat'},
+    studio: {label:'Studio', wk:40,  moTok:6e6,   baht:1900, price:'฿1,900',blurb:'~40 เอกสาร/สัปดาห์ · 3 seats · reference library · แชร์ลิงก์'},
+    agency: {label:'Agency', wk:200, moTok:25e6,  baht:5900, price:'฿5,900',blurb:'ไม่จำกัดจริง (fair-use) · หลาย seat · priority'},
+    internal:{label:'ORIONS',wk:0,   moTok:0,     baht:0,    price:'ทีมภายใน',blurb:'ไม่จำกัด — เครื่องมือของสตูดิโอ'},
   };
   let _usage={plan:'solo',wkUsed:0,wkLimit:10,moUsed:0,moLimit:1.5e6};
   function renderCredit(){
@@ -766,6 +808,39 @@
       const d=await r.json();if(!r.ok||!d.url){toast(d.error||'เปิดไม่สำเร็จ');return}location.href=d.url}
     catch(e){toast('เชื่อมต่อไม่สำเร็จ')}}
 
+  /* ═══ usage analytics — ต้นทุนต่อเอกสาร ═══ */
+  const RATE_DEF={opus:2600,fable:600}; // บาท/1M (รวม in+out) — ประมาณการ แก้ได้
+  function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r&&r.opus>=0&&r.fable>=0)return r}catch(e){}return {...RATE_DEF}}
+  function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
+  function docCost(s,rt){const t=s.tok||{opus:0,fable:0};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable}
+  const baht=n=>'฿'+(n>=1000?Math.round(n).toLocaleString():n.toFixed(n<10?2:1));
+  function openStats(){const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('statsView').classList.add('show');renderStats()}
+  function closeStats(){$('statsView').classList.remove('show')}
+  function renderStats(){
+    const rt=getRates();
+    const docs=sessions.filter(s=>(s.ops||0)>0);
+    let tOpus=0,tFable=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOpus+=t.opus||0;tFable+=t.fable||0;cost+=docCost(s,rt)});
+    const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?(tOpus+tFable)/nDoc:0;
+    $('statsKpis').innerHTML=[
+      ['เอกสารที่วัด',nDoc],
+      ['token รวม',fmtTok(tOpus+tFable)],
+      ['ต้นทุนรวม',baht(cost)],
+      ['เฉลี่ย/เอกสาร',baht(avg)+' <small>· '+fmtTok(avgTok)+'</small>'],
+    ].map(k=>'<div class="kpi"><div class="kn">'+k[0]+'</div><div class="kv">'+k[1]+'</div></div>').join('');
+    // per-plan: cost/เดือน = avg/เอกสาร × (เพดานเอกสาร/สัปดาห์ × 4.3)
+    const WK=4.3;
+    $('statsPlans').innerHTML='<thead><tr><th>แผน</th><th class="num">เอกสาร/เดือน</th><th class="num">ต้นทุนโดยประมาณ</th><th class="num">ราคา</th><th class="num">margin</th></tr></thead><tbody>'
+      +['solo','studio','agency'].map(id=>{const P=PLANS[id];const mDoc=Math.round(P.wk*WK);const mCost=avg*mDoc;const price=P.baht;
+        const marg=mCost>0?(price/mCost):0;const cls=marg>=4?'good':marg>=2?'':'thin';
+        return '<tr><td>'+P.label+'</td><td class="num">'+mDoc+'</td><td class="num">'+(avg?baht(mCost):'—')+'</td><td class="num">฿'+price.toLocaleString()+'</td>'
+          +'<td class="num marg '+cls+'">'+(avg&&mCost?marg.toFixed(1)+'×':'—')+'</td></tr>'}).join('')+'</tbody>';
+    // per-doc
+    const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
+    $('statsDocs').innerHTML= nDoc
+      ?('<thead><tr><th>เอกสาร</th><th class="num">ครั้ง</th><th class="num">token</th><th class="num">ต้นทุน</th></tr></thead><tbody>'
+        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
+      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">ยังไม่มีข้อมูล — เริ่มใช้ Summing/ปรับ/Refined แล้วต้นทุนจะขึ้นที่นี่</td></tr></tbody>'}
+
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage}}
   function applyBlob(b){
     if(!b)return false;
@@ -807,9 +882,14 @@
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
     setUsageFromHeaders(r.headers);
     const reader=r.body.getReader(),dec=new TextDecoder();let full='';
-    for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full)}
+    for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full.split('[[USAGE]]')[0])}
     const i=full.indexOf('[[ERROR]]');if(i>=0)throw new Error(full.slice(i+9).trim()||'server error');
+    // แยก token ต่อ call → บันทึกต้นทุนรายเอกสาร (session)
+    const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
+    if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]),fable=/fable/.test(um[3]);
+      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};s.tok[fable?'fable':'opus']+=tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
+  let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
   /* ═══ files — multi-format ═══ */
   function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[data-l="'+src+'"]'))return res();
@@ -1019,7 +1099,7 @@
   function hideCtx(){$('ctx').classList.remove('show')}
   addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.more'))hideCtx();
     if(!e.target.closest('.exp-wrap'))$('expMenu').classList.remove('show')});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closePricing();closeSnap()}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closePricing();closeSnap();closeStats()}});
   // ⌥↑ / ⌥↓ — สลับ session ตามลำดับที่เห็นใน rail
   addEventListener('keydown',e=>{
     if(!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
@@ -1114,6 +1194,7 @@
     }
     A('สร้าง project ใหม่',()=>newProject());
     A('แผน & การใช้งาน',()=>openPricing());
+    A('สถิติการใช้ & ต้นทุน',()=>openStats());
     A('ออกจากระบบ'+(AUTH?' ('+AUTH.email+')':''),()=>confirmLogout());
     sessions.forEach(s=>c.push({t:s.title||'ไม่มีชื่อ',sub:fmtAgo(s.updatedAt),run:()=>openSession(s.id),k:'session'}));
     return c}

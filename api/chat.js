@@ -111,6 +111,7 @@ export default async function handler(req, res) {
     const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, week: u.week, used: u.used + inTok + outTok, wkCount: wkAfter, plan: u.plan, limit: plan.moTok });
+    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // ให้ client แยก cost รายเอกสาร
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
