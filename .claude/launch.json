@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vaest",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/serve.cjs"],
+      "port": 4599
+    }
+  ]
+}
