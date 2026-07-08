@@ -1,36 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { PLANS, readUsage, readUsageData, writeUsageRow, verifyUser } from '../lib/plans.js';
 
 // ANTHROPIC_API_KEY มาจาก Vercel env เท่านั้น
 const anthropic = new Anthropic();
-
-// Supabase — ใช้ตรวจ auth token + เก็บเครดิต (publishable key ฝั่ง frontend-safe)
-const SB = {
-  url: 'https://yyhqcqlylnoukmovrpwo.supabase.co',
-  key: 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',
-};
-// ── Plans — limit รายสัปดาห์ (soft, จำนวนเอกสารใหม่/Summing) + เพดาน token รายเดือน (hard, fair-use) ──
-const PLANS = {
-  solo:    { label: 'Solo',    wk: 10,       moTok: 1_500_000 },
-  studio:  { label: 'Studio',  wk: 40,       moTok: 6_000_000 },
-  agency:  { label: 'Agency',  wk: 200,      moTok: 25_000_000 },
-  internal:{ label: 'ORIONS',  wk: Infinity, moTok: Infinity },
-};
-const DEFAULT_PLAN = 'solo';
-// อีเมลทีม ORIONS → ไม่จำกัด
-const INTERNAL = new Set(['rakan@orions.agency', 'rakan.suwanphakdee@gmail.com']);
-function planOf(email, data) {
-  if (INTERNAL.has(email)) return 'internal';
-  const p = data && data.plan;
-  return PLANS[p] ? p : DEFAULT_PLAN;
-}
-// สัปดาห์เริ่มวันจันทร์ (UTC) — คืนคีย์ YYYY-MM-DD ของวันจันทร์
-function weekKey() {
-  const now = Date.now();
-  const d = new Date(now);
-  const dow = (d.getUTCDay() + 6) % 7; // Mon=0
-  const mon = new Date(now - dow * 86400000);
-  return mon.toISOString().slice(0, 10);
-}
 
 // VÆST 1.0 — ทุกงานแก้เอกสาร = Opus 4.8 · เฉพาะ Refined (ตรวจทั้งฉบับ) = Fable 5
 const ROUTE = {
@@ -85,49 +57,6 @@ const TASK = {
 ตอบเป็น markdown: แต่ละจุดขึ้นด้วย "- " ตามด้วย **หัวข้อสั้น** แล้วอธิบาย 1–2 บรรทัดว่าปรับยังไง`,
 };
 
-// ── auth: ตรวจ Supabase JWT → คืน user (หรือ null) ──
-async function verifyUser(req) {
-  const h = req.headers.authorization || '';
-  const token = h.startsWith('Bearer ') ? h.slice(7) : '';
-  if (!token) return null;
-  try {
-    const r = await fetch(`${SB.url}/auth/v1/user`, {
-      headers: { apikey: SB.key, Authorization: `Bearer ${token}` },
-    });
-    if (!r.ok) return null;
-    const u = await r.json();
-    return u && u.email ? { email: u.email.toLowerCase(), id: u.id } : null;
-  } catch (e) { return null; }
-}
-
-// ── credit: อ่าน/เขียน usage (เก็บใน vaest_state แถว email = "usage:<email>") ──
-const sbHeaders = { apikey: SB.key, Authorization: `Bearer ${SB.key}`, 'Content-Type': 'application/json' };
-async function readUsage(email) {
-  const month = new Date().toISOString().slice(0, 7), week = weekKey();
-  try {
-    const r = await fetch(`${SB.url}/rest/v1/vaest_state?email=eq.${encodeURIComponent('usage:' + email)}&select=data`, { headers: sbHeaders });
-    const rows = r.ok ? await r.json() : [];
-    const d = (rows[0] && rows[0].data) || {};
-    return {
-      month, week,
-      used: d.month === month ? (d.used || 0) : 0,   // token เดือนนี้ (hard)
-      wkCount: d.week === week ? (d.wkCount || 0) : 0, // เอกสารสัปดาห์นี้ (soft)
-      plan: planOf(email, d),
-    };
-  } catch (e) { return { month, week, used: 0, wkCount: 0, plan: planOf(email, null) }; }
-}
-async function writeUsage(email, u) {
-  try {
-    await fetch(`${SB.url}/rest/v1/vaest_state`, {
-      method: 'POST',
-      headers: { ...sbHeaders, Prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify({ email: 'usage:' + email, data: {
-        month: u.month, used: u.used, week: u.week, wkCount: u.wkCount, plan: u.plan, limit: u.moTok,
-      }, updated_at: new Date().toISOString() }),
-    });
-  } catch (e) { /* best-effort */ }
-}
-
 async function streamAnthropic(res, model, system, messages, maxTokens) {
   const params = { model, max_tokens: maxTokens, messages };
   if (system) params.system = system;
@@ -180,7 +109,8 @@ export default async function handler(req, res) {
 
   try {
     const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
-    await writeUsage(user.email, { month: u.month, week: u.week, used: u.used + inTok + outTok, wkCount: wkAfter, plan: u.plan, moTok: plan.moTok });
+    const d0 = await readUsageData(user.email);
+    await writeUsageRow(user.email, { ...d0, month: u.month, week: u.week, used: u.used + inTok + outTok, wkCount: wkAfter, plan: u.plan, limit: plan.moTok });
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));

@@ -547,7 +547,7 @@
 <div class="price" id="priceView" onclick="if(event.target===this)closePricing()">
   <div class="price-box">
     <div class="price-hd"><b>แผน &amp; การใช้งาน</b><button class="x" onclick="closePricing()" aria-label="ปิด">✕</button></div>
-    <div class="price-note">เลือกแผนตามปริมาณงาน — limit นับเป็น “เอกสารใหม่ต่อสัปดาห์” (soft) + เพดาน token ต่อเดือน (hard, fair-use) · <b>ตัวเลขและราคายังเป็น mockup</b> ยังไม่ต่อระบบจ่ายเงินจริง</div>
+    <div class="price-note">เลือกแผนตามปริมาณงาน — limit นับเป็น “เอกสารใหม่ต่อสัปดาห์” (soft) + เพดาน token ต่อเดือน (hard, fair-use) · ชำระเงินผ่าน Stripe · <b>ตอนนี้เป็นโหมดทดสอบ</b> ใช้บัตรทดสอบ 4242 4242 4242 4242 (วันหมดอายุอนาคต · CVC อะไรก็ได้)</div>
     <div class="tiers" id="tiers"></div>
     <div class="price-use" id="priceUse"></div>
   </div>
@@ -728,9 +728,10 @@
       const mo=new Date().toISOString().slice(0,7);
       const plan=INTERNAL.has(AUTH.email)?'internal':(PLANS[d.plan]?d.plan:'solo');const P=PLANS[plan];
       _usage={plan,wkLimit:P.wk,moLimit:P.moTok,
-        wkUsed:0, // เดาสัปดาห์จาก server ไม่ได้ตรงๆ ใช้ค่าจาก header ตอนยิงจริง
-        moUsed:d.month===mo?(d.used||0):0};
-      _usage.wkUsed=d.wkCount||0;renderCredit()}catch(e){renderCredit()}}
+        wkUsed:d.wkCount||0,
+        moUsed:d.month===mo?(d.used||0):0,
+        hasSub:!!d.stripeCustomer,status:d.status||''};
+      renderCredit()}catch(e){renderCredit()}}
   const INTERNAL=new Set(['rakan@orions.agency','rakan.suwanphakdee@gmail.com']);
   /* pricing modal */
   function openPricing(){renderPricing();$('priceView').classList.add('show')}
@@ -745,18 +746,25 @@
     const P=PLANS[_usage.plan]||PLANS.solo;
     $('priceUse').innerHTML='<span>แผนปัจจุบัน · <b>'+P.label+'</b></span>'
       +'<span>เอกสารสัปดาห์นี้ · <b>'+(P.wk?(_usage.wkUsed+'/'+P.wk):'ไม่จำกัด')+'</b></span>'
-      +'<span>token เดือนนี้ · <b>'+fmtTok(_usage.moUsed)+(P.moTok?(' / '+fmtTok(P.moTok)):' · ไม่จำกัด')+'</b></span>'}
+      +'<span>token เดือนนี้ · <b>'+fmtTok(_usage.moUsed)+(P.moTok?(' / '+fmtTok(P.moTok)):' · ไม่จำกัด')+'</b></span>'
+      +(_usage.hasSub?'<span><button onclick="openPortal()" style="color:var(--ink);font-weight:650;text-decoration:underline;text-underline-offset:3px">จัดการการสมัคร / ยกเลิก →</button></span>':'')}
   async function choosePlan(id){
     if(!PLANS[id]||!AUTH)return;
     if(INTERNAL.has(AUTH.email)){toast('บัญชีทีม ORIONS ไม่จำกัดอยู่แล้ว');return}
-    try{ // read-modify-write กัน usage เดิมหาย
-      const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('usage:'+AUTH.email)+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
-      const rows=r.ok?await r.json():[];const d=(rows[0]&&rows[0].data)||{};d.plan=id;
-      await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
-        body:JSON.stringify({email:'usage:'+AUTH.email,data:d,updated_at:new Date().toISOString()})});
-      _usage.plan=id;_usage.wkLimit=PLANS[id].wk;_usage.moLimit=PLANS[id].moTok;renderCredit();renderPricing();
-      toast('เปลี่ยนเป็นแผน '+PLANS[id].label+' แล้ว (mockup — ยังไม่คิดเงินจริง)')}
-    catch(e){toast('เปลี่ยนแผนไม่สำเร็จ')}}
+    if(!await ensureAuth()){showAuth();return}
+    toast('กำลังเปิดหน้าชำระเงิน…');
+    try{
+      const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},body:JSON.stringify({plan:id})});
+      const d=await r.json();
+      if(!r.ok||!d.url){toast(d.error||'เปิด checkout ไม่สำเร็จ');return}
+      location.href=d.url}
+    catch(e){toast('เชื่อมต่อ Stripe ไม่สำเร็จ')}}
+  async function openPortal(){
+    if(!AUTH)return;if(!await ensureAuth()){showAuth();return}
+    toast('กำลังเปิดหน้าจัดการสมาชิก…');
+    try{const r=await fetch('/api/portal',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token}});
+      const d=await r.json();if(!r.ok||!d.url){toast(d.error||'เปิดไม่สำเร็จ');return}location.href=d.url}
+    catch(e){toast('เชื่อมต่อไม่สำเร็จ')}}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage}}
   function applyBlob(b){
@@ -1508,9 +1516,16 @@
     if(sid){await openShareView(sid);return}
     // 3) ปกติ — ต้อง login
     loadAuth();
-    if(AUTH&&await ensureAuth()){hideAuth();await boot()}
+    if(AUTH&&await ensureAuth()){hideAuth();await boot();handleCheckoutReturn()}
     else{saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);showAuth()}
   })();
+  // กลับจาก Stripe Checkout — webhook อาจตั้งแผนช้านิดนึง จึง poll usage 2-3 รอบ
+  function handleCheckoutReturn(){
+    const q=new URLSearchParams(location.search),c=q.get('checkout');if(!c)return;
+    history.replaceState(null,'',location.pathname);
+    if(c==='cancel'){toast('ยกเลิกการชำระเงิน');return}
+    if(c==='success'){toast('ชำระเงินสำเร็จ — กำลังอัปเดตแผน…');let n=0;
+      const iv=setInterval(async()=>{n++;await refreshUsage();if(_usage.hasSub||n>=4){clearInterval(iv);if(_usage.hasSub)toast('อัปเกรดเป็นแผน '+(PLANS[_usage.plan]||{}).label+' แล้ว')}},2500)}}
 </script>
 </body>
 </html>
