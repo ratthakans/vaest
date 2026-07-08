@@ -351,6 +351,33 @@
   .credit .cr-fill{height:100%;border-radius:99px;background:#5d9e7e;transition:width .6s var(--ease)}
   .credit .cr-fill.warn{background:#c9a04a}
   .credit .cr-fill.max{background:var(--cinnabar)}
+  .credit{cursor:pointer;border-radius:9px;transition:background .15s}
+  .credit:hover{background:rgba(245,243,238,.05)}
+  .credit #crPlan{color:#cdcac2;font-weight:600}
+  .credit .cr-sub{margin-top:5px;opacity:.7}
+  /* pricing modal */
+  .price{position:fixed;inset:0;z-index:135;display:none;align-items:center;justify-content:center;padding:5vh 20px;background:rgba(23,20,15,.4);backdrop-filter:blur(6px);overflow-y:auto}
+  .price.show{display:flex;animation:palBg .2s var(--ease)}
+  .price-box{width:100%;max-width:860px;background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--pop);padding:34px 34px 30px;animation:palIn .28s var(--ease)}
+  .price-hd{display:flex;align-items:flex-end;gap:12px;margin-bottom:6px}
+  .price-hd b{font-family:var(--body);font-style:italic;font-weight:500;font-size:26px}
+  .price-hd .x{margin-left:auto;color:var(--mute);font-size:20px;padding:4px 8px;border-radius:8px}
+  .price-hd .x:hover{color:var(--ink);background:var(--soft)}
+  .price-note{font-size:12.5px;color:var(--mute);margin-bottom:22px;line-height:1.6}
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:720px){.tiers{grid-template-columns:1fr}}
+  .tier{border:1px solid var(--line);border-radius:15px;padding:22px 20px;display:flex;flex-direction:column;transition:.2s var(--ease)}
+  .tier.cur{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .tier:hover{transform:translateY(-2px);box-shadow:var(--pop)}
+  .tier .tn{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--cinnabar)}
+  .tier .tp{font-size:23px;font-weight:750;letter-spacing:-.02em;margin:8px 0 2px}
+  .tier .tp small{font-size:12px;font-weight:500;color:var(--mute)}
+  .tier .tb2{font-size:12.5px;line-height:1.7;color:var(--dim);margin:12px 0 18px;flex:1}
+  .tier .tgo{text-align:center;font-size:13px;font-weight:650;padding:10px;border-radius:10px;background:var(--soft);color:var(--ink);transition:.15s}
+  .tier .tgo:hover{background:rgba(23,20,15,.09)}
+  .tier.cur .tgo{background:var(--ink);color:var(--snow);pointer-events:none}
+  .price-use{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:20px 40px;font-size:13px;color:var(--dim)}
+  .price-use b{color:var(--ink);font-weight:650}
   .r-foot .who{cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .r-foot .who:hover{color:#cdcac2;text-decoration:underline;text-underline-offset:2px}
 
@@ -452,9 +479,10 @@
         <div class="r-lbl">Projects <button onclick="newProject()" title="สร้าง project" aria-label="สร้าง project">＋</button></div>
         <div id="projList"></div>
       </div>
-      <div class="credit" id="creditBox" style="display:none">
-        <div class="cr-row"><span>เครดิตเดือนนี้</span><span id="crText">—</span></div>
+      <div class="credit" id="creditBox" style="display:none" onclick="openPricing()" title="ดูแผน & การใช้งาน">
+        <div class="cr-row"><span id="crPlan">—</span><span id="crWeek">—</span></div>
         <div class="cr-bar"><div class="cr-fill" id="crFill" style="width:0%"></div></div>
+        <div class="cr-row cr-sub"><span>token เดือนนี้</span><span id="crText">—</span></div>
       </div>
       <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="คลิกเพื่อออกจากระบบ">VÆST 1.0</span></div>
     </div>
@@ -514,6 +542,14 @@
       <kbd>esc</kbd>
     </div>
     <div class="pal-list" id="palList"></div>
+  </div>
+</div>
+<div class="price" id="priceView" onclick="if(event.target===this)closePricing()">
+  <div class="price-box">
+    <div class="price-hd"><b>แผน &amp; การใช้งาน</b><button class="x" onclick="closePricing()" aria-label="ปิด">✕</button></div>
+    <div class="price-note">เลือกแผนตามปริมาณงาน — limit นับเป็น “เอกสารใหม่ต่อสัปดาห์” (soft) + เพดาน token ต่อเดือน (hard, fair-use) · <b>ตัวเลขและราคายังเป็น mockup</b> ยังไม่ต่อระบบจ่ายเงินจริง</div>
+    <div class="tiers" id="tiers"></div>
+    <div class="price-use" id="priceUse"></div>
   </div>
 </div>
 <div class="snap" id="snapView" onclick="if(event.target===this)closeSnap()">
@@ -659,20 +695,68 @@
     catch(e){$('npErr').textContent=e.message;b.disabled=false;b.textContent='บันทึกรหัสใหม่'}}
 
   /* ═══ credit meter ═══ */
-  function renderCredit(used,limit){
-    const box=$('creditBox');if(!box)return;
-    if(!limit){box.style.display='none';return}
-    box.style.display='';
-    const pct=Math.min(100,Math.round(used/limit*100));
-    $('crText').textContent=fmtTok(used)+' / '+fmtTok(limit);
-    const f=$('crFill');f.style.width=pct+'%';
-    f.className='cr-fill'+(pct>=95?' max':pct>=80?' warn':'')}
+  /* ═══ plans & credit ═══ */
+  const PLANS={
+    solo:   {label:'Solo',   wk:10,  moTok:1.5e6, price:'฿590',  blurb:'~10 เอกสาร/สัปดาห์ · Refined ไม่จำกัด · 1 seat'},
+    studio: {label:'Studio', wk:40,  moTok:6e6,   price:'฿1,900',blurb:'~40 เอกสาร/สัปดาห์ · 3 seats · reference library · แชร์ลิงก์'},
+    agency: {label:'Agency', wk:200, moTok:25e6,  price:'฿5,900',blurb:'ไม่จำกัดจริง (fair-use) · หลาย seat · priority'},
+    internal:{label:'ORIONS',wk:0,   moTok:0,     price:'ทีมภายใน',blurb:'ไม่จำกัด — เครื่องมือของสตูดิโอ'},
+  };
+  let _usage={plan:'solo',wkUsed:0,wkLimit:10,moUsed:0,moLimit:1.5e6};
+  function renderCredit(){
+    const box=$('creditBox');if(!box||!AUTH)return;box.style.display='';
+    const u=_usage,P=PLANS[u.plan]||PLANS.solo;
+    $('crPlan').textContent='แผน '+P.label;
+    const wkInf=!u.wkLimit;
+    $('crWeek').textContent=wkInf?'ไม่จำกัด':(u.wkUsed+'/'+u.wkLimit+' เอกสาร·สัปดาห์');
+    const pct=wkInf?0:Math.min(100,Math.round(u.wkUsed/u.wkLimit*100));
+    const f=$('crFill');f.style.width=pct+'%';f.className='cr-fill'+(pct>=100?' max':pct>=80?' warn':'');
+    $('crText').textContent=u.moLimit?(fmtTok(u.moUsed)+' / '+fmtTok(u.moLimit)):(fmtTok(u.moUsed)+' · ไม่จำกัด')}
+  function setUsageFromHeaders(h){
+    const plan=h.get('X-Plan');if(plan&&PLANS[plan])_usage.plan=plan;
+    const cu=+h.get('X-Credit-Used'),cl=+h.get('X-Credit-Limit'),wu=+h.get('X-Week-Used'),wl=+h.get('X-Week-Limit');
+    if(!isNaN(cu))_usage.moUsed=cu;if(!isNaN(cl))_usage.moLimit=cl;
+    if(!isNaN(wu))_usage.wkUsed=wu;if(!isNaN(wl))_usage.wkLimit=wl;
+    renderCredit();
+    if(h.get('X-Week-Over')==='1')toast('เกิน limit เอกสารของแผนสัปดาห์นี้แล้ว — ยังใช้ต่อได้ แต่ลองอัปเกรดแผนได้เลย')}
   async function refreshUsage(){
     if(!AUTH)return;
     try{const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('usage:'+AUTH.email)+'&select=data',
       {headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
-      if(!r.ok)return;const rows=await r.json();const d=(rows[0]&&rows[0].data)||null;
-      if(d)renderCredit(d.month===new Date().toISOString().slice(0,7)?(d.used||0):0,d.limit||TOKEN_CAP)}catch(e){}}
+      if(!r.ok){renderCredit();return}
+      const rows=await r.json();const d=(rows[0]&&rows[0].data)||{};
+      const mo=new Date().toISOString().slice(0,7);
+      const plan=INTERNAL.has(AUTH.email)?'internal':(PLANS[d.plan]?d.plan:'solo');const P=PLANS[plan];
+      _usage={plan,wkLimit:P.wk,moLimit:P.moTok,
+        wkUsed:0, // เดาสัปดาห์จาก server ไม่ได้ตรงๆ ใช้ค่าจาก header ตอนยิงจริง
+        moUsed:d.month===mo?(d.used||0):0};
+      _usage.wkUsed=d.wkCount||0;renderCredit()}catch(e){renderCredit()}}
+  const INTERNAL=new Set(['rakan@orions.agency','rakan.suwanphakdee@gmail.com']);
+  /* pricing modal */
+  function openPricing(){renderPricing();$('priceView').classList.add('show')}
+  function closePricing(){$('priceView').classList.remove('show')}
+  function renderPricing(){
+    const order=['solo','studio','agency'];if(_usage.plan==='internal')order.push('internal');
+    $('tiers').innerHTML=order.map(id=>{const P=PLANS[id],cur=_usage.plan===id;
+      return '<div class="tier'+(cur?' cur':'')+'"><div class="tn">'+P.label+'</div>'
+        +'<div class="tp">'+P.price+(id==='internal'?'':' <small>/เดือน</small>')+'</div>'
+        +'<div class="tb2">'+P.blurb+'</div>'
+        +'<div class="tgo" '+(cur?'':'onclick="choosePlan(\''+id+'\')"')+'>'+(cur?'แผนปัจจุบัน':'เลือกแผนนี้')+'</div></div>'}).join('');
+    const P=PLANS[_usage.plan]||PLANS.solo;
+    $('priceUse').innerHTML='<span>แผนปัจจุบัน · <b>'+P.label+'</b></span>'
+      +'<span>เอกสารสัปดาห์นี้ · <b>'+(P.wk?(_usage.wkUsed+'/'+P.wk):'ไม่จำกัด')+'</b></span>'
+      +'<span>token เดือนนี้ · <b>'+fmtTok(_usage.moUsed)+(P.moTok?(' / '+fmtTok(P.moTok)):' · ไม่จำกัด')+'</b></span>'}
+  async function choosePlan(id){
+    if(!PLANS[id]||!AUTH)return;
+    if(INTERNAL.has(AUTH.email)){toast('บัญชีทีม ORIONS ไม่จำกัดอยู่แล้ว');return}
+    try{ // read-modify-write กัน usage เดิมหาย
+      const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('usage:'+AUTH.email)+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
+      const rows=r.ok?await r.json():[];const d=(rows[0]&&rows[0].data)||{};d.plan=id;
+      await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+        body:JSON.stringify({email:'usage:'+AUTH.email,data:d,updated_at:new Date().toISOString()})});
+      _usage.plan=id;_usage.wkLimit=PLANS[id].wk;_usage.moLimit=PLANS[id].moTok;renderCredit();renderPricing();
+      toast('เปลี่ยนเป็นแผน '+PLANS[id].label+' แล้ว (mockup — ยังไม่คิดเงินจริง)')}
+    catch(e){toast('เปลี่ยนแผนไม่สำเร็จ')}}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage}}
   function applyBlob(b){
@@ -711,13 +795,12 @@
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
       body:JSON.stringify({mode,messages,system:system||''})});
     if(r.status===401){showAuth('เซสชันหมดอายุ — เข้าสู่ระบบอีกครั้ง');throw new Error('เซสชันหมดอายุ')}
+    if(r.status===429){let msg='เครดิตหมด';try{msg=(await r.json()).error||msg}catch(e){}toast(msg);openPricing();throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
-    const cu=parseInt(r.headers.get('X-Credit-Used')||'',10),cl=parseInt(r.headers.get('X-Credit-Limit')||'',10);
-    if(cl)renderCredit(cu||0,cl);
+    setUsageFromHeaders(r.headers);
     const reader=r.body.getReader(),dec=new TextDecoder();let full='';
     for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full)}
     const i=full.indexOf('[[ERROR]]');if(i>=0)throw new Error(full.slice(i+9).trim()||'server error');
-    setTimeout(refreshUsage,800);
     return full.trim()}
 
   /* ═══ files — multi-format ═══ */
@@ -928,7 +1011,7 @@
   function hideCtx(){$('ctx').classList.remove('show')}
   addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.more'))hideCtx();
     if(!e.target.closest('.exp-wrap'))$('expMenu').classList.remove('show')});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show')}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closePricing();closeSnap()}});
   // ⌥↑ / ⌥↓ — สลับ session ตามลำดับที่เห็นใน rail
   addEventListener('keydown',e=>{
     if(!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
@@ -1022,6 +1105,7 @@
       A('แนบไฟล์',()=>$('fileInput').click());
     }
     A('สร้าง project ใหม่',()=>newProject());
+    A('แผน & การใช้งาน',()=>openPricing());
     A('ออกจากระบบ'+(AUTH?' ('+AUTH.email+')':''),()=>confirmLogout());
     sessions.forEach(s=>c.push({t:s.title||'ไม่มีชื่อ',sub:fmtAgo(s.updatedAt),run:()=>openSession(s.id),k:'session'}));
     return c}

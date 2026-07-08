@@ -8,8 +8,29 @@ const SB = {
   url: 'https://yyhqcqlylnoukmovrpwo.supabase.co',
   key: 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',
 };
-// เพดานเครดิตต่อเดือน (token รวม in+out) — override ได้ด้วย env TOKEN_LIMIT
-const TOKEN_LIMIT = parseInt(process.env.TOKEN_LIMIT || '', 10) || 5_000_000;
+// ── Plans — limit รายสัปดาห์ (soft, จำนวนเอกสารใหม่/Summing) + เพดาน token รายเดือน (hard, fair-use) ──
+const PLANS = {
+  solo:    { label: 'Solo',    wk: 10,       moTok: 1_500_000 },
+  studio:  { label: 'Studio',  wk: 40,       moTok: 6_000_000 },
+  agency:  { label: 'Agency',  wk: 200,      moTok: 25_000_000 },
+  internal:{ label: 'ORIONS',  wk: Infinity, moTok: Infinity },
+};
+const DEFAULT_PLAN = 'solo';
+// อีเมลทีม ORIONS → ไม่จำกัด
+const INTERNAL = new Set(['rakan@orions.agency', 'rakan.suwanphakdee@gmail.com']);
+function planOf(email, data) {
+  if (INTERNAL.has(email)) return 'internal';
+  const p = data && data.plan;
+  return PLANS[p] ? p : DEFAULT_PLAN;
+}
+// สัปดาห์เริ่มวันจันทร์ (UTC) — คืนคีย์ YYYY-MM-DD ของวันจันทร์
+function weekKey() {
+  const now = Date.now();
+  const d = new Date(now);
+  const dow = (d.getUTCDay() + 6) % 7; // Mon=0
+  const mon = new Date(now - dow * 86400000);
+  return mon.toISOString().slice(0, 10);
+}
 
 // VÆST 1.0 — ทุกงานแก้เอกสาร = Opus 4.8 · เฉพาะ Refined (ตรวจทั้งฉบับ) = Fable 5
 const ROUTE = {
@@ -79,23 +100,30 @@ async function verifyUser(req) {
   } catch (e) { return null; }
 }
 
-// ── credit: อ่าน/เขียน usage รายเดือน (เก็บใน vaest_state แถว email = "usage:<email>") ──
+// ── credit: อ่าน/เขียน usage (เก็บใน vaest_state แถว email = "usage:<email>") ──
 const sbHeaders = { apikey: SB.key, Authorization: `Bearer ${SB.key}`, 'Content-Type': 'application/json' };
 async function readUsage(email) {
-  const month = new Date().toISOString().slice(0, 7);
+  const month = new Date().toISOString().slice(0, 7), week = weekKey();
   try {
     const r = await fetch(`${SB.url}/rest/v1/vaest_state?email=eq.${encodeURIComponent('usage:' + email)}&select=data`, { headers: sbHeaders });
     const rows = r.ok ? await r.json() : [];
     const d = (rows[0] && rows[0].data) || {};
-    return { month, used: d.month === month ? (d.used || 0) : 0 };
-  } catch (e) { return { month, used: 0 }; }
+    return {
+      month, week,
+      used: d.month === month ? (d.used || 0) : 0,   // token เดือนนี้ (hard)
+      wkCount: d.week === week ? (d.wkCount || 0) : 0, // เอกสารสัปดาห์นี้ (soft)
+      plan: planOf(email, d),
+    };
+  } catch (e) { return { month, week, used: 0, wkCount: 0, plan: planOf(email, null) }; }
 }
-async function writeUsage(email, month, used) {
+async function writeUsage(email, u) {
   try {
     await fetch(`${SB.url}/rest/v1/vaest_state`, {
       method: 'POST',
       headers: { ...sbHeaders, Prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify({ email: 'usage:' + email, data: { month, used, limit: TOKEN_LIMIT }, updated_at: new Date().toISOString() }),
+      body: JSON.stringify({ email: 'usage:' + email, data: {
+        month: u.month, used: u.used, week: u.week, wkCount: u.wkCount, plan: u.plan, limit: u.moTok,
+      }, updated_at: new Date().toISOString() }),
     });
   } catch (e) { /* best-effort */ }
 }
@@ -120,15 +148,21 @@ export default async function handler(req, res) {
   const user = await verifyUser(req);
   if (!user) { res.status(401).json({ error: 'ยังไม่ได้เข้าสู่ระบบ หรือเซสชันหมดอายุ' }); return; }
 
-  // 2) credit gate
-  const { month, used } = await readUsage(user.email);
-  if (used >= TOKEN_LIMIT) {
-    res.status(429).json({ error: `เครดิตเดือนนี้หมดแล้ว (${Math.round(used / 1000)}K / ${Math.round(TOKEN_LIMIT / 1000)}K tokens) — รีเซ็ตต้นเดือนหน้า` });
+  const { mode = 'summing', messages = [], system = '' } = req.body || {};
+  if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
+
+  // 2) usage + plan
+  const u = await readUsage(user.email);
+  const plan = PLANS[u.plan];
+  const isNewDoc = mode === 'summing';                   // เอกสารใหม่ = นับ weekly
+  const wkAfter = u.wkCount + (isNewDoc ? 1 : 0);
+
+  // hard cap — token รายเดือนตามแพลน
+  if (u.used >= plan.moTok) {
+    res.status(429).json({ error: `เครดิตเดือนนี้ของแพลน ${plan.label} หมดแล้ว (${Math.round(u.used/1000)}K tokens) — อัปเกรดแพลน หรือรอต้นเดือนหน้า` });
     return;
   }
 
-  const { mode = 'summing', messages = [], system = '' } = req.body || {};
-  if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
   const route = ROUTE[mode] || ROUTE.summing;
   const base = TASK[mode] || TASK.summing;
   const sys = base + (system ? '\n\n' + system : '');
@@ -136,13 +170,17 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Model', route.model);
-  res.setHeader('X-Credit-Used', String(used));
-  res.setHeader('X-Credit-Limit', String(TOKEN_LIMIT));
+  res.setHeader('X-Plan', u.plan);
+  res.setHeader('X-Credit-Used', String(u.used));
+  res.setHeader('X-Credit-Limit', plan.moTok === Infinity ? '0' : String(plan.moTok));
+  res.setHeader('X-Week-Used', String(wkAfter));
+  res.setHeader('X-Week-Limit', plan.wk === Infinity ? '0' : String(plan.wk));
+  res.setHeader('X-Week-Over', (isNewDoc && wkAfter > plan.wk) ? '1' : '0'); // soft — เตือน ไม่บล็อก
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
     const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
-    await writeUsage(user.email, month, used + inTok + outTok);
+    await writeUsage(user.email, { month: u.month, week: u.week, used: u.used + inTok + outTok, wkCount: wkAfter, plan: u.plan, moTok: plan.moTok });
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
