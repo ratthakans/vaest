@@ -69,7 +69,7 @@
   .exp-item:hover{background:rgba(255,255,255,.05)}
   .exp-item .mo{font-family:var(--mono);font-size:10px;color:var(--mute);margin-left:auto}
 
-  /* ===== HOME (บรีฟ + แนบไฟล์) ===== */
+  /* ===== HOME (บรีฟ + Attach files) ===== */
   .home,.cv{animation:viewIn .5s var(--ease) both}
   @keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .home{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:40px 24px}
@@ -320,7 +320,7 @@
   .snap-it .si-x:hover{color:var(--ink);background:rgba(255,255,255,.06)}
   .snap-empty{padding:30px 20px;text-align:center;color:var(--mute);font-size:13.5px;line-height:1.7}
 
-  /* auth — เข้าสู่ระบบ / สมัครใช้งาน */
+  /* auth — Sign in / Sign up */
   .auth{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:24px;background:var(--app)}
   .auth.show{display:flex}
   .auth-in{width:100%;max-width:392px;animation:viewIn .5s var(--ease) both}
@@ -404,25 +404,25 @@
 <body>
 <div class="app" id="app">
   <main class="main">
-    <button class="rail-toggle" onclick="toggleRail()" title="เมนู" aria-label="เมนู"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+    <button class="rail-toggle" onclick="toggleRail()" title="Menu" aria-label="Menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
     <!-- topbar: เฉพาะตอนมีเอกสาร -->
     <header class="top" id="topbar" style="display:none">
-      <button class="tb" onclick="toggleRail()" title="เมนู" aria-label="เมนู"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
-      <button class="tb" onclick="backToBrief()" title="แก้บรีฟ / เพิ่มไฟล์ / สรุปใหม่"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg> บรีฟ</button>
-      <button class="tb" onclick="$('addFileInput').click()" title="เพิ่มไฟล์แล้วรวมเข้าเอกสาร"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> เพิ่มไฟล์</button>
-      <button class="tb" id="undoBtn" onclick="undoCanvas()" disabled title="ย้อนการแก้ล่าสุด"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg> ย้อน</button>
-      <button class="tb" onclick="openSnapshots()" title="เวอร์ชันที่บันทึก"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg></button>
+      <button class="tb" onclick="toggleRail()" title="Menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+      <button class="tb" onclick="backToBrief()" title="Edit brief / add files / re-sum"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg> Brief</button>
+      <button class="tb" onclick="$('addFileInput').click()" title="Add files and merge into the document"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add files</button>
+      <button class="tb" id="undoBtn" onclick="undoCanvas()" disabled title="Undo last change"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg> Undo</button>
+      <button class="tb" onclick="openSnapshots()" title="Saved versions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg></button>
       <div class="top-title" id="topTitle"></div>
       <span class="save-ind" id="saveInd"></span>
       <button class="tb dark" id="mastBtn" onclick="runMastering()">Refined</button>
       <div class="exp-wrap">
         <button class="tb accent" onclick="toggleExp(event)">Export <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="exp-menu" id="expMenu">
-          <button class="exp-item" onclick="shareDoc()">แชร์ลิงก์ · อ่านอย่างเดียว <span class="mo">link</span></button>
-          <button class="exp-item" onclick="copyFullPage()">คัดลอกทั้งหน้า <span class="mo">copy</span></button>
+          <button class="exp-item" onclick="shareDoc()">Share link · read-only <span class="mo">link</span></button>
+          <button class="exp-item" onclick="copyFullPage()">Copy full page <span class="mo">copy</span></button>
           <button class="exp-item" onclick="downloadMD()">Markdown <span class="mo">.md</span></button>
           <button class="exp-item" onclick="downloadDOC()">Word <span class="mo">.doc</span></button>
-          <button class="exp-item" onclick="exportPDF()">พิมพ์ · แนวตั้ง <span class="mo">PDF</span></button>
+          <button class="exp-item" onclick="exportPDF()">Print · portrait <span class="mo">PDF</span></button>
         </div>
       </div>
     </header>
@@ -431,21 +431,21 @@
     <section class="home" id="home">
       <div class="home-in">
         <div class="h-eye">ORIONS · VÆST</div>
-        <h1 class="h-title">อยากทำอะไร</h1>
+        <h1 class="h-title">What are we making?</h1>
         <div class="brief-box" id="briefBox">
-          <textarea id="brief" placeholder="บรีฟ: ต้องการอะไร บริบทเป็นยังไง งานนี้ส่งให้ใคร…" oninput="briefChanged()" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
+          <textarea id="brief" placeholder="Brief: what do you need, what's the context, who's it for…" oninput="briefChanged()" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
           <div class="bb-foot">
-            <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> แนบไฟล์</button>
-            <span class="bb-hint">ลากไฟล์มาวางได้</span>
-            <button class="go" id="sumBtn" onclick="runSumming()" title="⌘⏎ ก็ได้">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+            <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
+            <span class="bb-hint">or drop files</span>
+            <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
         </div>
         <div class="tone" id="toneBar">
-          <button data-tone="" onclick="setTone('')">มาตรฐาน</button>
-          <button data-tone="formal" onclick="setTone('formal')">เป็นทางการ</button>
-          <button data-tone="playful" onclick="setTone('playful')">เล่นๆ</button>
-          <button data-tone="sharp" onclick="setTone('sharp')">คมกริบ</button>
+          <button data-tone="" onclick="setTone('')">Standard</button>
+          <button data-tone="formal" onclick="setTone('formal')">Formal</button>
+          <button data-tone="playful" onclick="setTone('playful')">Playful</button>
+          <button data-tone="sharp" onclick="setTone('sharp')">Sharp</button>
         </div>
         <div class="h-foot">“Computation is nothing without taste.” · VÆST 1.0</div>
       </div>
@@ -464,15 +464,15 @@
         <svg class="r-mark" viewBox="0 0 40 40"><rect width="40" height="40" fill="#f5f3ee"/><path d="M25.5 8 14.5 32" stroke="#d5542c" stroke-width="3.6"/></svg>
         <div class="r-wm">V<i>Æ</i>ST</div>
       </div>
-      <button class="r-new" onclick="newSession()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> งานใหม่</button>
-      <button class="r-search" onclick="openPalette()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> ค้นหา / สั่งงาน <span class="rs-k">⌘K</span></button>
+      <button class="r-new" onclick="newSession()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New</button>
+      <button class="r-search" onclick="openPalette()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search / commands <span class="rs-k">⌘K</span></button>
       <div class="r-scroll">
-        <div class="r-lbl" title="สลับเร็ว: ⌥↑ / ⌥↓">Sessions</div>
+        <div class="r-lbl" title="Quick switch: ⌥↑ / ⌥↓">Sessions</div>
         <div id="freeList"></div>
-        <div class="r-lbl">Projects <button onclick="newProject()" title="สร้าง project" aria-label="สร้าง project">＋</button></div>
+        <div class="r-lbl">Projects <button onclick="newProject()" title="New project" aria-label="New project">＋</button></div>
         <div id="projList"></div>
       </div>
-      <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="คลิกเพื่อออกจากระบบ">VÆST 1.0</span></div>
+      <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.0</span></div>
     </div>
   </aside>
   <div class="scrim" onclick="toggleRail()"></div>
@@ -487,7 +487,7 @@
 <input type="file" id="refInput" multiple style="display:none"
   accept=".md,.markdown,.txt,.csv,.tsv,.json,.html,.htm,.docx,.xlsx,.xls,.pdf"
   onchange="handleRefFiles(event)">
-<div class="dropzone" id="dropzone"><div class="dz-in">วางไฟล์เพื่อแนบเข้า session นี้</div></div>
+<div class="dropzone" id="dropzone"><div class="dz-in">Drop files to attach to this session</div></div>
 <div class="auth" id="authView">
   <div class="auth-in">
     <div class="auth-mark">
@@ -495,15 +495,15 @@
       <div class="wm">V<i>Æ</i>ST</div>
       <div class="by">by ORIONS.Agency</div>
     </div>
-    <div class="auth-h" id="authTitle">เข้าสู่ระบบ</div>
+    <div class="auth-h" id="authTitle">Sign in</div>
     <form class="auth-f" onsubmit="event.preventDefault();submitAuth()">
-      <input type="email" id="authEmail" placeholder="อีเมล" autocomplete="email" required>
-      <input type="password" id="authPass" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="current-password" minlength="6" required>
+      <input type="email" id="authEmail" placeholder="Email" autocomplete="email" required>
+      <input type="password" id="authPass" placeholder="Password (min 6 characters)" autocomplete="current-password" minlength="6" required>
       <div class="auth-err" id="authErr"></div>
-      <button type="submit" class="auth-go" id="authGo">เข้าสู่ระบบ</button>
+      <button type="submit" class="auth-go" id="authGo">Sign in</button>
     </form>
-    <div class="auth-sw"><button type="button" onclick="forgotPassword()">ลืมรหัสผ่าน?</button></div>
-    <div class="auth-foot">เข้าใช้แบบ invite-only · ติดต่อทีม ORIONS เพื่อขอสิทธิ์</div>
+    <div class="auth-sw"><button type="button" onclick="forgotPassword()">Forgot password?</button></div>
+    <div class="auth-foot">Invite-only access · contact the ORIONS team</div>
   </div>
 </div>
 <div class="auth" id="npView">
@@ -512,11 +512,11 @@
       <svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#17140f"/><path d="M25.5 8 14.5 32" stroke="#cf4f28" stroke-width="3.6"/></svg>
       <div class="wm">V<i>Æ</i>ST</div>
     </div>
-    <div class="auth-h">ตั้งรหัสผ่าน</div>
+    <div class="auth-h">Set password</div>
     <form class="auth-f" onsubmit="event.preventDefault();submitNewPass()">
-      <input type="password" id="npPass" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="new-password" minlength="6" required>
+      <input type="password" id="npPass" placeholder="Set a password (min 6 characters)" autocomplete="new-password" minlength="6" required>
       <div class="auth-err" id="npErr"></div>
-      <button type="submit" class="auth-go" id="npGo">บันทึกรหัสใหม่</button>
+      <button type="submit" class="auth-go" id="npGo">Save new password</button>
     </form>
   </div>
 </div>
@@ -525,7 +525,7 @@
   <div class="pal-box">
     <div class="pal-in">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="palInput" placeholder="ค้นหาคำสั่ง หรือ session…" autocomplete="off" spellcheck="false">
+      <input id="palInput" placeholder="Search commands or sessions…" autocomplete="off" spellcheck="false">
       <kbd>esc</kbd>
     </div>
     <div class="pal-list" id="palList"></div>
@@ -537,28 +537,28 @@
       <svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#17140f"/><path d="M25.5 8 14.5 32" stroke="#cf4f28" stroke-width="3.6"/></svg>
       <div class="wm">V<i>Æ</i>ST</div>
     </div>
-    <div class="auth-h">ยังไม่ได้รับเชิญ</div>
-    <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:8px">VÆST เปิดใช้แบบ invite-only · บัญชี <b id="giEmail" style="color:var(--ink)"></b> ยังไม่อยู่ในรายชื่อ</p>
-    <p style="font-size:13px;color:var(--mute);margin-bottom:26px">ทักทีม ORIONS เพื่อขอสิทธิ์เข้าใช้</p>
-    <button class="auth-go" onclick="logout()">ออกจากระบบ / เข้าบัญชีอื่น</button>
+    <div class="auth-h">Not invited yet</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:8px">VÆST is invite-only · the account <b id="giEmail" style="color:var(--ink)"></b> isn’t on the list yet</p>
+    <p style="font-size:13px;color:var(--mute);margin-bottom:26px">Contact the ORIONS team for access</p>
+    <button class="auth-go" onclick="logout()">Sign out / use another account</button>
   </div>
 </div>
 <div class="stats" id="statsView" onclick="if(event.target===this)closeStats()">
   <div class="stats-box">
-    <div class="stats-hd"><b>สถิติการใช้ & ต้นทุน</b><button class="x" onclick="closeStats()" aria-label="ปิด">✕</button></div>
-    <div class="stats-note">วัดต้นทุนจริงต่อเอกสารเพื่อจูนราคาแผน · ใส่ <b>เรทจริง (บาท/1M token รวม in+out)</b> จากบิล Anthropic ของคุณ · เริ่มนับตั้งแต่ติดตั้งฟีเจอร์นี้ — ใช้งานจริง 1–2 สัปดาห์ให้ข้อมูลนิ่งก่อนตั้งราคา</div>
+    <div class="stats-hd"><b>Usage & cost</b><button class="x" onclick="closeStats()" aria-label="Close">✕</button></div>
+    <div class="stats-note">Measure real cost per document · enter <b>your real rate (THB per 1M tokens, in+out)</b> from your Anthropic bill · counting starts from when this shipped — run it live 1–2 weeks for stable data.</div>
     <div class="rate-row">
-      <div class="rate-f"><label>Opus 4.8 · บาท/1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
-      <div class="rate-f"><label>Fable 5 · บาท/1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>Opus 4.8 · THB / 1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>Fable 5 · THB / 1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
     </div>
     <div class="kpis" id="statsKpis"></div>
-    <div class="st-h2">ต้นทุนรายเอกสาร (สูงสุด 12)</div>
+    <div class="st-h2">Cost per document (top 12)</div>
     <div style="overflow-x:auto"><table class="st-tbl" id="statsDocs"></table></div>
   </div>
 </div>
 <div class="snap" id="snapView" onclick="if(event.target===this)closeSnap()">
   <div class="snap-box">
-    <div class="snap-hd"><b>เวอร์ชันที่บันทึก</b><button class="save" onclick="saveSnapshot()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> บันทึกตอนนี้</button></div>
+    <div class="snap-hd"><b>Saved versions</b><button class="save" onclick="saveSnapshot()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Save now</button></div>
     <div class="snap-list" id="snapList"></div>
   </div>
 </div>
@@ -631,12 +631,12 @@
   async function authLogin(email,pass){
     const r=await fetch(SB.url+'/auth/v1/token?grant_type=password',{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password:pass})});
     const d=await r.json();
-    if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Wrong email or password');
     applySession(d)}
   async function authSignup(email,pass){
     const r=await fetch(SB.url+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password:pass})});
     const d=await r.json();
-    if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'สมัครไม่สำเร็จ');
+    if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-up failed');
     if(d.access_token){applySession(d);return 'ok'}
     return 'confirm' // ต้องยืนยันอีเมลก่อน
   }
@@ -648,55 +648,55 @@
     if(!AUTH)return false;
     if(Date.now()<(AUTH.expires_at||0))return true;
     return authRefresh()}
-  function confirmLogout(){if(!AUTH)return;if(confirm('ออกจากระบบ ('+AUTH.email+') ?'))logout()}
+  function confirmLogout(){if(!AUTH)return;if(confirm('Sign out ('+AUTH.email+') ?'))logout()}
   function logout(){const k=STORE+':'+((AUTH&&AUTH.email)||'anon');saveAuth(null);try{localStorage.removeItem(k);localStorage.removeItem(STORE)}catch(e){}location.reload()}
 
   /* auth UI */
   let _authMode='login';
   function toggleAuthMode(){_authMode=_authMode==='login'?'signup':'login';
-    $('authTitle').textContent=_authMode==='login'?'เข้าสู่ระบบ':'สมัครใช้งาน';
-    $('authGo').textContent=_authMode==='login'?'เข้าสู่ระบบ':'สมัครใช้งาน';
+    $('authTitle').textContent=_authMode==='login'?'Sign in':'Sign up';
+    $('authGo').textContent=_authMode==='login'?'Sign in':'Sign up';
     $('authSw').innerHTML=_authMode==='login'
-      ?'ยังไม่มีบัญชี<button type="button" onclick="toggleAuthMode()">สมัครใช้งาน</button>'
-      :'มีบัญชีแล้ว<button type="button" onclick="toggleAuthMode()">เข้าสู่ระบบ</button>';
+      ?'No account yet<button type="button" onclick="toggleAuthMode()">Sign up</button>'
+      :'Already have an account<button type="button" onclick="toggleAuthMode()">Sign in</button>';
     $('authErr').textContent=''}
   function showAuth(msg){$('authView').classList.add('show');if(msg)$('authErr').textContent=msg;setTimeout(()=>$('authEmail').focus(),50)}
   function hideAuth(){$('authView').classList.remove('show')}
   async function submitAuth(){
     const email=$('authEmail').value.trim().toLowerCase(),pass=$('authPass').value;
-    if(!email||pass.length<6){$('authErr').textContent='กรอกอีเมล และรหัสผ่านอย่างน้อย 6 ตัว';return}
-    const go=$('authGo');go.disabled=true;go.textContent='สักครู่…';$('authErr').textContent='';
+    if(!email||pass.length<6){$('authErr').textContent='Enter an email and a password of at least 6 characters';return}
+    const go=$('authGo');go.disabled=true;go.textContent='One sec…';$('authErr').textContent='';
     try{
       if(_authMode==='login'){await authLogin(email,pass)}
       else{const res=await authSignup(email,pass);
-        if(res==='confirm'){$('authErr').textContent='สมัครแล้ว — เช็กอีเมลเพื่อยืนยัน แล้วกลับมาเข้าสู่ระบบ';
+        if(res==='confirm'){$('authErr').textContent='Signed up — check your email to confirm, then sign in';
           _authMode='signup';toggleAuthMode();go.disabled=false;return}}
       if(await checkAccess()){hideAuth();await boot()}else showNotInvited();
     }catch(e){$('authErr').textContent=e.message}
-    finally{go.disabled=false;go.textContent=_authMode==='login'?'เข้าสู่ระบบ':'สมัครใช้งาน'}}
+    finally{go.disabled=false;go.textContent=_authMode==='login'?'Sign in':'Sign up'}}
 
   /* reset password */
   async function forgotPassword(){
     const email=($('authEmail').value||'').trim().toLowerCase();
-    if(!email){$('authErr').textContent='กรอกอีเมลก่อน แล้วกด “ลืมรหัสผ่าน”';$('authEmail').focus();return}
+    if(!email){$('authErr').textContent='Enter your email first, then tap “Forgot password”';$('authEmail').focus();return}
     try{await fetch(SB.url+'/auth/v1/recover',{method:'POST',headers:authHeaders(),
       body:JSON.stringify({email,options:{redirect_to:location.origin+'/app'}})});
-      $('authErr').textContent='ส่งลิงก์รีเซ็ตไปที่ '+email+' แล้ว — เช็กอีเมล'}
-    catch(e){$('authErr').textContent='ส่งไม่สำเร็จ ลองใหม่อีกครั้ง'}}
+      $('authErr').textContent='Reset link sent to '+email+' — check your email'}
+    catch(e){$('authErr').textContent='Couldn’t send, try again'}}
   // ตั้งรหัส (ลิงก์อีเมล — reset รหัส หรือ อีเมลเชิญของ Supabase)
   function recoveryTokenFromHash(){
     const h=(location.hash||'').replace(/^#/,'');if(!/type=(recovery|invite|signup)/.test(h))return null;
     const p=new URLSearchParams(h);return p.get('access_token')||null}
   async function submitNewPass(){
     const t=window._recToken,p1=$('npPass').value;
-    if(p1.length<6){$('npErr').textContent='รหัสผ่านอย่างน้อย 6 ตัว';return}
-    const b=$('npGo');b.disabled=true;b.textContent='สักครู่…';$('npErr').textContent='';
+    if(p1.length<6){$('npErr').textContent='Password must be at least 6 characters';return}
+    const b=$('npGo');b.disabled=true;b.textContent='One sec…';$('npErr').textContent='';
     try{const r=await fetch(SB.url+'/auth/v1/user',{method:'PUT',
       headers:{apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({password:p1})});
-      const d=await r.json();if(!r.ok)throw new Error(d.msg||d.error_description||'ตั้งรหัสใหม่ไม่สำเร็จ');
+      const d=await r.json();if(!r.ok)throw new Error(d.msg||d.error_description||'Couldn’t set the new password');
       history.replaceState(null,'',location.pathname);
-      $('npView').classList.remove('show');toast('ตั้งรหัสผ่านใหม่แล้ว — เข้าสู่ระบบได้เลย');showAuth('ตั้งรหัสใหม่แล้ว เข้าสู่ระบบด้วยรหัสใหม่')}
-    catch(e){$('npErr').textContent=e.message;b.disabled=false;b.textContent='บันทึกรหัสใหม่'}}
+      $('npView').classList.remove('show');toast('Password updated — you can sign in now');showAuth('Password set — sign in with your new password')}
+    catch(e){$('npErr').textContent=e.message;b.disabled=false;b.textContent='Save new password'}}
 
   /* ═══ credit meter ═══ */
   /* ═══ invite-only — เช็คสิทธิ์ (server บังคับจริง · client แค่โชว์หน้าถูก) ═══ */
@@ -710,7 +710,7 @@
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';$('gateView').classList.add('show')}
 
   /* ═══ usage analytics — ต้นทุนต่อเอกสาร ═══ */
-  const RATE_DEF={opus:2600,fable:600}; // บาท/1M (รวม in+out) — ประมาณการ แก้ได้
+  const RATE_DEF={opus:2600,fable:600}; // บาท/1M (Merged in+out) — ประมาณการ แก้ได้
   function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r&&r.opus>=0&&r.fable>=0)return r}catch(e){}return {...RATE_DEF}}
   function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
   function docCost(s,rt){const t=s.tok||{opus:0,fable:0};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable}
@@ -723,17 +723,17 @@
     let tOpus=0,tFable=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOpus+=t.opus||0;tFable+=t.fable||0;cost+=docCost(s,rt)});
     const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?(tOpus+tFable)/nDoc:0;
     $('statsKpis').innerHTML=[
-      ['เอกสารที่วัด',nDoc],
-      ['token รวม',fmtTok(tOpus+tFable)],
-      ['ต้นทุนรวม',baht(cost)],
-      ['เฉลี่ย/เอกสาร',baht(avg)+' <small>· '+fmtTok(avgTok)+'</small>'],
+      ['Documents measured',nDoc],
+      ['Total tokens',fmtTok(tOpus+tFable)],
+      ['Total cost',baht(cost)],
+      ['Avg / document',baht(avg)+' <small>· '+fmtTok(avgTok)+'</small>'],
     ].map(k=>'<div class="kpi"><div class="kn">'+k[0]+'</div><div class="kv">'+k[1]+'</div></div>').join('');
     // per-doc
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
-      ?('<thead><tr><th>เอกสาร</th><th class="num">ครั้ง</th><th class="num">token</th><th class="num">ต้นทุน</th></tr></thead><tbody>'
+      ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
-      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">ยังไม่มีข้อมูล — เริ่มใช้ Summing/ปรับ/Refined แล้วต้นทุนจะขึ้นที่นี่</td></tr></tbody>'}
+      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Summing / Refine / Refined and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage}}
   function applyBlob(b){
@@ -744,7 +744,7 @@
       b.projects.forEach(p=>{
         const files=((b.LIB||{})[p.id]||[]).map(m=>({n:m.t||'ไฟล์',c:m.content||''}));
         const canvas=((b.CANVAS||{})[p.id])||'';
-        if(files.length||canvas.trim())sessions.push({id:uid('s'),title:p.name||'งานเดิม',projectId:null,brief:'',files,canvas,updatedAt:Date.now()});
+        if(files.length||canvas.trim())sessions.push({id:uid('s'),title:p.name||'Prior work',projectId:null,brief:'',files,canvas,updatedAt:Date.now()});
       });
       usage=b.usage||0;currentSid=(sessions[0]||{}).id||null;return true}
     return false}
@@ -767,13 +767,13 @@
 
   /* ═══ API ═══ */
   async function streamAPI(mode,messages,system,onText){
-    if(!await ensureAuth()){showAuth('เซสชันหมดอายุ — เข้าสู่ระบบอีกครั้ง');throw new Error('ยังไม่ได้เข้าสู่ระบบ')}
+    if(!await ensureAuth()){showAuth('Session expired — sign in again');throw new Error('Not signed in')}
     const r=await fetch('/api/chat',{method:'POST',
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
       body:JSON.stringify({mode,messages,system:system||''})});
-    if(r.status===401){showAuth('เซสชันหมดอายุ — เข้าสู่ระบบอีกครั้ง');throw new Error('เซสชันหมดอายุ')}
-    if(r.status===403){showNotInvited();throw new Error('ยังไม่ได้รับเชิญ')}
-    if(r.status===429){let msg='ถึงเพดานการใช้งาน';try{msg=(await r.json()).error||msg}catch(e){}toast(msg);throw new Error(msg)}
+    if(r.status===401){showAuth('Session expired — sign in again');throw new Error('เซสชันหมดอายุ')}
+    if(r.status===403){showNotInvited();throw new Error('Not invited yet')}
+    if(r.status===429){let msg='Usage limit reached';try{msg=(await r.json()).error||msg}catch(e){}toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
     const reader=r.body.getReader(),dec=new TextDecoder();let full='';
     for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full.split('[[USAGE]]')[0])}
@@ -787,7 +787,7 @@
 
   /* ═══ files — multi-format ═══ */
   function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[data-l="'+src+'"]'))return res();
-    const s=document.createElement('script');s.src=src;s.dataset.l=src;s.onload=res;s.onerror=()=>rej(new Error('โหลดตัวอ่านไฟล์ไม่สำเร็จ'));document.head.appendChild(s)})}
+    const s=document.createElement('script');s.src=src;s.dataset.l=src;s.onload=res;s.onerror=()=>rej(new Error('Couldn’t load the file reader'));document.head.appendChild(s)})}
   const readText=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||''));r.onerror=rej;r.readAsText(f)});
   const readBuf=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(f)});
   async function extractFile(f){
@@ -803,36 +803,36 @@
       const doc=await pj.getDocument({data:await readBuf(f)}).promise;let out='';
       for(let p=1;p<=doc.numPages;p++){const pg=await doc.getPage(p);const tc=await pg.getTextContent();out+=tc.items.map(x=>x.str).join(' ')+'\n\n'}
       return out.trim()}
-    if(['jpg','jpeg','png','webp','gif','heic'].includes(ext))return '[ภาพอ้างอิง: '+f.name+']';
+    if(['jpg','jpeg','png','webp','gif','heic'].includes(ext))return '[image ref: '+f.name+']';
     return (await readText(f)).trim()}
   async function addFiles(files){
     const s=cur();if(!s)return;
-    toast('กำลังอ่าน '+files.length+' ไฟล์…');let ok=0,fail=0;
+    toast('Reading '+files.length+' files…');let ok=0,fail=0;
     for(const f of files){try{const c=await extractFile(f);
       if(c&&c.trim()){s.files.push({n:f.name,c:c.trim()});ok++}else fail++}catch(e){fail++}}
     s.updatedAt=Date.now();save();renderChips();
-    toast(ok?('แนบ '+ok+' ไฟล์แล้ว'+(fail?' · '+fail+' ไฟล์อ่านไม่ได้':'')):'อ่านไฟล์ไม่สำเร็จ')}
+    toast(ok?('Attached '+ok+' files'+(fail?' · '+fail+' files unreadable':'')):'Couldn’t read the files')}
   function handleUpload(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs)}
   function removeFile(i){const s=cur();if(!s)return;s.files.splice(i,1);s.updatedAt=Date.now();save();renderChips()}
   function renderChips(){const s=cur();
     $('chips').innerHTML=(s&&s.files.length)?s.files.map((f,i)=>
-      '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+')" title="เอาออก">✕</button></span>').join(''):''}
+      '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+')" title="Remove">✕</button></span>').join(''):''}
   // เพิ่มไฟล์ตอนอยู่ canvas → รวมเข้าเอกสาร (Opus)
   async function handleAddFiles(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)await addAndMerge(fs)}
   async function addAndMerge(fs){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
-    toast('กำลังอ่าน '+fs.length+' ไฟล์…');const names=[];
+    toast('Reading '+fs.length+' files…');const names=[];
     for(const f of fs){try{const c=await extractFile(f);if(c.trim()){s.files.push({n:f.name,c:c.trim()});names.push(f.name)}}catch(e){}}
     s.updatedAt=Date.now();save();
-    if(!names.length){toast('อ่านไฟล์ไม่สำเร็จ');return}
+    if(!names.length){toast('Couldn’t read the files');return}
     pushUndo();_busy=true;
     const newC=s.files.filter(f=>names.includes(f.n)).map(f=>'### '+f.n+'\n'+f.c.slice(0,20000)).join('\n\n');
-    const prompt='เอกสารเดิม:\n\n'+genMd()+'\n\nข้อมูลใหม่ที่เพิ่งแนบ:\n'+newC+'\n\nรวมข้อมูลใหม่เข้ากับเอกสารเดิมให้กลมกลืนและสอดคล้อง ส่งกลับ markdown เต็ม (คง "# ชื่อ" และโครง "## " เดิม เพิ่ม/ปรับเฉพาะที่เกี่ยว)';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> รวมไฟล์ใหม่เข้าเอกสาร…</div><div class="gen-body" id="genBody"></div></div>';
+    const prompt='Original document:\n\n'+genMd()+'\n\nNewly attached data:\n'+newC+'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging new files into the document…</div><div class="gen-body" id="genBody"></div></div>';
     try{const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      s.canvas=md;s.updatedAt=Date.now();save();renderRail();showCanvas();toast('รวม '+names.length+' ไฟล์เข้าเอกสารแล้ว')}
-    catch(e){renderDoc(s.canvas);toast('ไม่สำเร็จ: '+e.message)}
+      s.canvas=md;s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
+    catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
     finally{_busy=false}}
   // drop ไฟล์เข้า section → แก้เฉพาะส่วนนั้น
   // ── image blocks — ฝังรูปจริง (ย่อขนาดกันไฟล์บวม) ──
@@ -853,15 +853,15 @@
     const s=cur();if(!s)return;const c=secEl.querySelector('.sec-c');
     pushUndo();let added=0;
     for(const f of imgs){
-      if(stateBytes()>4.2e6){toast('เอกสารใหญ่มากแล้ว — ข้ามรูปที่เหลือกันไฟล์เสีย');break}
+      if(stateBytes()>4.2e6){toast('Document is very large — skipping remaining images to stay safe');break}
       try{const url=await imgToDataURL(f,1200,.72);
         const p=document.createElement('p');p.innerHTML='<img src="'+url+'" alt="'+esc(f.name.replace(/\.[^.]+$/,''))+'">';
         c.appendChild(p);added++}catch(e){}
     }
-    if(added){s.canvas=genMd();s.updatedAt=Date.now();save();toast('ฝัง '+added+' รูปแล้ว')}
+    if(added){s.canvas=genMd();s.updatedAt=Date.now();save();toast('Embedded '+added+' images')}
   }
   async function dropOnSection(secEl,files){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
     const imgs=files.filter(isImg),docs=files.filter(f=>!isImg(f));
     if(imgs.length)await embedImages(secEl,imgs);
@@ -870,25 +870,25 @@
     const hEl=secEl.querySelector('.sec-h'),c=secEl.querySelector('.sec-c');const h=hEl?hEl.innerText.trim():'';
     const beforeTxt=c.innerText.trim();
     pushUndo();_busy=true;s.secFiles=s.secFiles||{};s.secFiles[h]=s.secFiles[h]||[];
-    toast('อ่านไฟล์เข้าส่วน “'+h+'”…');let merged='';
+    toast('Reading files into “'+h+'”…');let merged='';
     for(const f of files){try{const cc=await extractFile(f);s.secFiles[h].push(f.name);merged+='### '+f.name+'\n'+cc.slice(0,15000)+'\n\n'}catch(e){}}
     secEl.classList.add('improving');c.innerHTML='<span class="cursor"></span>';
-    const prompt='บริบทเอกสาร: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nเนื้อเดิม:\n'+beforeTxt+'\n\nข้อมูลจากไฟล์ที่แนบเข้าส่วนนี้:\n'+merged+'\n\nรวมข้อมูลจากไฟล์เข้ากับ section นี้ให้กลมกลืน ตอบเฉพาะเนื้อ section ที่ปรับแล้ว (markdown ไม่มีหัวข้อ ##)';
+    const prompt='Document context: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nCurrent text:\n'+beforeTxt+'\n\nData from the files attached to this section:\n'+merged+'\n\nMerge the file data into this section smoothly. Return only the refined section body (markdown, no ## heading).';
     try{const text=await streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}));
       c.innerHTML=renderMd(text);s.canvas=genMd();s.updatedAt=Date.now();save();renderDoc(s.canvas);
       const nEl=[...document.querySelectorAll('#doc .sec')].find(x=>x.getAttribute('data-h')===h);if(nEl){nEl.classList.add('flash');setTimeout(()=>nEl.classList.remove('flash'),1300)}
-      toast('รวมไฟล์เข้าส่วนนี้แล้ว — กด Refined ให้เช็กความสอดคล้องทั้งฉบับ')}
-    catch(e){c.innerHTML=renderMd(beforeTxt);toast('ไม่สำเร็จ: '+e.message)}
+      toast('Merged files into this section — hit Refined to check whole-document coherence')}
+    catch(e){c.innerHTML=renderMd(beforeTxt);toast('Failed: '+e.message)}
     finally{_busy=false}}
   function removeSecFile(h,k){const s=cur();if(!s||!s.secFiles||!s.secFiles[h])return;s.secFiles[h].splice(k,1);if(!s.secFiles[h].length)delete s.secFiles[h];save();renderDoc(s.canvas)}
   // section tools
   function pinSection(btn){const sec=btn.closest('.sec');const h=sec.getAttribute('data-h');const s=cur();if(!s)return;
-    s.pins=s.pins||{};if(s.pins[h])delete s.pins[h];else s.pins[h]=1;save();renderDoc(s.canvas);toast(s.pins[h]?'ปักหมุด chapter':'เอาหมุดออก')}
+    s.pins=s.pins||{};if(s.pins[h])delete s.pins[h];else s.pins[h]=1;save();renderDoc(s.canvas);toast(s.pins[h]?'Pinned as chapter':'Unpinned')}
   function copyToClip(t){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(()=>fbCopy(t));else fbCopy(t)}
   function fbCopy(t){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}
   function copySection(btn){const sec=btn.closest('.sec');const hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
-    copyToClip((hEl?hEl.innerText.trim()+'\n\n':'')+c.innerText.trim());const b=btn;const o=b.innerHTML;b.classList.add('on');setTimeout(()=>{b.classList.remove('on');b.innerHTML=o},1000);toast('คัดลอกส่วนนี้แล้ว')}
-  function copyFullPage(){$('expMenu').classList.remove('show');copyToClip(genMd());toast('คัดลอกทั้งหน้าแล้ว')}
+    copyToClip((hEl?hEl.innerText.trim()+'\n\n':'')+c.innerText.trim());const b=btn;const o=b.innerHTML;b.classList.add('on');setTimeout(()=>{b.classList.remove('on');b.innerHTML=o},1000);toast('Section copied')}
+  function copyFullPage(){$('expMenu').classList.remove('show');copyToClip(genMd());toast('Full page copied')}
   // drag & drop ระดับหน้า (ทั้ง project/session)
   let _dg=0;
   addEventListener('dragenter',e=>{e.preventDefault();_dg++;$('dropzone').classList.add('on')});
@@ -900,7 +900,7 @@
 
   /* ═══ sessions / projects ═══ */
   function newSession(){
-    const s={id:uid('s'),title:'งานใหม่',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()};
+    const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()};
     sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile()}
   function openSession(id){
     if(_renaming)return;
@@ -908,46 +908,46 @@
     if(s.canvas&&s.canvas.trim())showCanvas();else showHome();closeRailMobile()}
   function deleteSession(id){
     const s=sessions.find(x=>x.id===id);if(!s)return;
-    if(!confirm('ลบ “'+s.title+'” ?'))return;
+    if(!confirm('Delete “'+s.title+'”?'))return;
     sessions=sessions.filter(x=>x.id!==id);
     if(currentSid===id){currentSid=(sessions[0]||{}).id||null;if(!currentSid){newSession();return}openSession(currentSid)}
-    save();renderRail();toast('ลบแล้ว')}
+    save();renderRail();toast('Deleted')}
   function moveSession(id,pid){const s=sessions.find(x=>x.id===id);if(!s)return;s.projectId=pid;s.updatedAt=Date.now();save();renderRail();
-    toast(pid?'ย้ายเข้า project แล้ว — Summing ครั้งหน้าจะเห็นบริบทของ project นี้':'เอาออกจาก project แล้ว')}
-  function newProject(){const n=(prompt('ชื่อ project','')||'').trim();if(!n)return;
+    toast(pid?'Moved into the project — the next Summing will see this project’s context':'Removed from the project')}
+  function newProject(){const n=(prompt('Project name','')||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
   function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
-    const n=(prompt('เปลี่ยนชื่อ project',p.name)||'').trim();if(!n)return;p.name=n;save();renderRail()}
+    const n=(prompt('Rename project',p.name)||'').trim();if(!n)return;p.name=n;save();renderRail()}
   function deleteProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
-    if(!confirm('ลบ project “'+p.name+'” ? (sessions ข้างในจะกลายเป็นงานเดี่ยว)'))return;
+    if(!confirm('Delete project “'+p.name+'”? (its sessions become standalone)'))return;
     sessions.forEach(s=>{if(s.projectId===id)s.projectId=null});
     projects=projects.filter(x=>x.id!==id);save();renderRail()}
 
   function fmtAgo(ts){if(!ts)return '';const d=Date.now()-ts;const m=Math.floor(d/6e4),h=Math.floor(d/36e5),day=Math.floor(d/864e5);
-    if(m<1)return 'เมื่อกี้';if(m<60)return m+' นาทีที่แล้ว';if(h<24)return h+' ชม.ที่แล้ว';if(day<7)return day+' วันที่แล้ว';
-    return Math.floor(day/7)+' สัปดาห์ที่แล้ว'}
+    if(m<1)return 'just now';if(m<60)return m+' min ago';if(h<24)return h+' hr ago';if(day<7)return day+' days ago';
+    return Math.floor(day/7)+' weeks ago'}
   function sItem(s){return '<div class="s-item'+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
     +'<span class="dot"></span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
-    +'<button class="more" aria-label="ตัวเลือก session" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
+    +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
   function renderRail(){
     const free=sessions.filter(s=>!s.projectId);
-    $('freeList').innerHTML=free.length?free.map(sItem).join(''):'<div class="r-empty">ยังไม่มี — กด “งานใหม่”</div>';
+    $('freeList').innerHTML=free.length?free.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>';
     $('projList').innerHTML=projects.length?projects.map(p=>{
       const kids=sessions.filter(s=>s.projectId===p.id);
       return '<div class="p-row"><span class="pi">/</span>'+esc(p.name)
-        +'<button class="more" aria-label="ตัวเลือก project" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
-        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty">ว่าง — ย้าย session เข้ามาได้</div>')+'</div>';
-    }).join(''):'<div class="r-empty">ยังไม่มี project</div>'}
+        +'<button class="more" aria-label="Project options" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
+        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty">Empty — move sessions in</div>')+'</div>';
+    }).join(''):'<div class="r-empty">No projects yet</div>'}
 
   /* ctx menus */
   function openCtx(e,sid){
     const s=sessions.find(x=>x.id===sid);if(!s)return;
-    let h='<button onclick="renameSession(\''+sid+'\');hideCtx()">เปลี่ยนชื่อ</button>';
+    let h='<button onclick="renameSession(\''+sid+'\');hideCtx()">Rename</button>';
     if(projects.length||s.projectId)h+='<div class="sep"></div>';
-    if(projects.length){h+='<div class="cap">ย้ายไป project</div>';
+    if(projects.length){h+='<div class="cap">Move to project</div>';
       projects.forEach(p=>{if(p.id!==s.projectId)h+='<button onclick="moveSession(\''+sid+'\',\''+p.id+'\');hideCtx()">'+esc(p.name)+'</button>'})}
-    if(s.projectId)h+='<button onclick="moveSession(\''+sid+'\',null);hideCtx()">เอาออกจาก project</button>';
-    h+='<div class="sep"></div><button class="danger" onclick="deleteSession(\''+sid+'\');hideCtx()">ลบ session</button>';
+    if(s.projectId)h+='<button onclick="moveSession(\''+sid+'\',null);hideCtx()">Remove from project</button>';
+    h+='<div class="sep"></div><button class="danger" onclick="deleteSession(\''+sid+'\');hideCtx()">Delete session</button>';
     showCtx(e,h)}
   function renameSession(id){
     const s=sessions.find(x=>x.id===id);if(!s)return;
@@ -972,19 +972,19 @@
     el.addEventListener('keydown',onKey);el.addEventListener('blur',onBlur)}
   function openPCtx(e,pid){
     const p=projects.find(x=>x.id===pid);const nRef=(p&&p.refs&&p.refs.length)||0;
-    let h='<button onclick="renameProject(\''+pid+'\');hideCtx()">เปลี่ยนชื่อ</button>'
-      +'<div class="sep"></div><div class="cap">Reference'+(nRef?' · '+nRef+' ไฟล์':'')+'</div>'
-      +'<button onclick="addProjectRef(\''+pid+'\');hideCtx()">เพิ่ม reference (ไฟล์)</button>';
+    let h='<button onclick="renameProject(\''+pid+'\');hideCtx()">Rename</button>'
+      +'<div class="sep"></div><div class="cap">Reference'+(nRef?' · '+nRef+' files':'')+'</div>'
+      +'<button onclick="addProjectRef(\''+pid+'\');hideCtx()">Add reference (file)</button>';
     if(nRef)p.refs.forEach((r,k)=>h+='<button class="danger" onclick="removeProjectRef(\''+pid+'\','+k+');hideCtx()">✕ '+esc(r.n.slice(0,26))+'</button>');
-    h+='<div class="sep"></div><button class="danger" onclick="deleteProject(\''+pid+'\');hideCtx()">ลบ project</button>';
+    h+='<div class="sep"></div><button class="danger" onclick="deleteProject(\''+pid+'\');hideCtx()">Delete project</button>';
     showCtx(e,h)}
   let _refPid=null;
   function addProjectRef(pid){_refPid=pid;$('refInput').click()}
   async function handleRefFiles(e){const fs=[...(e.target.files||[])];e.target.value='';const p=projects.find(x=>x.id===_refPid);if(!p||!fs.length)return;
-    p.refs=p.refs||[];toast('กำลังอ่าน '+fs.length+' ไฟล์…');let ok=0;
+    p.refs=p.refs||[];toast('Reading '+fs.length+' files…');let ok=0;
     for(const f of fs){try{const c=await extractFile(f);if(c&&c.trim()){p.refs.push({n:f.name,c:c.trim()});ok++}}catch(e){}}
-    save();renderRail();toast(ok?('เพิ่ม '+ok+' reference เข้า project แล้ว — Summing ของทุก session ใน project นี้จะเห็น'):'อ่านไฟล์ไม่สำเร็จ')}
-  function removeProjectRef(pid,k){const p=projects.find(x=>x.id===pid);if(!p||!p.refs)return;p.refs.splice(k,1);save();toast('เอา reference ออกแล้ว')}
+    save();renderRail();toast(ok?('Added '+ok+' references to the project — every session’s Summing will see them'):'Couldn’t read the files')}
+  function removeProjectRef(pid,k){const p=projects.find(x=>x.id===pid);if(!p||!p.refs)return;p.refs.splice(k,1);save();toast('Reference removed')}
   function showCtx(e,html){const c=$('ctx');c.innerHTML=html;c.classList.add('show');
     const r=c.getBoundingClientRect();
     let x=e.clientX-r.width+10,y=e.clientY+8;
@@ -1007,11 +1007,11 @@
 
   /* ═══ selection toolbar — เกลาข้อความที่ไฮไลต์ (Opus 4.8) ═══ */
   let _selRange=null;
-  const SELBTNS='<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'ทำให้กระชับสั้นลง คงใจความ\')">สั้นลง</button>'
-    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'ปรับโทนให้เป็นทางการและสุภาพขึ้น\')">เป็นทางการ</button>'
-    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'ขยายความให้ละเอียดขึ้นเล็กน้อย คงโทนเดิม\')">ขยาย</button>'
+  const SELBTNS='<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'make it more concise while keeping the meaning\')">Shorten</button>'
+    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'make the tone more formal and polished\')">Formal</button>'
+    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'expand with a little more detail, keep the tone\')">Expand</button>'
     +'<span class="sb-div"></span>'
-    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'เขียนใหม่ให้คมและลื่นขึ้น คงความหมายเดิม\')">เขียนใหม่</button>';
+    +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'rewrite it sharper and smoother, keep the meaning\')">Rewrite</button>';
   function secCOf(node){const el=node&&(node.nodeType===1?node:node.parentElement);return el&&el.closest?el.closest('.sec-c'):null}
   function updateSelBar(){
     const bar=$('selBar');
@@ -1029,25 +1029,25 @@
     bar.style.left=left+'px';bar.style.top=(flip?r.bottom+8:r.top-8)+'px'}
   function hideSelBar(){const b=$('selBar');b.classList.remove('show','busy','below')}
   function runSelEdit(instruction){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     if(!_selRange)return;
     const secc=secCOf(_selRange.commonAncestorContainer);if(!secc)return;
     const original=_selRange.toString();if(original.replace(/\s+/g,' ').trim().length<2)return;
     const context=secc.innerText.trim().slice(0,1200);
-    const bar=$('selBar');bar.classList.add('busy');bar.innerHTML='<span class="sb-run"><span class="pulse"></span> กำลังเกลา…</span>';
+    const bar=$('selBar');bar.classList.add('busy');bar.innerHTML='<span class="sb-run"><span class="pulse"></span> Refining…</span>';
     _busy=true;pushUndo();
-    const prompt='บริบทของย่อหน้า:\n"'+context+'"\n\nคำสั่ง: '+instruction+'\n\nข้อความที่เลือก (ส่งกลับเฉพาะข้อความนี้ที่เกลาแล้ว):\n"'+original+'"';
+    const prompt='Paragraph context:\n"'+context+'"\n\nInstruction: '+instruction+'\n\nSelected text (return only this text, refined):\n"'+original+'"';
     streamAPI('edit',[{role:'user',content:prompt}],toneSys())
       .then(text=>{
         text=text.trim().replace(/^[\s"'“”]+|[\s"'“”]+$/g,'');
-        if(!text){toast('ไม่มีผลลัพธ์');return}
+        if(!text){toast('No result');return}
         try{const sel=getSelection();sel.removeAllRanges();sel.addRange(_selRange);
           _selRange.deleteContents();
           const frag=_selRange.createContextualFragment(mdInline(text));
           _selRange.insertNode(frag);sel.removeAllRanges()}catch(e){}
         const s=cur();if(s){s.canvas=genMd();s.updatedAt=Date.now();save();savedTick();renderDoc(s.canvas)}
-        toast('เกลาข้อความแล้ว')})
-      .catch(e=>toast('ไม่สำเร็จ: '+e.message))
+        toast('Text refined')})
+      .catch(e=>toast('Failed: '+e.message))
       .finally(()=>{_busy=false;_selRange=null;hideSelBar()})}
   document.addEventListener('mouseup',e=>{if(!e.target.closest('.sel-bar'))setTimeout(updateSelBar,10)});
   document.addEventListener('keyup',e=>{if(e.shiftKey||e.key==='Shift')setTimeout(updateSelBar,10)});
@@ -1055,10 +1055,10 @@
   addEventListener('keydown',e=>{if(e.key==='Escape')hideSelBar()});
 
   /* ═══ tone preset — โทนระดับ session (Opus 4.8 ทุกงานเขียน) ═══ */
-  const TONES={formal:'เป็นทางการ สุภาพ น่าเชื่อถือ',playful:'เล่นๆ เป็นกันเอง มีชีวิตชีวา',sharp:'คมกริบ กระชับ ตรงประเด็น ตัดคำฟุ่มเฟือย'};
-  function toneSys(){const s=cur(),t=s&&s.tone;return (t&&TONES[t])?('โทนที่ผู้ใช้เลือกสำหรับงานนี้: '+TONES[t]+' — เขียนและเกลาทุกอย่างให้เข้าโทนนี้'):''}
+  const TONES={formal:'formal, polite, trustworthy',playful:'playful, friendly, lively',sharp:'sharp, concise, on-point, no fluff'};
+  function toneSys(){const s=cur(),t=s&&s.tone;return (t&&TONES[t])?('Tone chosen for this work: '+TONES[t]+' — write and refine everything to match this tone'):''}
   function setTone(t){const s=cur();if(!s)return;s.tone=t;s.updatedAt=Date.now();save();renderTone();
-    toast(t?('ตั้งโทน “'+({formal:'เป็นทางการ',playful:'เล่นๆ',sharp:'คมกริบ'}[t])+'” — มีผลกับ Summing/ปรับ/เกลาต่อจากนี้'):'กลับเป็นโทนมาตรฐาน')}
+    toast(t?('Tone set to “'+({formal:'Formal',playful:'Playful',sharp:'Sharp'}[t])+'” — applies to Summing / edits from now on'):'Back to standard tone')}
   function renderTone(){const s=cur(),t=(s&&s.tone)||'';document.querySelectorAll('#toneBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-tone')||'')===t))}
 
   /* ═══ command palette (⌘K) ═══ */
@@ -1066,30 +1066,30 @@
   function paletteCommands(){
     const onCanvas=$('cvView').style.display!=='none',c=[];
     const A=(t,run)=>c.push({t,run,k:'action'});
-    A('งานใหม่',()=>newSession());
+    A('New',()=>newSession());
     if(onCanvas){
-      A('กลับไปแก้บรีฟ',()=>backToBrief());
-      A('เพิ่มไฟล์เข้าเอกสาร',()=>$('addFileInput').click());
-      A('Refined — ตรวจทั้งฉบับ',()=>runMastering(''));
-      A('Refined · เฉพาะโทนเสียง',()=>runMastering('tone'));
-      A('Refined · เฉพาะความสอดคล้อง',()=>runMastering('flow'));
-      A('Refined · เฉพาะความครบถ้วน',()=>runMastering('complete'));
-      A('บันทึกเวอร์ชันนี้',()=>saveSnapshot());
-      A('เวอร์ชันที่บันทึก…',()=>openSnapshots());
-      A('ย้อนการแก้ล่าสุด',()=>undoCanvas());
-      c.push({t:'แชร์ลิงก์ · อ่านอย่างเดียว',run:()=>shareDoc(),k:'export'});
-      c.push({t:'คัดลอกทั้งหน้า',run:()=>copyFullPage(),k:'export'});
-      c.push({t:'ดาวน์โหลด Markdown (.md)',run:()=>downloadMD(),k:'export'});
-      c.push({t:'ดาวน์โหลด Word (.doc)',run:()=>downloadDOC(),k:'export'});
-      c.push({t:'พิมพ์ / บันทึก PDF',run:()=>exportPDF(),k:'export'});
+      A('Back to brief',()=>backToBrief());
+      A('Add files to document',()=>$('addFileInput').click());
+      A('Refined — full recheck',()=>runMastering(''));
+      A('Refined · tone only',()=>runMastering('tone'));
+      A('Refined · coherence only',()=>runMastering('flow'));
+      A('Refined · completeness only',()=>runMastering('complete'));
+      A('Save this version',()=>saveSnapshot());
+      A('Saved versions…',()=>openSnapshots());
+      A('Undo last change',()=>undoCanvas());
+      c.push({t:'Share link · read-only',run:()=>shareDoc(),k:'export'});
+      c.push({t:'Copy full page',run:()=>copyFullPage(),k:'export'});
+      c.push({t:'Download Markdown (.md)',run:()=>downloadMD(),k:'export'});
+      c.push({t:'Download Word (.doc)',run:()=>downloadDOC(),k:'export'});
+      c.push({t:'Print / save PDF',run:()=>exportPDF(),k:'export'});
     }else{
-      A('Summing — ตกผลึกบรีฟ',()=>runSumming());
-      A('แนบไฟล์',()=>$('fileInput').click());
+      A('Summing — crystallize the brief',()=>runSumming());
+      A('Attach files',()=>$('fileInput').click());
     }
-    A('สร้าง project ใหม่',()=>newProject());
-    A('สถิติการใช้ & ต้นทุน',()=>openStats());
-    A('ออกจากระบบ'+(AUTH?' ('+AUTH.email+')':''),()=>confirmLogout());
-    sessions.forEach(s=>c.push({t:s.title||'ไม่มีชื่อ',sub:fmtAgo(s.updatedAt),run:()=>openSession(s.id),k:'session'}));
+    A('New project',()=>newProject());
+    A('Usage & cost',()=>openStats());
+    A('Sign out'+(AUTH?' ('+AUTH.email+')':''),()=>confirmLogout());
+    sessions.forEach(s=>c.push({t:s.title||'Untitled',sub:fmtAgo(s.updatedAt),run:()=>openSession(s.id),k:'session'}));
     return c}
   function palIcon(k){return k==='session'?'/':k==='export'?'↓':'→'}
   function fuzzy(text,q){let i=-1;for(const ch of q){i=text.indexOf(ch,i+1);if(i<0)return false}return true}
@@ -1098,9 +1098,9 @@
   function renderPalette(q){q=(q||'').trim().toLowerCase();const all=paletteCommands();
     _palItems=q?all.filter(c=>fuzzy((c.t+' '+(c.sub||'')).toLowerCase(),q)):all;_palIdx=0;drawPalette()}
   function drawPalette(){const list=$('palList');
-    if(!_palItems.length){list.innerHTML='<div class="pal-empty">ไม่พบคำสั่งหรือ session</div>';return}
+    if(!_palItems.length){list.innerHTML='<div class="pal-empty">No commands or sessions</div>';return}
     let html='',lastG=null;
-    _palItems.forEach((c,i)=>{const g=c.k==='session'?'Sessions':'คำสั่ง';
+    _palItems.forEach((c,i)=>{const g=c.k==='session'?'Sessions':'Commands';
       if(g!==lastG){html+='<div class="pal-cap">'+g+'</div>';lastG=g}
       html+='<div class="pal-item'+(i===_palIdx?' on':'')+'" onmousemove="palHover('+i+')" onmousedown="event.preventDefault()" onclick="palRun('+i+')">'
         +'<span class="pi-i">'+palIcon(c.k)+'</span><span class="pi-t">'+esc(c.t)+'</span>'+(c.sub?'<span class="pi-s">'+esc(c.sub)+'</span>':'')+'</div>'});
@@ -1126,7 +1126,7 @@
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
     renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0}
-  function backToBrief(){showHome();toast('แก้บรีฟ/ไฟล์ แล้วกด Summing ใหม่ได้ — เอกสารเดิมยังอยู่')}
+  function backToBrief(){showHome();toast('Edit the brief/files and Summing again — your document stays')}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
@@ -1139,11 +1139,11 @@
       if(/^#\s/.test(line)&&!title){title=line.replace(/^#\s/,'');continue}
       if(/^##\s/.test(line)){c={h:line.replace(/^##\s/,''),body:[]};secs.push(c);continue}
       if(c)c.body.push(raw);else if(line){if(!secs.length||secs[0].h!=='_intro'){secs.unshift({h:'_intro',body:[raw]})}else secs[0].body.push(raw)}}
-    if(!secs.length)secs=[{h:'เอกสาร',body:lines}];
-    const s=cur();const docTitle=title||(s?s.title:'เอกสาร');
+    if(!secs.length)secs=[{h:'Document',body:lines}];
+    const s=cur();const docTitle=title||(s?s.title:'Document');
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
-      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · แก้ได้ทุกส่วน</div></div>';
+      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · fully editable</div></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -1153,9 +1153,9 @@
       h+='<div class="sec'+(pinned?' pinned':'')+'" data-i="'+i+'" data-h="'+esc(sec.h)+'">'
         +(isIntro?'':'<div class="sec-top"><div class="sec-eye">'+(pinned?'<span class="pin-on">◆</span> ':'')+String(n).padStart(2,'0')+'</div>'
           +'<div class="sec-tools">'
-          +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="ปักหมุดเป็น chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
-          +'<button class="st" onclick="copySection(this)" title="คัดลอกส่วนนี้"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
-          +'<button class="st" onclick="improveSection(this)" title="ให้ VÆST เกลาใหม่"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> ปรับ</button>'
+          +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
+          +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
+          +'<button class="st" onclick="improveSection(this)" title="Let VÆST refine it"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Refine</button>'
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
         +'<div class="sec-c" contenteditable="true" spellcheck="false">'+renderMd(sec.body.join('\n'))+'</div>'
@@ -1168,7 +1168,7 @@
       secEl.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();secEl.classList.remove('drop-tgt');window._dg=0;$('dropzone').classList.remove('on');
         const fs=[...(e.dataTransfer?.files||[])];if(fs.length)dropOnSection(secEl,fs)});
     });
-    $('mhTitle').addEventListener('input',()=>{const st=cur();if(st){st.title=$('mhTitle').innerText.trim()||'งาน';$('topTitle').textContent=st.title;schedulePersist();renderRail()}})}
+    $('mhTitle').addEventListener('input',()=>{const st=cur();if(st){st.title=$('mhTitle').innerText.trim()||'work';$('topTitle').textContent=st.title;schedulePersist();renderRail()}})}
   // DOM → inline markdown — คง **หนา** *เอียง* `code` [ลิงก์](url) ตอน serialize กลับ
   function inlineMd(node){let out='';node.childNodes.forEach(n=>{
     if(n.nodeType===3){out+=n.textContent;return}
@@ -1183,7 +1183,7 @@
     out+=inlineMd(n)});
     return out}
   function genMd(){
-    let md='# '+($('mhTitle')?$('mhTitle').innerText.trim():'เอกสาร')+'\n\n';
+    let md='# '+($('mhTitle')?$('mhTitle').innerText.trim():'Document')+'\n\n';
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       const hEl=sec.querySelector('.sec-h');
       if(hEl)md+='## '+hEl.innerText.trim()+'\n\n';
@@ -1205,34 +1205,34 @@
     });
     return md.replace(/\n{3,}/g,'\n\n').trim()+'\n'}
   let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&$('cvView').style.display!=='none'){s.canvas=genMd();s.updatedAt=Date.now();save();savedTick()}},700)}
-  let _si;function savedTick(){const el=$('saveInd');if(!el)return;el.textContent='บันทึกแล้ว ✓';el.classList.add('show');clearTimeout(_si);_si=setTimeout(()=>el.classList.remove('show'),1600)}
+  let _si;function savedTick(){const el=$('saveInd');if(!el)return;el.textContent='Saved ✓';el.classList.add('show');clearTimeout(_si);_si=setTimeout(()=>el.classList.remove('show'),1600)}
 
   /* ═══ version snapshots ═══ */
-  function openSnapshots(){const s=cur();if(!s){toast('ยังไม่มีเอกสาร');return}if($('cvView').style.display==='none'){toast('เปิดเอกสารก่อน');return}$('snapView').classList.add('show');renderSnaps()}
+  function openSnapshots(){const s=cur();if(!s){toast('No document yet');return}if($('cvView').style.display==='none'){toast('Open a document first');return}$('snapView').classList.add('show');renderSnaps()}
   function closeSnap(){$('snapView').classList.remove('show')}
   function saveSnapshot(nameArg){const s=cur();if(!s)return;s.snaps=s.snaps||[];
-    const dflt='เวอร์ชัน '+(s.snaps.length+1);
-    let name=nameArg;if(name===undefined){try{name=prompt('ตั้งชื่อเวอร์ชันนี้',dflt)}catch(e){name=dflt}if(name===null)return}
+    const dflt='Version '+(s.snaps.length+1);
+    let name=nameArg;if(name===undefined){try{name=prompt('Name this version',dflt)}catch(e){name=dflt}if(name===null)return}
     name=(name||'').trim()||dflt;
     s.snaps.unshift({id:uid('v'),name,md:genMd(),ts:Date.now()});if(s.snaps.length>25)s.snaps.length=25;
-    s.updatedAt=Date.now();save();renderSnaps();toast('บันทึกเวอร์ชัน “'+name+'” แล้ว')}
+    s.updatedAt=Date.now();save();renderSnaps();toast('Saved version “'+name+'”')}
   function renderSnaps(){const s=cur();const list=$('snapList');const snaps=(s&&s.snaps)||[];
-    if(!snaps.length){list.innerHTML='<div class="snap-empty">ยังไม่มีเวอร์ชันที่บันทึก<br>กด “บันทึกตอนนี้” เพื่อเก็บจุดที่พอใจ ไว้ย้อนกลับได้</div>';return}
+    if(!snaps.length){list.innerHTML='<div class="snap-empty">No saved versions yet<br>Hit “Save now” to keep a point you like, to roll back to</div>';return}
     list.innerHTML=snaps.map(v=>'<div class="snap-it"><div class="si-b"><div class="si-n">'+esc(v.name)+'</div><div class="si-t">'+fmtAgo(v.ts)+'</div></div>'
-      +'<button class="si-r" onclick="restoreSnap(\''+v.id+'\')">คืนค่า</button>'
-      +'<button class="si-x" aria-label="ลบ" onclick="delSnap(\''+v.id+'\')">✕</button></div>').join('')}
+      +'<button class="si-r" onclick="restoreSnap(\''+v.id+'\')">Restore</button>'
+      +'<button class="si-x" aria-label="Delete" onclick="delSnap(\''+v.id+'\')">✕</button></div>').join('')}
   function restoreSnap(id){const s=cur();if(!s||!s.snaps)return;const v=s.snaps.find(x=>x.id===id);if(!v)return;
-    pushUndo();s.canvas=v.md;s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('คืนค่าเป็น “'+v.name+'” แล้ว (กด “ย้อน” ได้ถ้าเปลี่ยนใจ)')}
+    pushUndo();s.canvas=v.md;s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('Restored to “'+v.name+'” (hit “Undo” if you change your mind)')}
   function delSnap(id){const s=cur();if(!s||!s.snaps)return;s.snaps=s.snaps.filter(x=>x.id!==id);s.updatedAt=Date.now();save();renderSnaps()}
 
   /* ═══ undo ═══ */
   const undoStack=[];
   function pushUndo(){const s=cur();if(!s)return;undoStack.push({sid:s.id,md:genMd()});if(undoStack.length>30)undoStack.shift();updateUndo()}
   function undoCanvas(){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     for(let i=undoStack.length-1;i>=0;i--){if(undoStack[i].sid===currentSid){
-      const u=undoStack.splice(i,1)[0];const s=cur();s.canvas=u.md;renderDoc(u.md);save();updateUndo();toast('ย้อนกลับแล้ว');return}}
-    toast('ไม่มีอะไรให้ย้อน')}
+      const u=undoStack.splice(i,1)[0];const s=cur();s.canvas=u.md;renderDoc(u.md);save();updateUndo();toast('Reverted');return}}
+    toast('Nothing to undo')}
   function updateUndo(){$('undoBtn').disabled=!undoStack.some(u=>u.sid===currentSid)}
 
   /* ═══ SUMMING ═══ */
@@ -1241,84 +1241,84 @@
     let out='';
     const p=projects.find(x=>x.id===s.projectId);
     if(p&&p.refs&&p.refs.length){ // reference library — บริบทถาวรของ project
-      out+='\n\n# Reference ของ project "'+p.name+'" (แนวทาง/ข้อมูลอ้างอิงถาวร ยึดตามนี้)\n'
+      out+='\n\n# References for project "'+p.name+'" (permanent guidelines/reference — follow these)\n'
         +p.refs.map(r=>'## '+r.n+'\n'+String(r.c).slice(0,6000)).join('\n\n')}
     const sibs=sessions.filter(x=>x.projectId===s.projectId&&x.id!==s.id&&x.canvas&&x.canvas.trim()).slice(0,3);
-    if(sibs.length)out+='\n\n# บริบทจากงานอื่นใน project เดียวกัน (ใช้เป็นบริบท ไม่ต้องสรุปซ้ำ)\n'
+    if(sibs.length)out+='\n\n# Context from other work in the same project (background only, don’t re-summarize)\n'
       +sibs.map(x=>'## '+x.title+'\n'+x.canvas.slice(0,1500)).join('\n\n');
     return out}
   async function runSumming(){
-    if(_busy){toast('กำลังทำงานอยู่ — รอสักครู่');return}
+    if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
-    if(!s.brief&&!s.files.length){toast('เขียนบรีฟ หรือแนบไฟล์อย่างน้อย 1 อย่างก่อน');return}
-    _busy=true;const go=$('sumBtn');go.disabled=true;go.textContent='กำลังตกผลึก…';
+    if(!s.brief&&!s.files.length){toast('Write a brief or attach at least one file first');return}
+    _busy=true;const go=$('sumBtn');go.disabled=true;go.textContent='Crystallizing…';
     const hadCanvas=!!(s.canvas&&s.canvas.trim());if(hadCanvas)pushUndo();
-    const src=s.files.map((f,i)=>'### ไฟล์ '+(i+1)+': '+f.n+'\n'+f.c.slice(0,20000)).join('\n\n');
-    const prompt=(s.brief?('# บรีฟ\n'+s.brief+'\n\n'):'')+(src?('# แหล่งข้อมูล\n'+src):'')+projectContext(s);
+    const src=s.files.map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+f.c.slice(0,20000)).join('\n\n');
+    const prompt=(s.brief?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')+projectContext(s);
     // สลับไป canvas พร้อมสตรีมสด
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> VÆST กำลังตกผลึก…</div><div class="gen-body" id="genBody"></div></div>';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> VÆST is crystallizing…</div><div class="gen-body" id="genBody"></div></div>';
     try{
       const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
       s.canvas=md;
       const t=(md.match(/^#\s+(.+)/m)||[])[1];
-      if(t&&(s.title==='งานใหม่'||!s.title))s.title=t.trim().slice(0,60);
+      if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
       s.updatedAt=Date.now();save();renderRail();showCanvas();
-      toast('เสร็จแล้ว — แก้ได้ทุกส่วน หรือกด “ปรับ” ให้ VÆST เกลาให้');
+      toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
-      $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">ไม่สำเร็จ — '+esc(e.message)+'</div>'
-        +'<button class="tb dark" onclick="backToBrief()">← กลับไปที่บรีฟ</button></div>';
+      $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
+        +'<button class="tb dark" onclick="backToBrief()">← Back to brief</button></div>';
     }finally{_busy=false;go.disabled=false;go.innerHTML='Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
   /* ═══ IMPROVE (รายส่วน) ═══ */
   function improveSection(btn){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     const sec=btn.closest('.sec'),hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
     const h=hEl?hEl.innerText.trim():'',old=c.innerHTML,curTxt=c.innerText.trim();
     pushUndo();_busy=true;
-    btn.disabled=true;btn.classList.add('busy');btn.innerHTML='<span class="pulse"></span> กำลังเกลา…';
-    const prompt='บริบทเอกสาร: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nเนื้อเดิม:\n'+curTxt+'\n\nปรับ section นี้ให้ดีขึ้น';
+    btn.disabled=true;btn.classList.add('busy');btn.innerHTML='<span class="pulse"></span> Refining…';
+    const prompt='Document context: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt+'\n\nImprove this section.';
     streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('เกลา “'+h+'” แล้ว')})
-      .catch(e=>{c.innerHTML=old;toast('ไม่สำเร็จ: '+e.message)})
+      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Refined “'+h+'”')})
+      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{_busy=false;btn.disabled=false;btn.classList.remove('busy');
-        btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> ปรับ'})}
+        btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Refine'})}
 
   /* ═══ MASTERING (Fable · final recheck · approve รายข้อ) ═══ */
   let _mast=null;
-  const LENS={'':'',tone:'โฟกัสเฉพาะ "โทนเสียงและความรู้สึก" — สม่ำเสมอไหม เข้ากับกลุ่มเป้าหมายไหม',
-    flow:'โฟกัสเฉพาะ "ความสอดคล้องและลำดับ" — แต่ละส่วนต่อเนื่องกันไหม มีอะไรขัดแย้งกันเอง',
-    complete:'โฟกัสเฉพาะ "ความครบถ้วน" — มีประเด็นสำคัญตกหล่น หรือส่วนไหนตื้นเกินไปไหม'};
-  const LENS_LBL={'':'ทั้งหมด',tone:'โทนเสียง',flow:'ความสอดคล้อง',complete:'ความครบถ้วน'};
+  const LENS={'':'',tone:'Focus only on "tone and feel" — is it consistent, does it fit the audience?',
+    flow:'Focus only on "coherence and order" — do the parts flow, is anything self-contradicting?',
+    complete:'Focus only on "completeness" — any important point missing, any section too thin?'};
+  const LENS_LBL={'':'All',tone:'Tone',flow:'Coherence',complete:'Completeness'};
   function runMastering(lens){
     lens=lens||'';
-    if(_busy){toast('กำลังทำงานอยู่');return}
-    const s=cur();if(!s||!s.canvas.trim()){toast('ยังไม่มีเอกสาร');return}
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s||!s.canvas.trim()){toast('No document yet');return}
     _busy=true;const b=$('mastBtn');b.disabled=true;
     const old=$('doc').querySelector('.mast');if(old)old.remove();
     const box=document.createElement('div');box.className='mast';
-    box.innerHTML='<div class="mast-top">Refined · '+LENS_LBL[lens]+'<span class="mast-count">กำลังตรวจ…</span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
+    box.innerHTML='<div class="mast-top">Refined · '+LENS_LBL[lens]+'<span class="mast-count">Checking…</span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
     $('doc').prepend(box);$('cvView').scrollTop=0;
-    const prompt='นี่คือเอกสารทั้งฉบับ:\n\n'+genMd();
+    const prompt='Here is the full document:\n\n'+genMd();
     streamAPI('mastering',[{role:'user',content:prompt}],LENS[lens]||'',raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
       .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens};renderMast()})
-      .catch(e=>{box.remove();toast('ตรวจไม่สำเร็จ: '+e.message)})
+      .catch(e=>{box.remove();toast('Check failed: '+e.message)})
       .finally(()=>{_busy=false;b.disabled=false})}
   function parsePoints(t){const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));return pts.length?pts:[String(t).trim()]}
   function renderMast(){
     const old=$('doc').querySelector('.mast');if(old)old.remove();
     if(!_mast)return;
     const remain=_mast.points.filter((p,i)=>!_mast.done[i]).length;
-    let h='<div class="mast-top">Refined · '+LENS_LBL[_mast.lens||'']+'<span class="mast-count">'+(remain?remain+' จุด':'ครบแล้ว')+'</span></div>';
+    let h='<div class="mast-top">Refined · '+LENS_LBL[_mast.lens||'']+'<span class="mast-count">'+(remain?remain+' points':'all done')+'</span></div>';
     _mast.points.forEach((p,i)=>{const st=_mast.done[i];
       h+='<div class="mi'+(st?' done':'')+(st==='fixed'?' fixed':'')+'" data-i="'+i+'"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t">'+mdInline(p)+'</div>';
-      if(st==='fixed')h+='<div class="mi-tag ok">✓ ปรับแล้ว'+((_mast.chg&&_mast.chg[i]&&_mast.chg[i].length)?' <button class="mi-peek" onclick="peekChanges('+i+')">ดูที่เปลี่ยน</button>':'')+'</div>';
-      else if(st==='skip')h+='<div class="mi-tag skip">— ข้าม</div>';
-      else h+='<div class="mi-act"><button class="mi-ap" onclick="applyPoint('+i+')">Approve</button><button class="mi-sk" onclick="skipPoint('+i+')">ข้าม</button></div>';
+      if(st==='fixed')h+='<div class="mi-tag ok">✓ Applied'+((_mast.chg&&_mast.chg[i]&&_mast.chg[i].length)?' <button class="mi-peek" onclick="peekChanges('+i+')">View changes</button>':'')+'</div>';
+      else if(st==='skip')h+='<div class="mi-tag skip">— Skipped</div>';
+      else h+='<div class="mi-act"><button class="mi-ap" onclick="applyPoint('+i+')">Approve</button><button class="mi-sk" onclick="skipPoint('+i+')">Skip</button></div>';
       h+='</div></div>'});
-    h+='<div class="mast-foot">'+(remain>1?'<button class="mi-all" onclick="applyAll()">Approve ทั้งหมด ('+remain+')</button>':'')
-      +'<button class="mi-close" onclick="closeMast()">ปิด</button></div>';
+    h+='<div class="mast-foot">'+(remain>1?'<button class="mi-all" onclick="applyAll()">Approve all ('+remain+')</button>':'')
+      +'<button class="mi-close" onclick="closeMast()">Close</button></div>';
     const box=document.createElement('div');box.className='mast';box.innerHTML=h;$('doc').prepend(box)}
   function closeMast(){_mast=null;const b=$('doc').querySelector('.mast');if(b)b.remove()}
   function skipPoint(i){if(_mast){_mast.done[i]='skip';renderMast()}}
@@ -1326,7 +1326,7 @@
   function flashChanged(before){const chg=[];document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');const k=hh?hh.innerText.trim():'_';
     if(before[k]===undefined||before[k]!==s.querySelector('.sec-c').innerText.trim()){chg.push(k);s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),1300)}});return chg}
   function peekChanges(i){
-    const keys=(_mast&&_mast.chg&&_mast.chg[i])||[];if(!keys.length){toast('ข้อนี้ไม่ได้แตะเนื้อหา');return}
+    const keys=(_mast&&_mast.chg&&_mast.chg[i])||[];if(!keys.length){toast('This one didn’t touch the content');return}
     let first=null;
     document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');const k=hh?hh.innerText.trim():'_';
       if(keys.includes(k)){if(!first)first=s;s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),1300)}});
@@ -1334,32 +1334,32 @@
       smoothTo(cv,top)}}
   function applyMd(md,marks){const s=cur();s.canvas=md;s.updatedAt=Date.now();renderDoc(md);save()}
   function applyPoint(i){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     if(!_mast)return;const point=_mast.points[i];
     pushUndo();_busy=true;
-    const it=$('doc').querySelector('.mi[data-i="'+i+'"] .mi-act');if(it)it.innerHTML='<span class="mi-run"><span class="pulse"></span> กำลังปรับ…</span>';
+    const it=$('doc').querySelector('.mi[data-i="'+i+'"] .mi-act');if(it)it.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying…</span>';
     const before=snapshot();
-    const prompt='เอกสารเดิม:\n\n'+genMd()+'\n\nปรับตามข้อเสนอนี้ข้อเดียว: '+point+'\n\nส่งกลับ markdown เต็ม (คง "# ชื่อ" และ "## " โครงเดิม ปรับเฉพาะที่เกี่ยว)';
+    const prompt='Original document:\n\n'+genMd()+'\n\nApply just this one suggestion: '+point+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);_mast.done[i]='fixed';_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('ปรับแล้ว')})
-      .catch(e=>{renderMast();toast('ไม่สำเร็จ: '+e.message)})
+      .then(md=>{applyMd(md);_mast.done[i]='fixed';_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
+      .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{_busy=false})}
   function applyAll(){
-    if(_busy){toast('กำลังทำงานอยู่');return}
+    if(_busy){toast('Working…');return}
     if(!_mast)return;const rem=_mast.points.map((p,i)=>({p,i})).filter(x=>!_mast.done[x.i]);if(!rem.length)return;
     pushUndo();_busy=true;
-    const foot=$('doc').querySelector('.mast-foot');if(foot)foot.innerHTML='<span class="mi-run"><span class="pulse"></span> กำลังปรับทั้งฉบับให้สอดคล้อง…</span>';
+    const foot=$('doc').querySelector('.mast-foot');if(foot)foot.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying across the whole document…</span>';
     const before=snapshot();
-    const prompt='เอกสารเดิม:\n\n'+genMd()+'\n\nปรับตามข้อเสนอทั้งหมดนี้ และเช็กให้ทั้งฉบับสอดคล้องกัน:\n'+rem.map((x,k)=>(k+1)+'. '+x.p).join('\n')+'\n\nส่งกลับ markdown เต็ม (คง "# ชื่อ" และ "## " โครงเดิม)';
+    const prompt='Original document:\n\n'+genMd()+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';_mast.chg[x.i]=chg});renderMast();toast('ปรับทั้งหมดแล้ว — สอดคล้องทั้งฉบับ')})
-      .catch(e=>{renderMast();toast('ไม่สำเร็จ: '+e.message)})
+      .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
+      .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{_busy=false})}
 
   /* ═══ EXPORT ═══ */
   function docFilename(){return ($('mhTitle')?$('mhTitle').innerText.trim():'document').replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'document'}
   function buildDocHTML(forPrint){
-    const title=$('mhTitle')?$('mhTitle').innerText.trim():'เอกสาร';
+    const title=$('mhTitle')?$('mhTitle').innerText.trim():'Document';
     let body='';let n=0;
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       const hEl=sec.querySelector('.sec-h');
@@ -1395,27 +1395,27 @@
       +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">Summed &amp; refined by VÆST — Aesthetic Intelligence</div></div>'
       +body+'<div class="foot">Generated by VÆST 1.0 · ORIONS.Agency</div></div></body></html>'}
   function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
-  function downloadMD(){$('expMenu').classList.remove('show');dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('ดาวน์โหลด .md แล้ว')}
+  function downloadMD(){$('expMenu').classList.remove('show');dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md')}
   function downloadDOC(){$('expMenu').classList.remove('show');
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
       +buildDocHTML(false).replace(/^<!doctype html><html lang="th">/i,'').replace(/<\/html>$/i,'')+'</html>';
-    dl(new Blob(['﻿'+html],{type:'application/msword'}),docFilename()+'.doc');toast('ดาวน์โหลด .doc (เปิดใน Word ได้) แล้ว')}
+    dl(new Blob(['﻿'+html],{type:'application/msword'}),docFilename()+'.doc');toast('Downloaded .doc (opens in Word)')}
   // แชร์อ่านอย่างเดียว — เก็บเฉพาะ title+canvas ที่เลือกแชร์ ไม่มีข้อมูลบัญชี
   async function shareDoc(){
     $('expMenu').classList.remove('show');
-    const s=cur();if(!s||!s.canvas.trim()){toast('ยังไม่มีเอกสารให้แชร์');return}
+    const s=cur();if(!s||!s.canvas.trim()){toast('No document to share yet');return}
     if(!s.shareId)s.shareId='sh'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
-    toast('กำลังสร้างลิงก์แชร์…');
+    toast('Creating share link…');
     try{await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
       headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
       body:JSON.stringify({email:'share:'+s.shareId,data:{title:$('mhTitle')?$('mhTitle').innerText.trim():s.title,canvas:genMd(),by:AUTH?AUTH.email:''},updated_at:new Date().toISOString()})});
-      save();const link=location.origin+'/app?s='+s.shareId;copyToClip(link);toast('คัดลอกลิงก์อ่านอย่างเดียวแล้ว — วางส่งได้เลย')}
-    catch(e){toast('สร้างลิงก์ไม่สำเร็จ ลองใหม่')}}
+      save();const link=location.origin+'/app?s='+s.shareId;copyToClip(link);toast('Read-only link copied — paste to share')}
+    catch(e){toast('Couldn’t create the link, try again')}}
   function exportPDF(){$('expMenu').classList.remove('show');
     const w=window.open('','_blank');
-    if(!w){toast('เบราว์เซอร์บล็อกป็อปอัป — อนุญาตก่อนแล้วลองใหม่');return}
+    if(!w){toast('The browser blocked the popup — allow it and try again');return}
     w.document.write(buildDocHTML(true));w.document.close();w.focus();setTimeout(()=>{try{w.print()}catch(e){}},500);
-    toast('เปิดหน้าพิมพ์ A4 แนวตั้ง — เลือก “Save as PDF”')}
+    toast('Opened the A4 portrait print view — choose “Save as PDF”')}
 
   /* ═══ init — auth ก่อน แล้วค่อย boot ═══ */
   async function loadLegacy(){ // ข้อมูลยุคก่อน login — ย้ายเข้าบัญชีครั้งแรก
@@ -1425,7 +1425,7 @@
     SB.who=AUTH.email; // state ราย user
     $('whoLbl').textContent=AUTH.email;
     if(!loadLocal()){projects=[];sessions=[];usage=0}
-    if(!sessions.length){sessions=[{id:uid('s'),title:'งานใหม่',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}]}
+    if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}]}
     if(!currentSid||!cur())currentSid=sessions[0].id;
     renderRail();
     const s=cur();(s.canvas&&s.canvas.trim())?showCanvas():showHome();
@@ -1441,7 +1441,7 @@
           const cloudTime=Math.max(0,...sessions.map(x=>x.updatedAt||0));
           if(localMeaningful&&cloudTime<localTime){projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU;cloudSave()}
           else{if(!cur())currentSid=(sessions[0]||{}).id||null;
-            if(!sessions.length){sessions=[{id:uid('s'),title:'งานใหม่',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}];currentSid=sessions[0].id}
+            if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}];currentSid=sessions[0].id}
             save();renderRail();const c2=cur();(c2.canvas&&c2.canvas.trim())?showCanvas():showHome()}
         }else{projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU}
         setSync('ok')}
@@ -1451,8 +1451,8 @@
         cloudSave()}
     }catch(e){setSync('off')}}
   /* onboarding — ตัวอย่างงานสำหรับบัญชีใหม่ */
-  const SAMPLE_MD='# ARIYA Coffee — ทิศทางรีแบรนด์ (ตัวอย่าง)\n\n> นี่คือตัวอย่างที่ VÆST สรุปจากบรีฟ + ไฟล์ ลองแก้ ลองไฮไลต์ข้อความแล้วสั่งเกลา หรือกด Refined เพื่อดูการตรวจทั้งฉบับ\n\n---\n\n## แก่นความคิด: อบอุ่นแบบมีชั้นเชิง ไม่ใช่ vintage ซ้ำทาง\n\nลูกค้า 25–40 สายครีเอทีฟ ไม่ได้อยากได้ "ร้านกาแฟน่ารัก" อีกร้าน — เขาอยากได้ที่ที่รู้สึกว่า **ถูกคิดมาแล้วทุกตารางนิ้ว** ทุกองค์ประกอบต้องตอบคำถามเดียว: ร้านนี้คิดมาแล้วหรือเปล่า\n\n## โทนภาพ: ครีมอุ่น × ส้มเผา\n\n- สีหลัก: ครีมอุ่น เป็นพื้น ให้ความรู้สึกสะอาดแต่ไม่เย็นชา\n- สีเน้น: ส้มเผา ใช้เท่าที่จำเป็น — เป็นสัญญาณ ไม่ใช่การตกแต่ง\n- ตัวอักษร: serif ที่มั่นใจสำหรับหัวเรื่อง + sans สะอาดสำหรับเนื้อหา\n\n## สิ่งส่งมอบ\n\n1. ระบบโลโก้ (หลัก + ย่อ)\n2. เมนู + ป้ายราคา\n3. ป้ายหน้าร้าน\n4. เทมเพลตโซเชียล 3 แบบ';
-  function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — ตัวอย่าง',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
+  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refined for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates';
+  function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
 
   /* share view — อ่านอย่างเดียว */
   async function loadShare(id){
@@ -1463,12 +1463,12 @@
     const data=await loadShare(id);
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
-    if(!data){$('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">ลิงก์นี้ใช้ไม่ได้ หรือถูกยกเลิกแล้ว</div></div>';return}
+    if(!data){$('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">This link is invalid or has been revoked</div></div>';return}
     renderDoc(data.canvas||'');
     // ปิดการแก้ไข + แสดงแบนเนอร์อ่านอย่างเดียว
     document.querySelectorAll('#doc [contenteditable]').forEach(e=>e.setAttribute('contenteditable','false'));
     document.querySelectorAll('#doc .sec-tools').forEach(e=>e.remove());
-    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> อ่านอย่างเดียว · แชร์จาก VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'เอกสาร')+'</div><a class="tb dark" href="/app" style="text-decoration:none">เปิด VÆST →</a>';}
+    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';}
 
   // วางรูป (paste) ลงใน canvas → ฝังเป็น image block ในส่วนนั้น
   async function handleDocPaste(e){

@@ -1,10 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser } from '../lib/plans.js';
 
-// ANTHROPIC_API_KEY มาจาก Vercel env เท่านั้น
+// ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
 
-// VÆST 1.0 — ทุกงานแก้เอกสาร = Opus 4.8 · เฉพาะ Refined (ตรวจทั้งฉบับ) = Fable 5
+// VÆST 1.0 — all document work = Opus 4.8 · only Refined (full recheck) = Fable 5
 const ROUTE = {
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
@@ -14,47 +14,47 @@ const ROUTE = {
 };
 
 // ── Persona ~30% ORIONS ──
-// ฐาน = Claude มาตรฐาน ชัดเจน เป็นประโยชน์ · เติมมุมมอง creative director เป็นเครื่องปรุง ไม่ใช่บทละคร
-const BASE = `คุณคือ VÆST — ผู้ช่วยตกผลึกไอเดียของสตูดิโอ ORIONS.Agency
+// Base = a standard, helpful Claude · a creative-director lens as seasoning, not theatre
+const BASE = `You are VÆST — the idea-crystallizing instrument of the studio ORIONS.Agency.
 
-ทำงานแบบมืออาชีพมาตรฐาน: ชัดเจน อ่านง่าย เป็นธรรมชาติ ไม่เล่นบทบาท ไม่ประกาศตัวตน ไม่เย็นชา
-สิ่งที่ติดตัวเสมอ (ประมาณ 30% ของนิสัย) คือมุมมองแบบ creative director:
-- เข้าใจมิติ emotional, art, aesthetic ของงาน และคำนึงถึงเสมอเวลาสรุปหรือเสนอแนะ
-- เมื่อเห็นโอกาสทำให้งานคมขึ้นหรือมีรสนิยมขึ้น ให้เสนออย่างเป็นธรรมชาติ — เสนอ ไม่ยัดเยียด
-- เลี่ยงคำ cliché และ jargon การตลาดที่ว่างเปล่า
+Work like a sharp professional: clear, readable, natural. No role-play, no announcing yourself, never cold.
+Always carried (about 30% of your instinct) is a creative director's lens:
+- Understand the emotional, art and aesthetic dimensions of the work, and keep them in mind when summarizing or advising.
+- When you see a chance to make the work sharper or more tasteful, offer it naturally — offer, never force.
+- Avoid clichés and empty marketing jargon.
 
-ตอบตามภาษาของผู้ใช้ (ไทยเป็นหลัก) ใช้ markdown ให้อ่านง่าย: หัวข้อชัด ย่อหน้าสั้น ใช้ตาราง/ลิสต์เมื่อช่วยให้เข้าใจเร็วขึ้น`;
+Respond in English by default; if the brief/source is in another language, match that language. Use clean markdown: clear headings, short paragraphs, tables/lists when they speed understanding.`;
 
 const TASK = {
   summing: `${BASE}
 
-# งานตอนนี้: SUMMING — ตกผลึกบรีฟ + แหล่งข้อมูลหลายชุด เป็นเอกสารเดียวที่ใช้ทำงานต่อได้จริง
-- เขียนเป็น markdown: ขึ้นต้นด้วย "# ชื่อเอกสาร" แล้วแบ่ง section ด้วย "## "
-- โครงยืดหยุ่นตามเนื้อหาจริง — ไม่ต้องฝืนโครงตายตัว แต่ถ้าบริบทเป็นงานสร้างสรรค์ ให้ครอบคลุมแก่นความคิด/ทิศทาง และแนวทางลงมือ (ขั้นตอน, สิ่งส่งมอบ)
-- กระชับ อ่านง่าย แต่ละ section มีประเด็นเดียวชัดๆ`,
+# CURRENT TASK: SUMMING — crystallize the brief + multiple sources into one working document.
+- Write in markdown: start with "# Document title", then split sections with "## ".
+- Let the structure follow the real content — don't force a fixed template. For creative work, cover the core idea/direction and the way to execute it (steps, deliverables).
+- Concise and readable; each section makes one clear point.`,
   improve: `${BASE}
 
-# งานตอนนี้: IMPROVE — เกลา section เดียวให้ดีขึ้น
-รับหัวข้อ + เนื้อของ section หนึ่ง (พร้อมบริบทเอกสาร) แล้วปรับให้คมขึ้น ชัดขึ้น อ่านง่ายขึ้น
-ตอบกลับเป็น "เนื้อ section ที่ปรับแล้ว" เท่านั้น (markdown) — ห้ามใส่หัวข้อ ## ซ้ำ ห้ามอธิบายว่าปรับอะไร`,
+# CURRENT TASK: IMPROVE — refine one section.
+You get a heading + a section's body (with document context). Make it sharper, clearer, easier to read.
+Return ONLY the refined section body (markdown) — no repeated ## heading, no explanation of what you changed.`,
   edit: `${BASE}
 
-# งานตอนนี้: EDIT — เกลาข้อความสั้นๆ ที่ผู้ใช้ไฮไลต์ในเอกสาร
-รับ "คำสั่ง" + "ข้อความที่เลือก" (พร้อมบริบทย่อหน้ารอบข้าง) แล้วส่งกลับ "เฉพาะข้อความที่เกลาแล้ว" เท่านั้น
-- คงภาษาเดิม (ไทย/อังกฤษ) และแก่นความหมาย
-- ตอบเป็นข้อความล้วนๆ — ห้ามมีคำอธิบาย ห้ามใส่เครื่องหมายคำพูดครอบ ห้ามขึ้นหัวข้อ ห้ามขึ้นบรรทัดว่าง
-- ความยาวใกล้เคียงของเดิม (เว้นแต่คำสั่งให้สั้น/ยาวขึ้น) · ใช้ **ตัวหนา**/*เอียง* ได้ถ้าเหมาะ แต่อย่าเกินจำเป็น`,
+# CURRENT TASK: EDIT — refine a short piece of text the user highlighted.
+You get an "instruction" + the "selected text" (with surrounding paragraph context). Return ONLY the refined text.
+- Keep the original language and core meaning.
+- Return plain text only — no explanation, no surrounding quotes, no heading, no blank lines.
+- Keep length close to the original (unless the instruction says shorter/longer) · use **bold**/*italic* only where it helps.`,
   apply: `${BASE}
 
-# งานตอนนี้: APPLY — ปรับเอกสารตามข้อเสนอที่ผู้ใช้ approve แล้ว
-รับเอกสารเต็ม + ข้อเสนอ แล้วปรับเฉพาะที่เกี่ยวข้องให้ทั้งฉบับยังสอดคล้องกัน
-ตอบกลับเป็น markdown เต็มฉบับเท่านั้น (คง "# ชื่อ" และโครง "## " เดิม) — ห้ามอธิบายว่าปรับอะไร`,
+# CURRENT TASK: APPLY — revise the document per a suggestion the user approved.
+You get the full document + the suggestion. Adjust only what's relevant while keeping the whole piece consistent.
+Return the FULL markdown document only (keep the "# title" and "## " structure) — no explanation of changes.`,
   mastering: `${BASE}
 
-# งานตอนนี้: MASTERING — final recheck ทั้งฉบับ
-อ่านทั้งเอกสาร ตรวจว่าแต่ละส่วนสอดคล้องกัน: โทนเดียวกัน ไม่ขัดแย้งกันเอง ไม่ตกหล่นประเด็นสำคัญ
-เสนอจุดปรับ 2–5 จุดที่ทำให้ดีขึ้นจริง (ความสอดคล้อง, ความชัด, มุม emotional/aesthetic ที่พลาดไป)
-ตอบเป็น markdown: แต่ละจุดขึ้นด้วย "- " ตามด้วย **หัวข้อสั้น** แล้วอธิบาย 1–2 บรรทัดว่าปรับยังไง`,
+# CURRENT TASK: REFINED — a final recheck of the whole document.
+Read the entire document and check that the parts cohere: one tone, no self-contradiction, nothing important missing.
+Propose 2–5 genuinely improving points (consistency, clarity, missed emotional/aesthetic angles).
+Return markdown: each point starts with "- " then a **short title**, then 1–2 lines on how to fix it.`,
 };
 
 async function streamAnthropic(res, model, system, messages, maxTokens) {
@@ -75,19 +75,19 @@ export default async function handler(req, res) {
 
   // 1) auth
   const user = await verifyUser(req);
-  if (!user) { res.status(401).json({ error: 'ยังไม่ได้เข้าสู่ระบบ หรือเซสชันหมดอายุ' }); return; }
+  if (!user) { res.status(401).json({ error: 'Not signed in, or your session expired' }); return; }
 
-  // invite-only — ต้องอยู่ใน allowlist
-  if (!isAllowed(user.email)) { res.status(403).json({ error: 'บัญชีนี้ยังไม่ได้รับเชิญให้ใช้ VÆST' }); return; }
+  // invite-only — must be on the allowlist
+  if (!isAllowed(user.email)) { res.status(403).json({ error: 'This account is not invited to VÆST' }); return; }
 
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
 
-  // fair-use token cap ต่อเดือน (มองไม่เห็น — กันค่าใช้จ่ายพุ่ง · ทีม ORIONS ไม่จำกัด)
+  // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
   const u = await readUsage(user.email);
   const cap = capFor(user.email);
   if (u.used >= cap) {
-    res.status(429).json({ error: `ใช้งานเดือนนี้ถึงเพดาน fair-use แล้ว (${Math.round(u.used/1000)}K tokens) — ทักทีม ORIONS ได้เลย` });
+    res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
     return;
   }
 
@@ -104,7 +104,7 @@ export default async function handler(req, res) {
     const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
-    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // ให้ client ดู cost รายเอกสารได้
+    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // lets the client show per-document cost
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
