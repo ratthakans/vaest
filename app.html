@@ -20,7 +20,7 @@
     --body:"Newsreader","Noto Serif Thai",Georgia,"Times New Roman",serif;
     --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
     /* the one warm gradient accent */
-    --grad:linear-gradient(100deg,#e2582c 0%,#f0a04b 100%);
+    --grad:linear-gradient(100deg,#1f9de0 0%,#4fc3ff 30%,#ff7a3c 72%,#ff4a14 100%);
     --pop:0 1px 2px rgba(17,17,16,.05),0 24px 70px rgba(17,17,16,.14);
     --ease:cubic-bezier(.22,1,.36,1);
   }
@@ -96,8 +96,8 @@
   .bb-hint{font-size:12px;color:var(--mute)}
   .go{margin-left:auto;display:inline-flex;align-items:center;gap:9px;color:#fff;
     font-weight:650;font-size:14.5px;padding:12px 24px;border-radius:10px;transition:transform .3s var(--ease),box-shadow .3s var(--ease),filter .2s;
-    background:var(--grad);background-size:280% 280%;animation:liquid 11s ease-in-out infinite;box-shadow:0 4px 16px rgba(207,79,40,.24)}
-  .go:hover{filter:brightness(1.04);transform:translateY(-1.5px);box-shadow:0 9px 26px rgba(207,79,40,.3)}
+    background:#111110;box-shadow:0 4px 16px rgba(17,17,16,.18)}
+  .go:hover{background:#000;transform:translateY(-1.5px);box-shadow:0 9px 26px rgba(17,17,16,.24)}
   .go:active{transform:none}
   .h-foot{margin-top:26px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)}
 
@@ -347,7 +347,7 @@
   .auth-f input:focus{border-color:var(--ink);box-shadow:0 4px 18px rgba(17,17,16,.06)}
   .auth-f input::placeholder{color:var(--mute)}
   .auth-go{margin-top:6px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;color:#fff;font-weight:650;font-size:14.5px;
-    padding:13px;border-radius:10px;background:var(--grad);background-size:280% 280%;animation:liquid 11s ease-in-out infinite;
+    padding:13px;border-radius:10px;background:#111110;
     box-shadow:0 4px 16px rgba(207,79,40,.22);transition:transform .3s var(--ease),filter .2s}
   .auth-go:hover{filter:brightness(1.04);transform:translateY(-1px)}
   .auth-err{font-size:12.5px;color:var(--cin-d);min-height:18px;line-height:1.5}

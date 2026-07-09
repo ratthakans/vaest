@@ -5,7 +5,7 @@
 <title>VÆST — Aesthetic Intelligence · by ORIONS.Agency</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="VÆST — Aesthetic Intelligence. Crystallize briefs and piles of files into one sharp, tasteful document. An internal instrument of ORIONS.Agency">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="VÆST — Aesthetic Intelligence">
 <meta property="og:description" content="Crystallize briefs and piles of files into one sharp, tasteful document. A studio instrument by ORIONS.Agency — invite-only.">
@@ -15,13 +15,14 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#ffffff; --ink:#111110; --dim:#55544f; --mute:#9b9a94;
-    --line:rgba(17,17,16,.1); --line2:rgba(17,17,16,.22);
-    --grad:linear-gradient(100deg,#e2582c 0%,#f0a04b 100%);
-    --acc:#e2582c;
+    --bg:#050506; --ink:#f2f1ee; --dim:#a1a09b; --mute:#5c5b57;
+    --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
+    /* chromatic dispersion — the one accent */
+    --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
+    --cy:#4fc3ff; --or:#ff5a1f;
     --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
     --th:"IBM Plex Sans Thai","Inter",sans-serif;
     --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -31,16 +32,47 @@
   html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
   body{font-family:var(--ui);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
-  ::selection{background:#111110;color:#fff}
+  ::selection{background:#f2f1ee;color:#050506}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   .wrap{max-width:1200px;margin:0 auto;padding:0 44px}
   @media(max-width:640px){.wrap{padding:0 24px}}
   .eye{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .th{font-family:var(--th)}
-  .gtx{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ctx{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* ═══ prismatic glass field — pure CSS ═══ */
+  .prism{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .prism .glow{position:absolute;inset:-20%;
+    background:
+      radial-gradient(38% 46% at 74% 30%,rgba(64,150,255,.34),transparent 70%),
+      radial-gradient(30% 40% at 88% 68%,rgba(255,90,31,.3),transparent 70%),
+      radial-gradient(26% 32% at 60% 76%,rgba(79,195,255,.22),transparent 70%);
+    filter:blur(46px);animation:gl 14s ease-in-out infinite alternate}
+  @keyframes gl{to{transform:translateX(-3%) scale(1.06)}}
+  .prism .strips{position:absolute;top:-4%;bottom:-4%;left:46%;right:0;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,90,31,.5) 0 2px,transparent 2px 23px),
+      repeating-linear-gradient(90deg,rgba(240,250,255,.65) 3px 5px,transparent 5px 26px),
+      repeating-linear-gradient(90deg,rgba(79,195,255,.55) 6px 8px,transparent 8px 29px),
+      repeating-linear-gradient(90deg,rgba(120,210,255,.14) 0 10px,rgba(5,5,6,0) 10px 34px);
+    filter:blur(.5px) saturate(1.35);
+    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 18%);
+    -webkit-mask-composite:source-in;
+    mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 18%);
+    mask-composite:intersect;
+    animation:drift 26s ease-in-out infinite alternate}
+  @keyframes drift{to{background-position:34px 0,26px 0,18px 0,10px 0}}
+  .prism .ripple{position:absolute;left:38%;right:-6%;top:26%;height:56%;
+    background:
+      repeating-linear-gradient(178deg,rgba(79,195,255,.16) 0 1.5px,transparent 1.5px 9px),
+      repeating-linear-gradient(2deg,rgba(255,120,50,.1) 0 1px,transparent 1px 12px);
+    filter:blur(.4px);border-radius:50%;transform:rotate(-7deg);
+    -webkit-mask-image:radial-gradient(60% 55% at 50% 50%,#000 30%,transparent 72%);
+    mask-image:radial-gradient(60% 55% at 50% 50%,#000 30%,transparent 72%)}
+  @media(max-width:760px){.prism .strips{left:20%}.prism .ripple{left:8%}}
 
   /* ── nav ── */
-  .nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .nav{position:sticky;top:0;z-index:60;background:rgba(5,5,6,.72);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
   .nav-in{display:flex;align-items:center;gap:13px;height:76px}
   .mark{width:22px;height:22px;flex:none}
   .wm{font-weight:700;font-size:16px;letter-spacing:.12em}
@@ -49,42 +81,47 @@
   .nav .cta{margin-left:auto;font-size:14.5px;font-weight:550;color:var(--ink);border-bottom:1px solid transparent;padding-bottom:2px;transition:border-color .2s var(--ease)}
   .nav .cta:hover{border-color:var(--ink)}
 
-  /* ── hero — statement, sentence case, air ── */
-  .hero{padding:17vh 0 15vh}
-  @media(max-width:640px){.hero{padding:12vh 0 11vh}}
+  /* ── hero — statement over black, glass field right ── */
+  .hero{position:relative;padding:16vh 0 14vh;border-bottom:1px solid var(--line);overflow:hidden}
+  @media(max-width:640px){.hero{padding:11vh 0 10vh}}
+  .hero .wrap{position:relative;z-index:2}
   .hero .eye{display:block;margin-bottom:42px}
-  .hero h1{font-weight:650;font-size:clamp(42px,7.4vw,104px);line-height:1.02;letter-spacing:-.038em;max-width:13ch}
-  .hero h1 .dot{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero .sub{font-family:var(--th);font-size:clamp(16px,1.65vw,20px);line-height:1.75;color:var(--dim);max-width:52ch;margin:52px 0 48px}
+  .hero h1{font-weight:650;font-size:clamp(42px,7.2vw,102px);line-height:1.02;letter-spacing:-.038em;max-width:13ch}
+  .hero h1 .dot{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .sub{font-family:var(--th);font-size:clamp(16px,1.65vw,20px);line-height:1.75;color:var(--dim);max-width:47ch;margin:48px 0 46px}
   .hero .sub b{color:var(--ink);font-weight:600}
   .hero .row{display:flex;flex-wrap:wrap;gap:14px 34px;align-items:center}
-  .btn{display:inline-flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;letter-spacing:0;
-    padding:17px 32px;border-radius:100px;background:var(--ink);color:#fff;transition:.25s var(--ease)}
-  .btn:hover{background:#000;transform:translateY(-1px)}
+  .btn{display:inline-flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;
+    padding:17px 32px;border-radius:100px;background:var(--ink);color:#050506;transition:.25s var(--ease)}
+  .btn:hover{background:#fff;transform:translateY(-1px)}
   .lnk{font-size:14.5px;font-weight:550;color:var(--ink);border-bottom:1px solid var(--line2);padding-bottom:3px;transition:border-color .2s var(--ease)}
   .lnk:hover{border-color:var(--ink)}
 
   /* ── spec strip ── */
-  .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;padding:64px 0;border-top:1px solid var(--line)}
+  .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;padding:64px 0;border-bottom:1px solid var(--line)}
   @media(max-width:720px){.specs{grid-template-columns:1fr 1fr;gap:44px 28px}}
   .spec .n{font-weight:650;font-size:clamp(38px,4.6vw,56px);line-height:1;letter-spacing:-.04em}
-  .spec .n .u{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .spec .n .u{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:14px}
 
   /* ── section frame ── */
-  .sec-pad{padding:160px 0}
-  @media(max-width:640px){.sec-pad{padding:110px 0}}
+  .sec-pad{padding:150px 0}
+  @media(max-width:640px){.sec-pad{padding:104px 0}}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:30px;display:flex;align-items:center;gap:13px}
-  .lbl::before{content:"";width:26px;height:2px;background:var(--grad);border-radius:2px}
-  h2{font-weight:650;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:22ch}
+  .lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
+  h2{font-weight:650;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
   .lead{font-family:var(--th);font-size:clamp(15px,1.55vw,18.5px);line-height:1.8;color:var(--dim);max-width:58ch;margin-top:26px}
   .lead b{color:var(--ink);font-weight:600}
+  section{border-bottom:1px solid var(--line)}
 
-  /* ── product window ── */
+  /* ── product window — dark glass ── */
   .demo-wrap{padding:84px 0 0}
-  .win{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 30px 90px rgba(17,17,16,.09)}
+  .win{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:rgba(10,10,12,.82);backdrop-filter:blur(6px);
+    box-shadow:0 40px 120px rgba(0,0,0,.55)}
+  .win::before{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+    background:linear-gradient(120deg,rgba(79,195,255,.08),transparent 30%,transparent 70%,rgba(255,90,31,.08));}
   .win-bar{display:flex;align-items:center;gap:7px;padding:15px 22px;border-bottom:1px solid var(--line)}
-  .win-bar i{width:8.5px;height:8.5px;border-radius:50%;background:rgba(17,17,16,.12)}
+  .win-bar i{width:8.5px;height:8.5px;border-radius:50%;background:rgba(255,255,255,.14)}
   .win-bar .url{margin-left:12px;font-family:var(--mono);font-size:10.5px;color:var(--mute);letter-spacing:.04em}
   .win-body{position:relative;min-height:452px}
   @media(max-width:640px){.win-body{min-height:512px}}
@@ -93,67 +130,67 @@
   .scene.on{opacity:1;visibility:visible}
   .d-eye{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
   .d-title{font-family:var(--th);font-weight:700;font-size:30px;letter-spacing:-.01em;margin:14px 0 26px;color:var(--ink)}
-  .d-box{background:#fafaf9;border:1px solid var(--line);border-radius:10px;padding:20px 22px;min-height:152px}
+  .d-box{background:rgba(0,0,0,.45);border:1px solid var(--line);border-radius:10px;padding:20px 22px;min-height:152px}
   .d-brief{font-family:var(--th);font-size:15px;line-height:1.85;color:var(--ink);white-space:pre-wrap}
-  .caret{display:inline-block;width:2px;height:1.05em;background:var(--acc);vertical-align:text-bottom;margin-left:1px;animation:bl 1s steps(2) infinite}
+  .caret{display:inline-block;width:2px;height:1.05em;background:var(--cy);vertical-align:text-bottom;margin-left:1px;animation:bl 1s steps(2) infinite}
   @keyframes bl{0%,50%{opacity:1}51%,100%{opacity:0}}
   .d-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;min-height:30px}
-  .d-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--dim);background:#fff;border:1px solid var(--line);border-radius:100px;padding:6px 12px;opacity:0;transform:translateY(5px);transition:.4s var(--ease)}
+  .d-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--dim);background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:100px;padding:6px 12px;opacity:0;transform:translateY(5px);transition:.4s var(--ease)}
   .d-chip.on{opacity:1;transform:none}
-  .d-chip b{color:var(--acc);font-size:8.5px;font-weight:600}
+  .d-chip b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:8.5px;font-weight:600}
   .d-foot{display:flex;justify-content:flex-end;margin-top:18px}
-  .d-sum{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#fff;background:var(--ink);font-weight:600;padding:12px 24px;border-radius:100px;transition:transform .25s var(--ease)}
+  .d-sum{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#050506;background:var(--ink);font-weight:600;padding:12px 24px;border-radius:100px;transition:transform .25s var(--ease)}
   .d-sum.press{transform:scale(.95)}
   .d-doc .ln{opacity:0;transform:translateY(7px);transition:.5s var(--ease)}
   .d-doc .ln.on{opacity:1;transform:none}
   .d-mast{font-family:var(--th);font-weight:700;font-size:26px;line-height:1.15;letter-spacing:-.01em;margin:8px 0 6px;color:var(--ink)}
   .d-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute);margin-bottom:24px}
   .d-sec{padding:17px 0;border-top:1px solid var(--line)}
-  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--acc)}
+  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .d-sec .h{font-family:var(--th);font-weight:600;font-size:16px;margin-top:6px;color:var(--ink)}
   .d-sec .p{font-family:var(--th);font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:7px;max-width:60ch}
   .d-ref{display:inline-flex;align-items:center;gap:9px;margin-top:20px;border:1px solid var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);border-radius:100px;padding:9px 15px;opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
   .d-ref.on{opacity:1;transform:none}
-  .d-ref .ok{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .d-ref .ok{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
 
   /* ── process ── */
   .rail{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;margin-top:84px}
   @media(max-width:760px){.rail{grid-template-columns:1fr 1fr;gap:48px 32px}}
   @media(max-width:440px){.rail{grid-template-columns:1fr}}
   .step{padding-top:24px;border-top:1px solid var(--line2)}
-  .step .si{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .step .si{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .step .st{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
-  .step .sd{font-family:var(--th);font-size:13px;color:var(--dim);margin-top:8px;line-height:1.7}
+  .step .sd{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
   /* ── before / after ── */
   .ba{display:grid;grid-template-columns:1fr 1fr;gap:76px;margin-top:84px}
   @media(max-width:760px){.ba{grid-template-columns:1fr;gap:56px}}
   .ba-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
   .ba-col.before .ba-tag{color:var(--mute)}
-  .ba-col.after .ba-tag{color:var(--acc)}
+  .ba-col.after .ba-tag{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .ba-b{font-family:var(--th);font-size:14.5px;line-height:2.05;color:var(--dim)}
   .ba-b .x{display:block}
   .ba-col.after .bh{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin:20px 0 8px}
-  .ba-col.after .bq{border-left:2px solid;border-image:var(--grad) 1;padding-left:16px;color:var(--ink);margin:16px 0;font-weight:500}
+  .ba-col.after .bq{border-left:2px solid;border-image:var(--chroma) 1;padding-left:16px;color:var(--ink);margin:16px 0;font-weight:500}
 
   /* ── engine ── */
   .eng{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:84px}
   @media(max-width:700px){.eng{grid-template-columns:1fr;gap:56px}}
   .e-card{padding-top:26px;border-top:1px solid var(--line2)}
-  .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .e-card h3{font-family:var(--th);font-weight:700;font-size:24px;margin:18px 0 14px;letter-spacing:-.01em;color:var(--ink)}
   .e-card p{font-family:var(--th);font-size:14px;line-height:1.85;color:var(--dim)}
   .e-card .tag{display:inline-block;margin-top:22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
 
-  /* ── orions — the single black band ── */
-  .orions{background:#111110;color:#fff}
-  .orions h2{color:#fff}
-  .orions .lbl{color:rgba(255,255,255,.5)}
-  .orions .lead{color:rgba(255,255,255,.68)}
-  .orions .lead b{color:#fff}
+  /* ── orions — the single white inversion ── */
+  .orions{background:#f2f1ee;color:#111110}
+  .orions h2{color:#111110}
+  .orions .lbl{color:rgba(17,17,16,.45)}
+  .orions .lead{color:rgba(17,17,16,.62)}
+  .orions .lead b{color:#111110}
   .olink{display:inline-flex;align-items:center;gap:10px;margin-top:38px;font-size:14px;font-weight:600;
-    border:1px solid rgba(255,255,255,.3);border-radius:100px;padding:14px 26px;transition:.25s var(--ease)}
-  .olink:hover{background:#fff;color:#111110;border-color:#fff}
+    border:1px solid rgba(17,17,16,.3);border-radius:100px;padding:14px 26px;transition:.25s var(--ease)}
+  .olink:hover{background:#111110;color:#f2f1ee;border-color:#111110}
 
   /* ── request access ── */
   .wl{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:48px;max-width:600px;align-items:flex-end}
@@ -162,20 +199,23 @@
   .wl input:focus{border-color:var(--ink)}
   .wl input::placeholder{color:var(--mute)}
   .wl .btn{padding:15px 28px;font-size:14px}
-  .wl-msg{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--acc);margin-top:20px;min-height:16px}
+  .wl-msg{font-family:var(--mono);font-size:11px;letter-spacing:.08em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;margin-top:20px;min-height:16px}
 
   /* ── final ── */
-  .final{text-align:center;padding:190px 0 170px}
-  @media(max-width:640px){.final{padding:130px 0 120px}}
+  .final{position:relative;text-align:center;padding:180px 0 160px;overflow:hidden}
+  @media(max-width:640px){.final{padding:120px 0 110px}}
+  .final .wrap{position:relative;z-index:2}
   .final h2{font-size:clamp(40px,7vw,96px);line-height:1;letter-spacing:-.04em;max-width:none}
-  .final h2 .dot{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .final h2 .dot{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .final .q{font-family:var(--th);font-size:16.5px;color:var(--dim);margin-top:32px}
   .final .btn{margin-top:52px}
   .final .req{margin-top:24px}
   .final .req a{font-size:13.5px;color:var(--mute);border-bottom:1px solid var(--line);padding-bottom:2px}
   .final .req a:hover{color:var(--ink);border-color:var(--ink)}
+  .final .prism .strips{left:0;right:0;opacity:.33;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 40%,#000 60%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 40%,#000 60%,transparent 100%)}
+  .final .prism .glow{opacity:.5}
 
-  footer{padding:44px 0;border-top:1px solid var(--line)}
+  footer{padding:44px 0}
   footer .fin{display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 
   .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
@@ -185,22 +225,25 @@
 <body>
 
 <nav class="nav"><div class="wrap nav-in">
-  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#111110"/><path d="M25.5 8 14.5 32" stroke="#e2582c" stroke-width="3.6" stroke-linecap="round"/></svg>
+  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#111112"/><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#cg)" stroke-width="3.6" stroke-linecap="round"/></svg>
   <div><div class="wm">V<i>&AElig;</i>ST</div></div>
   <span class="by">BY ORIONS.AGENCY</span>
   <a class="cta" href="/app">Open VÆST ↗</a>
 </div></nav>
 
 <!-- HERO -->
-<header class="hero"><div class="wrap">
-  <span class="eye">VÆST — a studio instrument by ORIONS.Agency</span>
-  <h1>Aesthetic intelligence<span class="dot">.</span></h1>
-  <p class="sub th">Drop your brief, files, spreadsheets, moodboards into VÆST and hit Summing — you get <b>one document</b> that’s sharp, readable, editable sentence by sentence, and passes a final taste check before it ships.</p>
-  <div class="row">
-    <a class="btn" href="/app">Start VÆST</a>
-    <a class="lnk" href="#how">See how it works ↓</a>
+<header class="hero">
+  <div class="prism"><div class="glow"></div><div class="strips"></div><div class="ripple"></div></div>
+  <div class="wrap">
+    <span class="eye">VÆST — a studio instrument by ORIONS.Agency</span>
+    <h1>Aesthetic intelligence<span class="dot">.</span></h1>
+    <p class="sub th">Drop your brief, files, spreadsheets, moodboards into VÆST and hit Summing — you get <b>one document</b> that’s sharp, readable, editable sentence by sentence, and passes a final taste check before it ships.</p>
+    <div class="row">
+      <a class="btn" href="/app">Start VÆST</a>
+      <a class="lnk" href="#how">See how it works ↓</a>
+    </div>
   </div>
-</div></header>
+</header>
 
 <!-- SPEC STRIP -->
 <div class="wrap"><div class="specs">
@@ -253,7 +296,7 @@
 </div></section>
 
 <!-- BEFORE / AFTER -->
-<section style="border-top:1px solid var(--line)"><div class="wrap sec-pad">
+<section><div class="wrap sec-pad">
   <div class="lbl">Before → After</div>
   <h2>From a pile of inputs to a document you can hand off</h2>
   <p class="lead th">VÆST doesn’t just "summarize" — it picks the points, orders them, and rewrites with a creative director’s eye.</p>
@@ -282,7 +325,7 @@
 </div></section>
 
 <!-- ENGINE -->
-<section style="border-top:1px solid var(--line)"><div class="wrap sec-pad">
+<section><div class="wrap sec-pad">
   <div class="lbl">Engine</div>
   <h2>Two minds, one taste</h2>
   <div class="eng reveal">
@@ -301,7 +344,7 @@
   </div>
 </div></section>
 
-<!-- ORIONS — the one black band -->
+<!-- ORIONS — the one white inversion -->
 <section class="orions"><div class="wrap sec-pad">
   <div class="lbl">Part of ORIONS</div>
   <h2>A studio instrument, open to invited people only</h2>
@@ -322,13 +365,16 @@
 </div></section>
 
 <!-- FINAL -->
-<section class="final" style="border-top:1px solid var(--line)"><div class="wrap">
-  <span class="eye" style="display:block;margin-bottom:30px">VÆST 1.0</span>
-  <h2>Taste, operationalized<span class="dot">.</span></h2>
-  <p class="q th">“Computation is nothing without taste.”</p>
-  <a class="btn" href="/app">Open VÆST</a>
-  <div class="req"><a href="#access">No invite yet? Request access</a></div>
-</div></section>
+<section class="final">
+  <div class="prism"><div class="glow"></div><div class="strips"></div></div>
+  <div class="wrap">
+    <span class="eye" style="display:block;margin-bottom:30px">VÆST 1.0</span>
+    <h2>Taste, operationalized<span class="dot">.</span></h2>
+    <p class="q th">“Computation is nothing without taste.”</p>
+    <a class="btn" href="/app">Open VÆST</a>
+    <div class="req"><a href="#access">No invite yet? Request access</a></div>
+  </div>
+</section>
 
 <footer><div class="wrap fin">
   <span>VÆST — Aesthetic Intelligence</span>
