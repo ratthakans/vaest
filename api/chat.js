@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { PLANS, readUsage, readUsageData, writeUsageRow, verifyUser } from '../lib/plans.js';
+import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser } from '../lib/plans.js';
 
 // ANTHROPIC_API_KEY มาจาก Vercel env เท่านั้น
 const anthropic = new Anthropic();
@@ -77,18 +77,17 @@ export default async function handler(req, res) {
   const user = await verifyUser(req);
   if (!user) { res.status(401).json({ error: 'ยังไม่ได้เข้าสู่ระบบ หรือเซสชันหมดอายุ' }); return; }
 
+  // invite-only — ต้องอยู่ใน allowlist
+  if (!isAllowed(user.email)) { res.status(403).json({ error: 'บัญชีนี้ยังไม่ได้รับเชิญให้ใช้ VÆST' }); return; }
+
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
 
-  // 2) usage + plan
+  // fair-use token cap ต่อเดือน (มองไม่เห็น — กันค่าใช้จ่ายพุ่ง · ทีม ORIONS ไม่จำกัด)
   const u = await readUsage(user.email);
-  const plan = PLANS[u.plan];
-  const isNewDoc = mode === 'summing';                   // เอกสารใหม่ = นับ weekly
-  const wkAfter = u.wkCount + (isNewDoc ? 1 : 0);
-
-  // hard cap — token รายเดือนตามแพลน
-  if (u.used >= plan.moTok) {
-    res.status(429).json({ error: `เครดิตเดือนนี้ของแพลน ${plan.label} หมดแล้ว (${Math.round(u.used/1000)}K tokens) — อัปเกรดแพลน หรือรอต้นเดือนหน้า` });
+  const cap = capFor(user.email);
+  if (u.used >= cap) {
+    res.status(429).json({ error: `ใช้งานเดือนนี้ถึงเพดาน fair-use แล้ว (${Math.round(u.used/1000)}K tokens) — ทักทีม ORIONS ได้เลย` });
     return;
   }
 
@@ -99,19 +98,13 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Model', route.model);
-  res.setHeader('X-Plan', u.plan);
-  res.setHeader('X-Credit-Used', String(u.used));
-  res.setHeader('X-Credit-Limit', plan.moTok === Infinity ? '0' : String(plan.moTok));
-  res.setHeader('X-Week-Used', String(wkAfter));
-  res.setHeader('X-Week-Limit', plan.wk === Infinity ? '0' : String(plan.wk));
-  res.setHeader('X-Week-Over', (isNewDoc && wkAfter > plan.wk) ? '1' : '0'); // soft — เตือน ไม่บล็อก
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
     const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
     const d0 = await readUsageData(user.email);
-    await writeUsageRow(user.email, { ...d0, month: u.month, week: u.week, used: u.used + inTok + outTok, wkCount: wkAfter, plan: u.plan, limit: plan.moTok });
-    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // ให้ client แยก cost รายเอกสาร
+    await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
+    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // ให้ client ดู cost รายเอกสารได้
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
