@@ -6,9 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="VÆST — Aesthetic Intelligence. Crystallize briefs and piles of files into one sharp, tasteful document. An internal instrument of ORIONS.Agency">
 <meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="VÆST — Aesthetic Intelligence">
+<meta property="og:description" content="Crystallize briefs and piles of files into one sharp, tasteful document. A studio instrument by ORIONS.Agency — invite-only.">
+<meta property="og:image" content="https://vaest-orions.vercel.app/og.jpg">
+<meta property="og:url" content="https://vaest-orions.vercel.app/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#000; --panel:#080808; --panel2:#0e0e0e;
@@ -39,7 +46,8 @@
   .nav{position:sticky;top:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
   .nav-in{display:flex;align-items:center;gap:13px;height:64px}
   .mark{width:24px;height:24px;flex:none}
-  .wm{font-weight:800;font-size:18px;letter-spacing:.02em}
+  .wm{font-family:"Newsreader",Georgia,serif;font-style:italic;font-weight:500;font-size:21px;letter-spacing:-.01em}
+  .wm i{color:var(--acc);font-style:italic}
   .nav .by{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:2px}
   .nav .cta{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx);
     border:1px solid var(--line2);border-radius:2px;padding:10px 18px;transition:.2s var(--ease)}
@@ -173,7 +181,7 @@
 
 <nav class="nav"><div class="wrap nav-in">
   <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" fill="#0c0c0c"/><path d="M25.5 8 14.5 32" stroke="#e2582c" stroke-width="3.6"/></svg>
-  <div><div class="wm">V&AElig;ST</div></div>
+  <div><div class="wm">V<i>&AElig;</i>ST</div></div>
   <span class="by">BY ORIONS.AGENCY</span>
   <a class="cta" href="/app">Open ↗</a>
 </div></nav>
