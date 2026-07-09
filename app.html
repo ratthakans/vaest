@@ -502,9 +502,8 @@
       <div class="auth-err" id="authErr"></div>
       <button type="submit" class="auth-go" id="authGo">เข้าสู่ระบบ</button>
     </form>
-    <div class="auth-sw" id="authSw">ยังไม่มีบัญชี<button type="button" onclick="toggleAuthMode()">สมัครใช้งาน</button></div>
-    <div class="auth-sw" style="margin-top:8px"><button type="button" onclick="forgotPassword()">ลืมรหัสผ่าน?</button></div>
-    <div class="auth-foot">“Computation is nothing without taste.” · VÆST 1.0</div>
+    <div class="auth-sw"><button type="button" onclick="forgotPassword()">ลืมรหัสผ่าน?</button></div>
+    <div class="auth-foot">เข้าใช้แบบ invite-only · ติดต่อทีม ORIONS เพื่อขอสิทธิ์</div>
   </div>
 </div>
 <div class="auth" id="npView">
@@ -513,9 +512,9 @@
       <svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#17140f"/><path d="M25.5 8 14.5 32" stroke="#cf4f28" stroke-width="3.6"/></svg>
       <div class="wm">V<i>Æ</i>ST</div>
     </div>
-    <div class="auth-h">ตั้งรหัสผ่านใหม่</div>
+    <div class="auth-h">ตั้งรหัสผ่าน</div>
     <form class="auth-f" onsubmit="event.preventDefault();submitNewPass()">
-      <input type="password" id="npPass" placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)" autocomplete="new-password" minlength="6" required>
+      <input type="password" id="npPass" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="new-password" minlength="6" required>
       <div class="auth-err" id="npErr"></div>
       <button type="submit" class="auth-go" id="npGo">บันทึกรหัสใหม่</button>
     </form>
@@ -684,9 +683,9 @@
       body:JSON.stringify({email,options:{redirect_to:location.origin+'/app'}})});
       $('authErr').textContent='ส่งลิงก์รีเซ็ตไปที่ '+email+' แล้ว — เช็กอีเมล'}
     catch(e){$('authErr').textContent='ส่งไม่สำเร็จ ลองใหม่อีกครั้ง'}}
-  // ตั้งรหัสใหม่ (มาจากลิงก์ในอีเมล — recovery token อยู่ใน hash)
+  // ตั้งรหัส (ลิงก์อีเมล — reset รหัส หรือ อีเมลเชิญของ Supabase)
   function recoveryTokenFromHash(){
-    const h=(location.hash||'').replace(/^#/,'');if(!/type=recovery/.test(h))return null;
+    const h=(location.hash||'').replace(/^#/,'');if(!/type=(recovery|invite|signup)/.test(h))return null;
     const p=new URLSearchParams(h);return p.get('access_token')||null}
   async function submitNewPass(){
     const t=window._recToken,p1=$('npPass').value;
