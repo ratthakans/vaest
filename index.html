@@ -4,228 +4,260 @@
 <meta charset="utf-8">
 <title>VÆST — Aesthetic Intelligence · by ORIONS.Agency</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="VÆST ตกผลึกบรีฟและไฟล์กองโตให้กลายเป็นเอกสารเดียวที่คมและมีรสนิยม — เครื่องมือภายในของ ORIONS.Agency">
+<meta name="description" content="VÆST — Aesthetic Intelligence. ตกผลึกบรีฟและไฟล์กองโตให้เป็นเอกสารเดียวที่คมและมีรสนิยม เครื่องมือภายในของ ORIONS.Agency">
+<meta name="theme-color" content="#000000">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#17140f; --charcoal:#0c0c0b; --snow:#f4f2ec; --cinnabar:#cf4f28; --cin-d:#a53f20;
-    --app:#f5f3ee; --card:#ffffff;
-    --line:rgba(23,20,15,.07); --line2:rgba(23,20,15,.12);
-    --dim:#66604f; --mute:#9a9284;
-    --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-    --body:"Newsreader","Noto Serif Thai",Georgia,serif;
+    --bg:#000; --panel:#080808; --panel2:#0e0e0e;
+    --tx:#f4f3f0; --dim:#9a9a96; --mute:#5a5a56;
+    --line:rgba(255,255,255,.1); --line2:rgba(255,255,255,.22);
+    --acc:#e2582c; --acc-dim:#b5461f;
+    --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+    --th:"IBM Plex Sans Thai","Inter",sans-serif;
     --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-    --grad:linear-gradient(122deg,#cf4f28 0%,#dd7440 42%,#c9451f 72%,#d75d2f 100%);
-    --pop:0 2px 8px rgba(23,20,15,.06),0 20px 48px rgba(23,20,15,.12);
     --ease:cubic-bezier(.22,1,.36,1);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{font-family:var(--ui);background:var(--app);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:var(--ui);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
-  .eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
-  .liquid{background:var(--grad);background-size:280% 280%;animation:liquid 11s ease-in-out infinite}
-  @keyframes liquid{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  ::selection{background:var(--acc);color:#000}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+  @media(max-width:640px){.wrap{padding:0 20px}}
+  .eye{font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
+  .th{font-family:var(--th)}
+
+  /* grain / vignette bg */
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% -10%,rgba(226,88,44,.10),transparent 55%),radial-gradient(100% 60% at 50% 120%,rgba(255,255,255,.03),transparent 60%)}
 
   /* nav */
-  .nav{position:sticky;top:0;z-index:50;background:rgba(245,243,238,.78);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--line)}
-  .nav-in{display:flex;align-items:center;gap:12px;padding:14px 0}
-  .mark{width:26px;height:26px;border-radius:6px}
-  .wm{font-family:var(--body);font-style:italic;font-weight:500;font-size:20px}
-  .wm i{color:var(--cinnabar);font-style:italic}
-  .nav .by{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-left:2px}
-  .nav .cta{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:650;font-size:13.5px;padding:9px 18px;border-radius:10px;box-shadow:0 3px 12px rgba(207,79,40,.22);transition:transform .3s var(--ease),filter .2s}
-  .nav .cta:hover{filter:brightness(1.05);transform:translateY(-1px)}
+  .nav{position:sticky;top:0;z-index:60;background:rgba(0,0,0,.72);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;gap:13px;height:64px}
+  .mark{width:24px;height:24px;flex:none}
+  .wm{font-weight:800;font-size:18px;letter-spacing:.02em}
+  .nav .by{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:2px}
+  .nav .cta{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx);
+    border:1px solid var(--line2);border-radius:2px;padding:10px 18px;transition:.2s var(--ease)}
+  .nav .cta:hover{background:var(--tx);color:#000;border-color:var(--tx)}
 
   /* hero */
-  .hero{padding:92px 0 40px;text-align:center}
-  .hero h1{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,6.4vw,76px);line-height:1.04;letter-spacing:-.01em;text-wrap:balance;margin:22px auto 20px;max-width:20ch}
-  .hero .sub{font-size:16.5px;line-height:1.75;color:var(--dim);max-width:52ch;margin:0 auto 34px}
-  .hero .go{display:inline-flex;align-items:center;gap:10px;color:#fff;font-weight:650;font-size:15.5px;padding:14px 30px;border-radius:13px;box-shadow:0 5px 20px rgba(207,79,40,.26);transition:transform .3s var(--ease),box-shadow .3s var(--ease),filter .2s}
-  .hero .go:hover{filter:brightness(1.05);transform:translateY(-2px);box-shadow:0 10px 30px rgba(207,79,40,.32)}
-  .hero .free{display:block;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--mute)}
+  .hero{position:relative;padding:120px 0 70px;border-bottom:1px solid var(--line)}
+  .hero .eye{margin-bottom:30px}
+  .hero h1{font-weight:800;font-size:clamp(52px,12vw,168px);line-height:.9;letter-spacing:-.045em;text-transform:uppercase}
+  .hero h1 .l2{display:block;color:var(--dim)}
+  .hero h1 .l2 em{font-style:normal;color:var(--acc)}
+  .hero .sub{font-family:var(--th);font-size:clamp(15px,1.7vw,19px);line-height:1.7;color:var(--dim);max-width:56ch;margin:38px 0 34px}
+  .hero .sub b{color:var(--tx);font-weight:600}
+  .hero .row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;
+    padding:15px 26px;border-radius:2px;transition:.22s var(--ease)}
+  .btn.solid{background:var(--tx);color:#000}
+  .btn.solid:hover{background:var(--acc);color:#000}
+  .btn.ghost{border:1px solid var(--line2);color:var(--tx)}
+  .btn.ghost:hover{border-color:var(--tx);background:rgba(255,255,255,.04)}
 
-  /* demo window — screen capture จำลอง + typing animation */
-  .demo{margin:58px auto 0;max-width:880px;text-align:left}
-  .win{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--pop);overflow:hidden}
+  /* spec strip */
+  .specs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+  @media(max-width:720px){.specs{grid-template-columns:1fr 1fr}}
+  .spec{padding:40px 32px;border-right:1px solid var(--line)}
+  .spec:last-child{border-right:none}
+  @media(max-width:720px){.spec{border-right:1px solid var(--line)}.spec:nth-child(2n){border-right:none}.spec:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+  .spec .n{font-weight:800;font-size:clamp(40px,5vw,60px);line-height:1;letter-spacing:-.04em}
+  .spec .n .u{color:var(--acc)}
+  .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:12px}
+
+  /* section frame */
+  section{border-bottom:1px solid var(--line)}
+  .sec-pad{padding:96px 0}
+  .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--acc);margin-bottom:22px;display:flex;align-items:center;gap:12px}
+  .lbl::before{content:"";width:26px;height:1px;background:var(--acc)}
+  h2{font-weight:800;font-size:clamp(30px,4.6vw,54px);line-height:1.02;letter-spacing:-.03em;text-transform:uppercase}
+  .lead{font-family:var(--th);font-size:clamp(15px,1.6vw,18px);line-height:1.75;color:var(--dim);max-width:60ch;margin-top:20px}
+  .lead b{color:var(--tx);font-weight:600}
+
+  /* product window */
+  .demo-wrap{padding:70px 0 0}
+  .win{border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:var(--panel);box-shadow:0 40px 120px rgba(0,0,0,.6)}
   .win-bar{display:flex;align-items:center;gap:7px;padding:13px 18px;border-bottom:1px solid var(--line)}
-  .win-bar i{width:10px;height:10px;border-radius:50%;background:rgba(23,20,15,.12)}
+  .win-bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.16)}
   .win-bar .url{margin-left:12px;font-family:var(--mono);font-size:10.5px;color:var(--mute);letter-spacing:.04em}
   .win-body{position:relative;min-height:440px}
-  @media(max-width:620px){.win-body{min-height:500px}}
+  @media(max-width:640px){.win-body{min-height:500px}}
   .scene{position:absolute;inset:0;padding:44px 52px;opacity:0;visibility:hidden;transition:opacity .55s var(--ease)}
-  @media(max-width:620px){.scene{padding:30px 24px}}
+  @media(max-width:640px){.scene{padding:28px 22px}}
   .scene.on{opacity:1;visibility:visible}
-  .d-eye{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mute)}
-  .d-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:32px;margin:12px 0 22px}
-  .d-box{background:var(--app);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-height:150px}
-  .d-brief{font-size:15px;line-height:1.85;color:var(--ink);white-space:pre-wrap}
-  .caret{display:inline-block;width:2px;height:1.05em;background:var(--cinnabar);vertical-align:text-bottom;margin-left:1px;animation:bl 1s steps(2) infinite}
+  .d-eye{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+  .d-title{font-family:var(--th);font-weight:700;font-size:30px;letter-spacing:-.01em;margin:12px 0 22px}
+  .d-box{background:#000;border:1px solid var(--line);border-radius:4px;padding:18px 20px;min-height:150px}
+  .d-brief{font-family:var(--th);font-size:15px;line-height:1.85;color:var(--tx);white-space:pre-wrap}
+  .caret{display:inline-block;width:2px;height:1.05em;background:var(--acc);vertical-align:text-bottom;margin-left:1px;animation:bl 1s steps(2) infinite}
   @keyframes bl{0%,50%{opacity:1}51%,100%{opacity:0}}
   .d-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;min-height:30px}
-  .d-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:var(--dim);background:rgba(23,20,15,.05);border:1px solid var(--line);border-radius:8px;padding:5px 10px;opacity:0;transform:translateY(5px);transition:.4s var(--ease)}
+  .d-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--dim);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:3px;padding:5px 10px;opacity:0;transform:translateY(5px);transition:.4s var(--ease)}
   .d-chip.on{opacity:1;transform:none}
-  .d-chip b{color:var(--cinnabar);font-size:8.5px;font-weight:600}
+  .d-chip b{color:var(--acc);font-size:8.5px;font-weight:600}
   .d-foot{display:flex;justify-content:flex-end;margin-top:16px}
-  .d-sum{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:650;font-size:14px;padding:11px 22px;border-radius:11px;box-shadow:0 4px 14px rgba(207,79,40,.24);transition:transform .25s var(--ease)}
-  .d-sum.press{transform:scale(.96)}
-  /* scene 2: doc */
+  .d-sum{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#000;background:var(--tx);font-weight:600;padding:11px 20px;border-radius:3px;transition:transform .25s var(--ease)}
+  .d-sum.press{transform:scale(.95)}
   .d-doc .ln{opacity:0;transform:translateY(7px);transition:.5s var(--ease)}
   .d-doc .ln.on{opacity:1;transform:none}
-  .d-mast{font-family:var(--body);font-style:italic;font-weight:500;font-size:30px;line-height:1.15;margin:10px 0 6px}
+  .d-mast{font-family:var(--th);font-weight:700;font-size:26px;line-height:1.15;letter-spacing:-.01em;margin:8px 0 6px}
   .d-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:22px}
   .d-sec{padding:15px 0;border-top:1px solid var(--line)}
-  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--mute)}
-  .d-sec .h{font-weight:700;font-size:16px;letter-spacing:-.01em;margin-top:5px}
-  .d-sec .p{font-family:var(--body);font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:6px;max-width:58ch}
-  .d-ref{display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:var(--charcoal);color:var(--snow);font-size:12px;font-weight:600;border-radius:9px;padding:8px 14px;opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
+  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--acc)}
+  .d-sec .h{font-family:var(--th);font-weight:600;font-size:16px;margin-top:5px}
+  .d-sec .p{font-family:var(--th);font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:6px;max-width:60ch}
+  .d-ref{display:inline-flex;align-items:center;gap:8px;margin-top:18px;border:1px solid var(--line2);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx);border-radius:3px;padding:8px 13px;opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
   .d-ref.on{opacity:1;transform:none}
-  .d-ref .ok{color:#7fc39e}
+  .d-ref .ok{color:#5fd39a}
 
-  /* strip steps */
-  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:74px;background:rgba(255,255,255,.5)}
-  .strip-in{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 34px;padding:20px 0;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-  .strip-in b{color:var(--cinnabar);font-weight:500}
-
-  /* sections */
-  section{padding:96px 0}
-  .sec-eye{margin-bottom:14px}
-  h2.big{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(30px,4.2vw,46px);line-height:1.12;letter-spacing:-.006em;text-wrap:balance;max-width:24ch}
-  .lead{font-size:15.5px;line-height:1.8;color:var(--dim);max-width:56ch;margin-top:16px}
+  /* process rail */
+  .rail{display:flex;flex-wrap:wrap;gap:8px 0;border:1px solid var(--line);border-radius:4px;margin-top:56px}
+  .step{flex:1;min-width:150px;padding:22px 24px;border-right:1px solid var(--line)}
+  .step:last-child{border-right:none}
+  .step .si{font-family:var(--mono);font-size:10px;color:var(--acc);letter-spacing:.1em}
+  .step .st{font-family:var(--th);font-weight:600;font-size:15px;margin-top:8px}
+  .step .sd{font-family:var(--th);font-size:12.5px;color:var(--mute);margin-top:5px;line-height:1.6}
 
   /* before/after */
-  .ba{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:44px}
+  .ba{display:grid;grid-template-columns:1fr 1fr;margin-top:56px;border:1px solid var(--line);border-radius:4px;overflow:hidden}
   @media(max-width:760px){.ba{grid-template-columns:1fr}}
-  .ba-card{border-radius:16px;padding:30px 32px;min-height:300px}
-  .ba-card.before{background:rgba(23,20,15,.045);border:1px dashed var(--line2)}
-  .ba-card.after{background:var(--card);border:1px solid var(--line);box-shadow:var(--pop)}
-  .ba-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;font-weight:500}
-  .ba-card.before .ba-tag{color:var(--mute)}
-  .ba-card.after .ba-tag{color:var(--cinnabar)}
-  .ba-b{margin-top:18px;font-size:13.5px;line-height:1.9;color:var(--dim)}
-  .ba-b .x{display:block;padding:3px 0}
-  .ba-card.after .ba-b{font-family:var(--body);font-size:15px;color:#33302a}
-  .ba-card.after .bh{font-family:var(--ui);font-weight:700;font-size:14px;color:var(--ink);margin:14px 0 4px}
-  .ba-card.after .bq{border-left:2px solid var(--ink);padding-left:14px;font-style:italic;color:var(--dim);margin:12px 0}
-
-  /* features */
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
-  @media(max-width:860px){.grid{grid-template-columns:1fr 1fr}}
-  @media(max-width:560px){.grid{grid-template-columns:1fr}}
-  .f{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:24px 24px 26px;transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
-  .f:hover{transform:translateY(-3px);box-shadow:var(--pop)}
-  .f .no{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--cinnabar)}
-  .f h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:10px 0 8px}
-  .f p{font-size:13px;line-height:1.75;color:var(--dim)}
+  .ba-col{padding:34px 34px 40px}
+  .ba-col.before{border-right:1px solid var(--line);background:var(--panel)}
+  @media(max-width:760px){.ba-col.before{border-right:none;border-bottom:1px solid var(--line)}}
+  .ba-col.after{background:var(--panel2)}
+  .ba-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
+  .ba-col.before .ba-tag{color:var(--mute)}
+  .ba-col.after .ba-tag{color:var(--acc)}
+  .ba-b{font-family:var(--th);font-size:14px;line-height:1.95;color:var(--dim)}
+  .ba-b .x{display:block}
+  .ba-col.after .bh{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx);margin:16px 0 6px}
+  .ba-col.after .bq{border-left:2px solid var(--acc);padding-left:14px;color:var(--tx);margin:12px 0;font-weight:500}
 
   /* engine */
-  .eng{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:44px}
+  .eng{display:grid;grid-template-columns:1fr 1fr;margin-top:56px;border:1px solid var(--line);border-radius:4px;overflow:hidden}
   @media(max-width:700px){.eng{grid-template-columns:1fr}}
-  .e-card{border-radius:16px;padding:30px 32px}
-  .e-card.opus{background:var(--card);border:1px solid var(--line)}
-  .e-card.fable{background:var(--charcoal);color:var(--snow)}
-  .e-card .mono{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
-  .e-card.opus .mono{color:var(--cinnabar)}
-  .e-card.fable .mono{color:#dd7440}
-  .e-card h3{font-family:var(--body);font-style:italic;font-weight:500;font-size:26px;margin:12px 0 10px}
-  .e-card p{font-size:13.5px;line-height:1.8;color:var(--dim)}
-  .e-card.fable p{color:#b9b5ac}
+  .e-card{padding:38px 36px 42px;border-right:1px solid var(--line)}
+  .e-card:last-child{border-right:none}
+  @media(max-width:700px){.e-card{border-right:none;border-bottom:1px solid var(--line)}.e-card:last-child{border-bottom:none}}
+  .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+  .e-card h3{font-family:var(--th);font-weight:700;font-size:24px;margin:14px 0 12px;letter-spacing:-.01em}
+  .e-card p{font-family:var(--th);font-size:14px;line-height:1.8;color:var(--dim)}
+  .e-card .tag{display:inline-block;margin-top:18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:2px;padding:5px 10px}
 
   /* orions band */
-  .orions{background:var(--charcoal);color:var(--snow)}
-  .orions .eye{color:#8f8c84}
-  .orions h2.big{color:var(--snow)}
-  .orions .lead{color:#b9b5ac}
-  .orions .olink{display:inline-flex;align-items:center;gap:9px;margin-top:28px;font-weight:650;font-size:14px;color:var(--snow);border:1px solid rgba(245,243,238,.22);border-radius:11px;padding:11px 20px;transition:.2s var(--ease)}
-  .orions .olink:hover{background:rgba(245,243,238,.08);border-color:rgba(245,243,238,.4)}
+  .orions .lbl{color:var(--dim)}.orions .lbl::before{background:var(--dim)}
+  .orions .olink{display:inline-flex;align-items:center;gap:10px;margin-top:30px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    border:1px solid var(--line2);border-radius:2px;padding:13px 22px;transition:.2s var(--ease)}
+  .orions .olink:hover{background:var(--tx);color:#000;border-color:var(--tx)}
 
-  /* final cta */
-  .final{text-align:center;padding:110px 0 120px}
-  .final h2{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(36px,5.6vw,64px);line-height:1.05;text-wrap:balance}
-  .final .go{display:inline-flex;align-items:center;gap:10px;margin-top:36px;color:#fff;font-weight:650;font-size:15.5px;padding:14px 30px;border-radius:13px;box-shadow:0 5px 20px rgba(207,79,40,.26);transition:transform .3s var(--ease),filter .2s}
-  .final .go:hover{filter:brightness(1.05);transform:translateY(-2px)}
+  /* final */
+  .final{text-align:center;padding:130px 0}
+  .final h2{font-size:clamp(40px,8vw,110px);line-height:.94}
+  .final .th{font-family:var(--th);font-size:16px;color:var(--dim);margin-top:26px;font-weight:400;text-transform:none;letter-spacing:normal}
+  .final .btn{margin-top:40px}
 
-  footer{border-top:1px solid var(--line);padding:26px 0;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)}
-  footer .fin{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
+  footer{padding:34px 0}
+  footer .fin{display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
 </style>
 </head>
 <body>
 
 <nav class="nav"><div class="wrap nav-in">
-  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" fill="#17140f"/><path d="M25.5 8 14.5 32" stroke="#cf4f28" stroke-width="3.6"/></svg>
-  <span class="wm">V<i>Æ</i>ST</span><span class="by">by ORIONS.Agency</span>
-  <a class="cta liquid" href="/app">เปิดใช้งาน →</a>
+  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" fill="#0c0c0c"/><path d="M25.5 8 14.5 32" stroke="#e2582c" stroke-width="3.6"/></svg>
+  <div><div class="wm">V&AElig;ST</div></div>
+  <span class="by">BY ORIONS.AGENCY</span>
+  <a class="cta" href="/app">เปิดใช้งาน ↗</a>
 </div></nav>
 
 <!-- HERO -->
 <header class="hero"><div class="wrap">
-  <div class="eye">Aesthetic Intelligence · A Studio Tool by ORIONS.Agency</div>
-  <h1>ตกผลึกทุกไอเดีย<br>ให้เป็นงานที่มีรสนิยม</h1>
-  <p class="sub">โยนบรีฟ ไฟล์ ตาราง มู้ดบอร์ด ทั้งหมดใส่ VÆST แล้วกด Summing — ได้เอกสารเดียวที่คม อ่านง่าย แก้ต่อได้ทีละส่วน และผ่านการตรวจรสนิยมขั้นสุดท้ายก่อนส่งจริง</p>
-  <a class="go liquid" href="/app">เริ่มใช้ VÆST <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
-  <span class="free">“Computation is nothing without taste.”</span>
+  <div class="eye">VÆST · A Studio Instrument by ORIONS.Agency</div>
+  <h1>Aesthetic<span class="l2">Intel<em>l</em>igence</span></h1>
+  <p class="sub th">โยนบรีฟ ไฟล์ ตาราง มู้ดบอร์ด ทั้งหมดเข้า VÆST แล้วกด Summing — ได้<b>เอกสารเดียว</b>ที่คม อ่านง่าย แก้ได้ทีละประโยค และผ่านการตรวจรสนิยมขั้นสุดท้ายก่อนส่งจริง</p>
+  <div class="row">
+    <a class="btn solid" href="/app">เริ่มใช้ VÆST →</a>
+    <a class="btn ghost" href="#how">ดูวิธีทำงาน</a>
+  </div>
+</div></header>
 
-  <!-- animated demo window -->
-  <div class="demo">
-    <div class="win">
+<!-- SPEC STRIP -->
+<div class="specs">
+  <div class="spec"><div class="n">2</div><div class="k">Frontier Models</div></div>
+  <div class="spec"><div class="n">7<span class="u">+</span></div><div class="k">Input Formats</div></div>
+  <div class="spec"><div class="n">1</div><div class="k">Source of Truth</div></div>
+  <div class="spec"><div class="n">&infin;</div><div class="k">Revisions</div></div>
+</div>
+
+<!-- PRODUCT -->
+<section id="how"><div class="wrap sec-pad">
+  <div class="lbl">The Instrument</div>
+  <h2>Brief in.<br>Refined document out.</h2>
+  <p class="lead th">ไม่ใช่แชตบอต ไม่ใช่กองข้อความ — เป็น <b>canvas เอกสารจริง</b> ที่ตกผลึกจากทุกไฟล์ที่โยนเข้าไป แก้ได้ทั้งส่วนหรือเลือกทีละประโยค</p>
+  <div class="demo-wrap">
+    <div class="win reveal">
       <div class="win-bar"><i></i><i></i><i></i><span class="url">vaest-orions.vercel.app/app</span></div>
       <div class="win-body">
-        <!-- scene 1: brief typing -->
         <div class="scene on" id="sc1">
           <div class="d-eye">ORIONS · VÆST</div>
-          <div class="d-title">อยากทำอะไร</div>
+          <div class="d-title th">อยากทำอะไร</div>
           <div class="d-box">
-            <div class="d-brief"><span id="typed"></span><span class="caret" id="caret"></span></div>
+            <div class="d-brief th"><span id="typed"></span><span class="caret" id="caret"></span></div>
             <div class="d-chips">
               <span class="d-chip" id="ch1"><b>PDF</b> brand-audit.pdf</span>
               <span class="d-chip" id="ch2"><b>XLSX</b> sales-2025.xlsx</span>
               <span class="d-chip" id="ch3"><b>JPG</b> moodboard.jpg</span>
             </div>
           </div>
-          <div class="d-foot"><span class="d-sum liquid" id="dSum">Summing →</span></div>
+          <div class="d-foot"><span class="d-sum" id="dSum">Summing →</span></div>
         </div>
-        <!-- scene 2: summed doc -->
         <div class="scene d-doc" id="sc2">
           <div class="ln d-eye">ORIONS · VÆST</div>
-          <div class="ln d-mast">ARIYA Coffee — ทิศทางรีแบรนด์</div>
-          <div class="ln d-meta">/ 5 sections · แก้ได้ทุกส่วน</div>
-          <div class="ln d-sec"><div class="no">01</div><div class="h">แก่นความคิด: อบอุ่นแบบมีชั้นเชิง ไม่ใช่ vintage ซ้ำทาง</div><div class="p">ลูกค้า 25–40 สายครีเอทีฟไม่ได้อยากได้ "ร้านกาแฟน่ารัก" อีกร้าน — เขาอยากได้ที่ที่รู้สึกว่าถูกคิดมาแล้วทุกตารางนิ้ว</div></div>
-          <div class="ln d-sec"><div class="no">02</div><div class="h">โทนภาพ: ครีมอุ่น × ส้มเผา · serif ที่มั่นใจ</div><div class="p">อิงจาก moodboard + ยอดขายเมนู signature — สีต้องกินได้ ไม่ใช่แค่สวย</div></div>
-          <div class="ln d-sec"><div class="no">03</div><div class="h">สิ่งส่งมอบ: โลโก้ · เมนู · ป้ายหน้าร้าน · template โซเชียล</div></div>
+          <div class="ln d-mast th">ARIYA Coffee — ทิศทางรีแบรนด์</div>
+          <div class="ln d-meta">/ 5 SECTIONS · แก้ได้ทุกส่วน</div>
+          <div class="ln d-sec"><div class="no">01</div><div class="h th">แก่นความคิด: อบอุ่นแบบมีชั้นเชิง ไม่ใช่ vintage ซ้ำทาง</div><div class="p th">ลูกค้า 25–40 สายครีเอทีฟไม่ได้อยากได้ "ร้านกาแฟน่ารัก" อีกร้าน — เขาอยากได้ที่ที่รู้สึกว่าถูกคิดมาแล้วทุกตารางนิ้ว</div></div>
+          <div class="ln d-sec"><div class="no">02</div><div class="h th">โทนภาพ: ครีมอุ่น × ส้มเผา · serif ที่มั่นใจ</div><div class="p th">อิงจาก moodboard + ยอดขายเมนู signature — สีต้องกินได้ ไม่ใช่แค่สวย</div></div>
+          <div class="ln d-sec"><div class="no">03</div><div class="h th">สิ่งส่งมอบ: โลโก้ · เมนู · ป้ายหน้าร้าน · template โซเชียล</div></div>
           <span class="d-ref" id="dRef"><span class="ok">✓</span> Refined — ผ่านการตรวจ 3 จุด</span>
         </div>
       </div>
     </div>
   </div>
-</div></header>
-
-<div class="strip"><div class="wrap strip-in">
-  <span><b>01</b> Add ไฟล์ + บรีฟ</span><span><b>02</b> Summing</span><span><b>03</b> Canvas แก้รายส่วน</span><span><b>04</b> Refined</span><span><b>05</b> Export</span>
-</div></div>
+  <div class="rail reveal">
+    <div class="step"><div class="si">01</div><div class="st th">Ingest</div><div class="sd th">docx · pdf · xlsx · csv · md · html · รูป — ลากวางทีเดียว</div></div>
+    <div class="step"><div class="si">02</div><div class="st th">Summing</div><div class="sd th">ตกผลึกทุกแหล่งเป็นเอกสารเดียว</div></div>
+    <div class="step"><div class="si">03</div><div class="st th">Canvas</div><div class="sd th">แก้ทั้งส่วน หรือไฮไลต์ทีละประโยค</div></div>
+    <div class="step"><div class="si">04</div><div class="st th">Refined</div><div class="sd th">ตรวจรสนิยมทั้งฉบับก่อนส่ง</div></div>
+  </div>
+</div></section>
 
 <!-- BEFORE / AFTER -->
-<section><div class="wrap">
-  <div class="eye sec-eye">Before → After</div>
-  <h2 class="big">จากกองข้อมูล<br>สู่เอกสารที่ส่งต่อได้เลย</h2>
-  <p class="lead">VÆST ไม่ได้แค่ "สรุป" — มันเลือกประเด็น เรียงลำดับ และเขียนใหม่ด้วยสายตาแบบ creative director</p>
-  <div class="ba">
-    <div class="ba-card before">
+<section><div class="wrap sec-pad">
+  <div class="lbl">Before → After</div>
+  <h2>จากกองข้อมูล<br>สู่เอกสารที่ส่งต่อได้เลย</h2>
+  <p class="lead th">VÆST ไม่ได้แค่ "สรุป" — มันเลือกประเด็น เรียงลำดับ และเขียนใหม่ด้วยสายตาแบบ creative director</p>
+  <div class="ba reveal">
+    <div class="ba-col before">
       <div class="ba-tag">Before — สิ่งที่ทีมได้รับ</div>
-      <div class="ba-b">
+      <div class="ba-b th">
         <span class="x">— อีเมลลูกค้า 4 ฉบับ ขัดกันเอง 2 จุด</span>
         <span class="x">— brand-audit.pdf 40 หน้า อ่านไม่จบ</span>
         <span class="x">— ยอดขายใน xlsx ที่ไม่มีใครเปิด</span>
         <span class="x">— moodboard ที่ "ชอบ vibe นี้" แต่บอกไม่ได้ว่าทำไม</span>
-        <span class="x">— โน้ตประชุม: "เอาแบบอบอุ่นแต่ไม่เชย ฝากด้วยนะ"</span>
+        <span class="x">— โน้ตประชุม: "เอาแบบอบอุ่นแต่ไม่เชย"</span>
       </div>
     </div>
-    <div class="ba-card after">
+    <div class="ba-col after">
       <div class="ba-tag">After — เอกสารจาก VÆST</div>
-      <div class="ba-b">
+      <div class="ba-b th">
         <div class="bh">แก่นความคิด</div>
         อบอุ่นแบบมีชั้นเชิง — ลูกค้ากลุ่มนี้ไม่ซื้อความน่ารัก เขาซื้อความตั้งใจ
         <div class="bq">"ทุกองค์ประกอบต้องตอบคำถามเดียว: ร้านนี้คิดมาแล้วหรือเปล่า"</div>
@@ -236,66 +268,59 @@
   </div>
 </div></section>
 
-<!-- FEATURES -->
-<section style="padding-top:0"><div class="wrap">
-  <div class="eye sec-eye">ทั้งหมดที่อยู่ในเครื่องมือเดียว</div>
-  <h2 class="big">น้อยปุ่ม แต่ครบทาง</h2>
-  <div class="grid">
-    <div class="f"><div class="no">01</div><h3>Summing หลายไฟล์</h3><p>docx · pdf · xlsx · csv · md · html · รูป — ลากวางทีเดียว ตกผลึกเป็นเอกสารเดียว พร้อมบริบทข้าม session ใน project เดียวกัน</p></div>
-    <div class="f"><div class="no">02</div><h3>แก้ได้ถึงระดับประโยค</h3><p>แก้ทั้ง section หรือไฮไลต์ข้อความแล้วสั่ง สั้นลง · เป็นทางการ · ขยาย · เขียนใหม่ — เปลี่ยนเฉพาะตรงนั้น ไม่รื้อทั้งหน้า</p></div>
-    <div class="f"><div class="no">03</div><h3>Refined ก่อนส่งจริง</h3><p>ตรวจทั้งฉบับด้วยโมเดลที่มีรสนิยมสูงสุด — เสนอจุดปรับ ให้คุณ approve ทีละข้อ พร้อมย้อนดูว่าแก้ตรงไหน</p></div>
-    <div class="f"><div class="no">04</div><h3>Tone ระดับ session</h3><p>มาตรฐาน · เป็นทางการ · เล่นๆ · คมกริบ — เลือกครั้งเดียว ทุกการเขียนและเกลาของงานนั้นเข้าโทนเดียวกันหมด</p></div>
-    <div class="f"><div class="no">05</div><h3>เร็วแบบมือโปร</h3><p>⌘K command palette กระโดดไปทุกงานทุกคำสั่ง · ⌥↑↓ สลับ session · ⌘⏎ Summing — มือไม่ต้องออกจากคีย์บอร์ด</p></div>
-    <div class="f"><div class="no">06</div><h3>บัญชี + เครดิตชัดเจน</h3><p>Login ส่วนตัว งาน sync ขึ้นคลาวด์ทุกเครื่อง เครดิตรายเดือนแสดงตลอดเวลา — รู้ว่าใช้ไปเท่าไหร่ เหลือเท่าไหร่</p></div>
-  </div>
-</div></section>
-
 <!-- ENGINE -->
-<section style="padding-top:0"><div class="wrap">
-  <div class="eye sec-eye">Engine</div>
-  <h2 class="big">สองสมอง หนึ่งรสนิยม</h2>
-  <div class="eng">
-    <div class="e-card opus">
-      <div class="mono">Claude Opus 4.8</div>
-      <h3>คิด เขียน เกลา</h3>
-      <p>Summing, แก้รายส่วน, เกลาประโยค, ปรับตามข้อเสนอ — งานเขียนทั้งหมดใช้โมเดลเรือธงที่แม่นเรื่องโครงสร้างและภาษาไทย</p>
+<section><div class="wrap sec-pad">
+  <div class="lbl">Engine</div>
+  <h2>สองสมอง<br>หนึ่งรสนิยม</h2>
+  <div class="eng reveal">
+    <div class="e-card">
+      <div class="em">Claude Opus 4.8</div>
+      <h3 class="th">คิด · เขียน · เกลา</h3>
+      <p class="th">Summing, แก้รายส่วน, เกลาทีละประโยค, ปรับตามข้อเสนอ — งานเขียนทั้งหมดใช้โมเดลเรือธงที่แม่นเรื่องโครงสร้างและภาษาไทย</p>
+      <span class="tag">Write · Edit · Merge</span>
     </div>
-    <div class="e-card fable">
-      <div class="mono">Claude Fable 5</div>
-      <h3>ตรวจรสนิยมขั้นสุดท้าย</h3>
-      <p>Refined ใช้โมเดลที่ละเอียดกับโทน ความสอดคล้อง และมิติ emotional ที่สุด — เหมือน creative director อ่านรอบสุดท้ายก่อนงานออกจากสตูดิโอ</p>
+    <div class="e-card">
+      <div class="em">Claude Fable 5</div>
+      <h3 class="th">ตรวจรสนิยมขั้นสุดท้าย</h3>
+      <p class="th">Refined ใช้โมเดลที่ละเอียดกับโทน ความสอดคล้อง และมิติ emotional — เหมือน creative director อ่านรอบสุดท้ายก่อนงานออกจากสตูดิโอ</p>
+      <span class="tag">Final Recheck</span>
     </div>
   </div>
 </div></section>
 
 <!-- ORIONS -->
-<section class="orions"><div class="wrap">
-  <div class="eye sec-eye">Part of ORIONS</div>
-  <h2 class="big">VÆST เป็นส่วนหนึ่งของ<br>ORIONS.Agency</h2>
-  <p class="lead">เราสร้าง VÆST ขึ้นเพื่อใช้เองในสตูดิโอ — ทุกฟีเจอร์เกิดจากงานจริง บรีฟจริง และมาตรฐานความงามที่เราใช้ส่งงานให้ลูกค้าทุกวัน มันคือวิธีที่ ORIONS คิด บรรจุอยู่ในเครื่องมือเดียว</p>
-  <a class="olink" href="https://orions.agency" target="_blank" rel="noopener">รู้จัก ORIONS.Agency →</a>
+<section class="orions"><div class="wrap sec-pad">
+  <div class="lbl">Part of ORIONS</div>
+  <h2>เครื่องมือของสตูดิโอ<br>ที่เปิดให้เฉพาะคนที่เชิญ</h2>
+  <p class="lead th">VÆST เกิดจากงานจริง บรีฟจริง และมาตรฐานความงามที่ ORIONS ใช้ส่งงานให้ลูกค้าทุกวัน — มันคือวิธีที่สตูดิโอคิด บรรจุอยู่ในเครื่องมือเดียว · เปิดใช้แบบ <b>invite-only</b></p>
+  <a class="olink" href="https://orions.agency" target="_blank" rel="noopener">ORIONS.Agency ↗</a>
 </div></section>
 
-<!-- FINAL CTA -->
+<!-- FINAL -->
 <section class="final"><div class="wrap">
-  <div class="eye">VÆST 1.0</div>
-  <h2>อยากทำอะไร — เล่ามา</h2>
-  <a class="go liquid" href="/app">เปิดใช้งาน VÆST <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+  <div class="eye" style="margin-bottom:24px">VÆST 1.0</div>
+  <h2>Taste,<br>Operationalized.</h2>
+  <p class="th">“Computation is nothing without taste.”</p>
+  <a class="btn solid" href="/app">เปิดใช้งาน VÆST →</a>
 </div></section>
 
 <footer><div class="wrap fin">
-  <span>VÆST 1.0 — Aesthetic Intelligence</span>
+  <span>VÆST — Aesthetic Intelligence</span>
   <span>© ORIONS.Agency</span>
 </div></footer>
 
 <script>
-  // ── demo timeline: พิมพ์บรีฟ → แนบไฟล์ → Summing → เอกสารไหลเข้า → Refined → วน ──
-  const BRIEF='รีแบรนด์ร้านกาแฟย่านอารีย์ อยากได้โทนอบอุ่นแต่ไม่เชย กลุ่มลูกค้า 25–40 สายครีเอทีฟ มีไฟล์ audit เก่ากับยอดขายแนบมาด้วย';
   const $=id=>document.getElementById(id);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.16});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // typing demo
+  const BRIEF='รีแบรนด์ร้านกาแฟย่านอารีย์ อยากได้โทนอบอุ่นแต่ไม่เชย กลุ่มลูกค้า 25–40 สายครีเอทีฟ มีไฟล์ audit เก่ากับยอดขายแนบมาด้วย';
   function showScene(n){$('sc1').classList.toggle('on',n===1);$('sc2').classList.toggle('on',n===2)}
   function wait(ms){return new Promise(r=>setTimeout(r,ms))}
-  async function typeText(el,text,speed){for(let i=0;i<=text.length;i++){el.textContent=text.slice(0,i);await wait(speed+(Math.random()*28))}}
+  async function typeText(el,t,sp){for(let i=0;i<=t.length;i++){el.textContent=t.slice(0,i);await wait(sp+Math.random()*26)}}
   async function runDemo(){
     for(;;){
       showScene(1);$('typed').textContent='';
@@ -304,20 +329,18 @@
       $('dRef').classList.remove('on');$('dSum').classList.remove('press');
       await wait(700);
       await typeText($('typed'),BRIEF,26);
-      await wait(350);$('ch1').classList.add('on');
+      await wait(340);$('ch1').classList.add('on');
       await wait(300);$('ch2').classList.add('on');
       await wait(300);$('ch3').classList.add('on');
-      await wait(650);$('dSum').classList.add('press');await wait(180);$('dSum').classList.remove('press');
+      await wait(640);$('dSum').classList.add('press');await wait(170);$('dSum').classList.remove('press');
       await wait(420);showScene(2);
-      const lns=[...document.querySelectorAll('#sc2 .ln')];
-      for(const ln of lns){ln.classList.add('on');await wait(430)}
-      await wait(700);$('dRef').classList.add('on');
+      for(const ln of document.querySelectorAll('#sc2 .ln')){ln.classList.add('on');await wait(420)}
+      await wait(680);$('dRef').classList.add('on');
       await wait(4200);
     }
   }
-  if(reduced){ // ไม่เล่น animation — โชว์ผลลัพธ์สุดท้ายนิ่งๆ
-    showScene(2);document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.add('on'));$('dRef').classList.add('on');
-  }else{runDemo()}
+  if(reduced){showScene(2);document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.add('on'));$('dRef').classList.add('on')}
+  else runDemo();
 </script>
 </body>
 </html>
