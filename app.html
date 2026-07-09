@@ -385,6 +385,55 @@
   .r-foot .who{cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .r-foot .who:hover{color:#cdcac2;text-decoration:underline;text-underline-offset:2px}
 
+  /* share comments */
+  .cmt-add{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:6px 11px;margin:10px 0 4px;transition:.15s}
+  .cmt-add:hover{color:var(--ink);border-color:var(--line2)}
+  .cmt{border-left:2px solid var(--cinnabar);background:rgba(226,88,44,.05);border-radius:0 6px 6px 0;padding:11px 14px;margin:10px 0}
+  .cmt .ch{display:flex;align-items:baseline;gap:9px;font-family:var(--mono);font-size:10px;color:var(--mute);margin-bottom:5px}
+  .cmt .ch b{color:var(--cin-d);letter-spacing:.04em}
+  .cmt .ct{font-size:13.5px;line-height:1.7;color:var(--ink);font-family:var(--ui)}
+  .cmt .cr{margin-left:auto;color:var(--mute);font-size:11px;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+  .cmt .cr:hover{color:var(--ink)}
+  .cmt-form{border:1px solid var(--line2);border-radius:6px;padding:12px;margin:10px 0;background:var(--card)}
+  .cmt-form input,.cmt-form textarea{width:100%;background:var(--app);border:1px solid var(--line);border-radius:4px;color:var(--ink);
+    font-family:var(--ui);font-size:13px;padding:8px 10px;outline:none;margin-bottom:8px}
+  .cmt-form textarea{min-height:64px;resize:vertical;line-height:1.6}
+  .cmt-form input:focus,.cmt-form textarea:focus{border-color:var(--ink)}
+  .cmt-form .row{display:flex;gap:8px;justify-content:flex-end}
+  .cmt-form .send{background:var(--ink);color:#0a0a0a;font-size:12px;font-weight:650;padding:8px 16px;border-radius:4px}
+  .cmt-form .send:hover{background:#fff}
+  .cmt-form .cxl{color:var(--mute);font-size:12px;font-weight:600;padding:8px 10px}
+
+  /* snapshot diff */
+  .diffv{position:fixed;inset:0;z-index:132;display:none;align-items:flex-start;justify-content:center;padding:6vh 20px 20px;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);overflow-y:auto}
+  .diffv.show{display:flex;animation:palBg .2s var(--ease)}
+  .diff-box{width:100%;max-width:760px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--pop);padding:26px 28px 24px;animation:palIn .26s var(--ease)}
+  .diff-hd{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+  .diff-hd b{font-family:var(--body);font-style:italic;font-weight:500;font-size:22px}
+  .diff-hd .x{margin-left:auto;color:var(--mute);font-size:19px;padding:4px 8px;border-radius:6px}
+  .diff-hd .x:hover{color:var(--ink);background:var(--soft)}
+  .diff-sub{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
+  .df-sec{padding:14px 0;border-top:1px solid var(--line)}
+  .df-h{font-size:14px;font-weight:700;margin-bottom:7px;display:flex;gap:8px;align-items:baseline}
+  .df-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+  .df-tag.add{color:#57c795}.df-tag.del{color:var(--cinnabar)}.df-tag.mod{color:#c9a04a}
+  .df-b{font-family:var(--body);font-size:14.5px;line-height:1.85;color:var(--dim);word-break:break-word}
+  .df-b ins{background:rgba(87,199,149,.14);color:#8fdcb8;text-decoration:none;border-radius:2px;padding:0 1px}
+  .df-b del{background:rgba(226,88,44,.1);color:#b98a77;text-decoration:line-through;border-radius:2px;padding:0 1px}
+  .df-none{padding:20px 0;color:var(--mute);font-size:13.5px}
+
+  /* project voice textarea */
+  .vc-ta{width:100%;min-height:150px;resize:vertical;background:var(--app);border:1px solid var(--line2);border-radius:6px;
+    padding:12px 14px;font-family:var(--ui);font-size:13.5px;line-height:1.7;color:var(--ink);outline:none}
+  .vc-ta:focus{border-color:var(--ink)}
+  .vc-ta::placeholder{color:var(--mute)}
+
+  /* brief templates */
+  .tpl{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:-14px 0 18px}
+  .tpl-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-right:3px}
+  .tpl button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:6px 12px;transition:.16s var(--ease)}
+  .tpl button:hover{color:var(--ink);border-color:var(--line2);background:rgba(255,255,255,.04)}
+
   /* tone preset */
   .tone{display:flex;align-items:center;gap:3px;margin-top:16px;padding:3px;background:rgba(255,255,255,.04);border-radius:10px;width:fit-content}
   .tone button{font-size:12.5px;font-weight:550;color:var(--dim);padding:7px 13px;border-radius:6px;transition:.16s var(--ease)}
@@ -444,6 +493,13 @@
       <div class="home-in">
         <div class="h-eye">ORIONS · VÆST</div>
         <h1 class="h-title">What are we making?</h1>
+        <div class="tpl" id="tplRow">
+          <span class="tpl-l">Start from</span>
+          <button onclick="useTpl('rebrand')">Rebrand</button>
+          <button onclick="useTpl('campaign')">Campaign</button>
+          <button onclick="useTpl('website')">Website</button>
+          <button onclick="useTpl('deck')">Deck</button>
+        </div>
         <div class="brief-box" id="briefBox">
           <textarea id="brief" placeholder="Brief: what do you need, what's the context, who's it for…" oninput="briefChanged()" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
@@ -568,6 +624,22 @@
     <div class="kpis" id="statsKpis"></div>
     <div class="st-h2">Cost per document (top 12)</div>
     <div style="overflow-x:auto"><table class="st-tbl" id="statsDocs"></table></div>
+  </div>
+</div>
+<div class="diffv" id="diffView" onclick="if(event.target===this)closeDiff()">
+  <div class="diff-box">
+    <div class="diff-hd"><b>What changed</b><button class="x" onclick="closeDiff()" aria-label="Close">✕</button></div>
+    <div class="diff-sub" id="diffSub"></div>
+    <div id="diffBody"></div>
+  </div>
+</div>
+<div class="snap" id="voiceView" onclick="if(event.target===this)closeVoice()">
+  <div class="snap-box">
+    <div class="snap-hd"><b id="voiceTitle">Project voice</b><button class="save" onclick="saveVoice()">Save</button></div>
+    <div style="padding:14px 16px 18px">
+      <div style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:10px">Guidelines every session in this project must follow — tone of voice, vocabulary, banned words, formats. Applied to Summing, section edits and refinements.</div>
+      <textarea class="vc-ta" id="voiceText" spellcheck="false" placeholder="e.g. Voice: confident, quiet, no exclamation marks.&#10;Always call it “the studio”, never “the agency”.&#10;Banned: synergy, world-class, elevate."></textarea>
+    </div>
   </div>
 </div>
 <div class="snap" id="snapView" onclick="if(event.target===this)closeSnap()">
@@ -1003,7 +1075,8 @@
     const p=projects.find(x=>x.id===pid);const nRef=(p&&p.refs&&p.refs.length)||0;
     let h='<button onclick="renameProject(\''+pid+'\');hideCtx()">Rename</button>'
       +'<div class="sep"></div><div class="cap">Reference'+(nRef?' · '+nRef+' files':'')+'</div>'
-      +'<button onclick="addProjectRef(\''+pid+'\');hideCtx()">Add reference (file)</button>';
+      +'<button onclick="addProjectRef(\''+pid+'\');hideCtx()">Add reference (file)</button>'
+      +'<button onclick="openVoice(\''+pid+'\');hideCtx()">Voice & guidelines'+(p&&p.voice?' ·&nbsp;set':'')+'</button>';
     if(nRef)p.refs.forEach((r,k)=>h+='<button class="danger" onclick="removeProjectRef(\''+pid+'\','+k+');hideCtx()">✕ '+esc(r.n.slice(0,26))+'</button>');
     h+='<div class="sep"></div><button class="danger" onclick="deleteProject(\''+pid+'\');hideCtx()">Delete project</button>';
     showCtx(e,h)}
@@ -1022,7 +1095,7 @@
   function hideCtx(){$('ctx').classList.remove('show')}
   addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.more'))hideCtx();
     if(!e.target.closest('.exp-wrap'))$('expMenu').classList.remove('show')});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats()}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff()}});
   // ⌥↑ / ⌥↓ — switch sessions in the order shown in the rail
   addEventListener('keydown',e=>{
     if(!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
@@ -1090,7 +1163,23 @@
 
   /* ═══ tone preset — session-level tone (Opus 4.8 for all writing) ═══ */
   const TONES={formal:'formal, polite, trustworthy',playful:'playful, friendly, lively',sharp:'sharp, concise, on-point, no fluff'};
-  function toneSys(){const s=cur(),t=s&&s.tone;return (t&&TONES[t])?('Tone chosen for this work: '+TONES[t]+' — write and refine everything to match this tone'):''}
+  function toneSys(){
+    const s=cur(),parts=[];
+    const t=s&&s.tone;
+    if(t&&TONES[t])parts.push('Tone chosen for this work: '+TONES[t]+' — write and refine everything to match this tone');
+    const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
+    if(p&&p.voice&&p.voice.trim())parts.push('Project voice & guidelines (follow strictly):\n'+p.voice.trim());
+    return parts.join('\n\n')}
+
+  /* project voice modal */
+  let _voicePid=null;
+  function openVoice(pid){const p=projects.find(x=>x.id===pid);if(!p)return;_voicePid=pid;
+    $('voiceTitle').textContent='Voice — '+p.name;$('voiceText').value=p.voice||'';
+    $('voiceView').classList.add('show');setTimeout(()=>$('voiceText').focus(),60)}
+  function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
+  function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
+    p.voice=$('voiceText').value.trim();save();closeVoice();
+    toast(p.voice?'Voice saved — every session in this project follows it':'Voice cleared')}
   function setTone(t){const s=cur();if(!s)return;s.tone=t;s.updatedAt=Date.now();save();renderTone();
     toast(t?('Tone set to “'+({formal:'Formal',playful:'Playful',sharp:'Sharp'}[t])+'” — applies to Summing / edits from now on'):'Back to standard tone')}
   function renderTone(){const s=cur(),t=(s&&s.tone)||'';document.querySelectorAll('#toneBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-tone')||'')===t))}
@@ -1177,9 +1266,22 @@
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
-    renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0}
+    renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;fetchComments(s)}
   function backToBrief(){showHome();toast('Edit the brief/files and Summing again — your document stays')}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
+
+  /* brief templates — a scaffold that teaches a good brief */
+  const TPL={
+    rebrand:"Rebrand for [brand] — [what they do].\nAudience: [who exactly]\nWhy now: [what's broken about the current brand]\nFeeling we want: [3 adjectives]\nKeep / kill: [what must stay, what must go]\nDeliverables: [logo · identity · guidelines · …]",
+    campaign:"Campaign for [product / launch].\nGoal: [awareness / conversion / launch]\nAudience: [who exactly]\nKey message: [one line]\nChannels: [social · OOH · video · …]\nBudget & timeline: [rough numbers]",
+    website:"Website for [brand].\nJob of the site: [convert / present / sell]\nAudience: [who lands here, and why]\nMust-have sections: [pages]\nTone: [voice in 3 words]\nReferences we like: [links + why]",
+    deck:"Deck for [pitch / report].\nWho's in the room: [audience]\nThe decision we want: [goal]\nStory in one line: [narrative]\nSlide count: [~N]\nData attached: [files]",
+  };
+  function useTpl(k){
+    const t=TPL[k];if(!t)return;
+    const b=$('brief');
+    if(b.value.trim()&&!confirm('Replace the current brief with the '+k+' template?'))return;
+    b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
   function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show')}
@@ -1221,7 +1323,7 @@
         const fs=[...(e.dataTransfer?.files||[])];if(fs.length)dropOnSection(secEl,fs)});
     });
     $('mhTitle').addEventListener('input',()=>{const st=cur();if(st){st.title=$('mhTitle').innerText.trim()||'work';$('topTitle').textContent=st.title;schedulePersist();renderRail()}});
-    renderOutline()}
+    renderOutline();if(!_shareId)renderOwnerComments()}
   // DOM → inline markdown — keep **bold** *italic* `code` [link](url) on serialize
   function inlineMd(node){let out='';node.childNodes.forEach(n=>{
     if(n.nodeType===3){out+=n.textContent;return}
@@ -1272,8 +1374,55 @@
   function renderSnaps(){const s=cur();const list=$('snapList');const snaps=(s&&s.snaps)||[];
     if(!snaps.length){list.innerHTML='<div class="snap-empty">No saved versions yet<br>Hit “Save now” to keep a point you like, to roll back to</div>';return}
     list.innerHTML=snaps.map(v=>'<div class="snap-it"><div class="si-b"><div class="si-n">'+esc(v.name)+'</div><div class="si-t">'+fmtAgo(v.ts)+'</div></div>'
+      +'<button class="si-r" style="color:var(--dim)" onclick="diffSnap(\''+v.id+'\')">Diff</button>'
       +'<button class="si-r" onclick="restoreSnap(\''+v.id+'\')">Restore</button>'
       +'<button class="si-x" aria-label="Delete" onclick="delSnap(\''+v.id+'\')">✕</button></div>').join('')}
+
+  /* diff — what changed since a saved version */
+  function parseSecs(md){
+    const out=[];let h='_intro',body=[];
+    String(md||'').split('\n').forEach(l=>{
+      const m=l.match(/^##\s+(.+)/);
+      if(m){out.push({h,body:body.join('\n').trim()});h=m[1].trim();body=[]}
+      else if(!/^#\s/.test(l))body.push(l)});
+    out.push({h,body:body.join('\n').trim()});
+    return out.filter(x=>x.h!=='_intro'||x.body)}
+  function wordDiff(a,b){ // LCS on word tokens → html with <del>/<ins>
+    const A=a.split(/(\s+)/).filter(x=>x!==''),B=b.split(/(\s+)/).filter(x=>x!=='');
+    if(A.length*B.length>4e6)return null; // too big — fall back to plain replace view
+    const n=A.length,m=B.length,dp=new Uint16Array((n+1)*(m+1));
+    for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)
+      dp[i*(m+1)+j]=A[i]===B[j]?dp[(i+1)*(m+1)+j+1]+1:Math.max(dp[(i+1)*(m+1)+j],dp[i*(m+1)+j+1]);
+    let i=0,j=0,out='';
+    const flushDel=t=>t&&(out+='<del>'+esc(t)+'</del>'),flushIns=t=>t&&(out+='<ins>'+esc(t)+'</ins>');
+    let dBuf='',iBuf='';
+    while(i<n&&j<m){
+      if(A[i]===B[j]){flushDel(dBuf);flushIns(iBuf);dBuf='';iBuf='';out+=esc(A[i]);i++;j++}
+      else if(dp[(i+1)*(m+1)+j]>=dp[i*(m+1)+j+1]){dBuf+=A[i++]}
+      else{iBuf+=B[j++]}}
+    while(i<n)dBuf+=A[i++];while(j<m)iBuf+=B[j++];
+    flushDel(dBuf);flushIns(iBuf);
+    return out}
+  function diffSnap(id){
+    const s=cur();if(!s||!s.snaps)return;const v=s.snaps.find(x=>x.id===id);if(!v)return;
+    const oldS=parseSecs(v.md),newS=parseSecs(genMd());
+    const oldMap=Object.fromEntries(oldS.map(x=>[x.h,x.body]));
+    const newMap=Object.fromEntries(newS.map(x=>[x.h,x.body]));
+    const keys=[...new Set([...newS.map(x=>x.h),...oldS.map(x=>x.h)])];
+    let html='',changes=0;
+    keys.forEach(h=>{
+      const o=oldMap[h],nw=newMap[h];
+      const label=h==='_intro'?'(intro)':h;
+      if(o===undefined){changes++;html+='<div class="df-sec"><div class="df-h"><span class="df-tag add">added</span>'+esc(label)+'</div><div class="df-b"><ins>'+esc(nw.slice(0,600))+'</ins></div></div>'}
+      else if(nw===undefined){changes++;html+='<div class="df-sec"><div class="df-h"><span class="df-tag del">removed</span>'+esc(label)+'</div><div class="df-b"><del>'+esc(o.slice(0,600))+'</del></div></div>'}
+      else if(o!==nw){changes++;
+        const d=wordDiff(o,nw);
+        html+='<div class="df-sec"><div class="df-h"><span class="df-tag mod">changed</span>'+esc(label)+'</div><div class="df-b">'
+          +(d!==null?d:('<del>'+esc(o.slice(0,400))+'</del> <ins>'+esc(nw.slice(0,400))+'</ins>'))+'</div></div>'}});
+    $('diffSub').textContent='“'+v.name+'” ('+fmtAgo(v.ts)+') → current · '+(changes||'no')+' section'+(changes===1?'':'s')+' changed';
+    $('diffBody').innerHTML=changes?html:'<div class="df-none">Identical — nothing changed since this version.</div>';
+    $('diffView').classList.add('show')}
+  function closeDiff(){$('diffView').classList.remove('show')}
   function restoreSnap(id){const s=cur();if(!s||!s.snaps)return;const v=s.snaps.find(x=>x.id===id);if(!v)return;
     pushUndo();s.canvas=v.md;s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('Restored to “'+v.name+'” (hit “Undo” if you change your mind)')}
   function delSnap(id){const s=cur();if(!s||!s.snaps)return;s.snaps=s.snaps.filter(x=>x.id!==id);s.updatedAt=Date.now();save();renderSnaps()}
@@ -1511,8 +1660,13 @@
   async function loadShare(id){
     try{const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('share:'+id)+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
       if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null}catch(e){return null}}
+  async function writeShareData(id,data){
+    await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
+      headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+      body:JSON.stringify({email:'share:'+id,data,updated_at:new Date().toISOString()})})}
+  let _shareId=null;
   async function openShareView(id){
-    hideAuth();$('app').classList.add('rail-off');
+    hideAuth();$('app').classList.add('rail-off');_shareId=id;
     const data=await loadShare(id);
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
@@ -1521,7 +1675,66 @@
     // disable editing + show read-only banner
     document.querySelectorAll('#doc [contenteditable]').forEach(e=>e.setAttribute('contenteditable','false'));
     document.querySelectorAll('#doc .sec-tools').forEach(e=>e.remove());
-    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';}
+    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';
+    // comments — readers can leave one per section
+    document.querySelectorAll('#doc .sec').forEach(sec=>{
+      if(sec.getAttribute('data-h')==='_intro')return;
+      const wrap=document.createElement('div');wrap.className='cmt-zone';sec.appendChild(wrap);
+      const btn=document.createElement('button');btn.className='cmt-add';btn.textContent='Comment';
+      btn.onclick=()=>shareCmtForm(sec,wrap);sec.appendChild(btn)});
+    renderShareComments(data.comments||[])}
+  function renderShareComments(comments){
+    document.querySelectorAll('#doc .cmt-zone').forEach(z=>{z.innerHTML='';
+      const h=z.closest('.sec').getAttribute('data-h');
+      comments.filter(c=>c.h===h).forEach(c=>{
+        z.insertAdjacentHTML('beforeend','<div class="cmt"><div class="ch"><b>'+esc(c.name||'Anonymous')+'</b>'+fmtAgo(c.ts)+'</div><div class="ct">'+esc(c.text)+'</div></div>')})})}
+  function shareCmtForm(sec,zone){
+    if(zone.querySelector('.cmt-form'))return;
+    const f=document.createElement('div');f.className='cmt-form';
+    f.innerHTML='<input class="cf-n" placeholder="Your name (optional)" maxlength="40">'
+      +'<textarea class="cf-t" placeholder="Comment on this section…" maxlength="1200"></textarea>'
+      +'<div class="row"><button class="cxl">Cancel</button><button class="send">Send</button></div>';
+    zone.appendChild(f);f.querySelector('.cf-t').focus();
+    f.querySelector('.cxl').onclick=()=>f.remove();
+    f.querySelector('.send').onclick=async()=>{
+      const text=f.querySelector('.cf-t').value.trim();if(!text)return;
+      const name=f.querySelector('.cf-n').value.trim();
+      const btn=f.querySelector('.send');btn.disabled=true;btn.textContent='Sending…';
+      try{
+        const data=await loadShare(_shareId)||{};data.comments=data.comments||[];
+        data.comments.push({id:uid('c'),h:sec.getAttribute('data-h'),name,text,ts:Date.now()});
+        if(data.comments.length>80)data.comments=data.comments.slice(-80);
+        await writeShareData(_shareId,data);
+        f.remove();renderShareComments(data.comments);toast('Comment sent')}
+      catch(e){btn.disabled=false;btn.textContent='Send';toast('Failed to send, try again')}}}
+
+  /* owner side — see & resolve comments from the share link */
+  let _cmtCache={};
+  async function fetchComments(s){
+    if(!s||!s.shareId)return;
+    const data=await loadShare(s.shareId);
+    _cmtCache[s.id]=(data&&data.comments)||[];
+    if(cur()&&cur().id===s.id)renderOwnerComments()}
+  function renderOwnerComments(){
+    const s=cur();if(!s)return;
+    const comments=_cmtCache[s.id]||[];
+    document.querySelectorAll('#doc .own-cmts').forEach(e=>e.remove());
+    if(!comments.length)return;
+    const secs=[...document.querySelectorAll('#doc .sec')];
+    const byH={};comments.forEach(c=>{(byH[c.h]=byH[c.h]||[]).push(c)});
+    Object.entries(byH).forEach(([h,list])=>{
+      const sec=secs.find(x=>x.getAttribute('data-h')===h)||secs[secs.length-1];if(!sec)return;
+      const box=document.createElement('div');box.className='own-cmts';
+      box.innerHTML=list.map(c=>'<div class="cmt"><div class="ch"><b>'+esc(c.name||'Anonymous')+'</b>'+fmtAgo(c.ts)
+        +'<button class="cr" onclick="resolveComment(\''+c.id+'\')">Resolve</button></div><div class="ct">'+esc(c.text)+'</div></div>').join('');
+      sec.appendChild(box)})}
+  async function resolveComment(cid){
+    const s=cur();if(!s||!s.shareId)return;
+    try{const data=await loadShare(s.shareId)||{};
+      data.comments=(data.comments||[]).filter(c=>c.id!==cid);
+      await writeShareData(s.shareId,data);
+      _cmtCache[s.id]=data.comments;renderOwnerComments();toast('Resolved')}
+    catch(e){toast('Failed, try again')}}
 
   // paste an image into the canvas → embed as an image block in that section
   async function handleDocPaste(e){
