@@ -610,7 +610,8 @@
     <div class="auth-h">Not invited yet</div>
     <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:8px">VÆST is invite-only · the account <b id="giEmail" style="color:var(--ink)"></b> isn’t on the list yet</p>
     <p style="font-size:13px;color:var(--mute);margin-bottom:26px">Contact the ORIONS team for access</p>
-    <button class="auth-go" onclick="logout()">Sign out / use another account</button>
+    <button class="auth-go" id="giReq" onclick="requestInvite()">Request an invite</button>
+    <div class="auth-sw" style="margin-top:14px"><button type="button" onclick="logout()">Sign out / use another account</button></div>
   </div>
 </div>
 <div class="stats" id="statsView" onclick="if(event.target===this)closeStats()">
@@ -794,6 +795,13 @@
       return true}catch(e){return true}}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';$('gateView').classList.add('show')}
+  async function requestInvite(){
+    if(!AUTH)return;const b=$('giReq');b.disabled=true;b.textContent='Sending…';
+    try{await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
+      headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+      body:JSON.stringify({email:'wl:'+AUTH.email,data:{ts:Date.now(),source:'gate'},updated_at:new Date().toISOString()})});
+      b.textContent='Requested ✓ — the team will reach out'}
+    catch(e){b.disabled=false;b.textContent='Request an invite';toast('Failed, try again')}}
 
   /* ═══ usage analytics — cost per document ═══ */
   const RATE_DEF={opus:2600,fable:600}; // THB per 1M (in+out combined) — estimate, editable
@@ -893,11 +901,16 @@
     return (await readText(f)).trim()}
   async function addFiles(files){
     const s=cur();if(!s)return;
-    toast('Reading '+files.length+' files…');let ok=0,fail=0;
-    for(const f of files){try{const c=await extractFile(f);
-      if(c&&c.trim()){s.files.push({n:f.name,c:c.trim()});ok++}else fail++}catch(e){fail++}}
+    toast('Reading '+files.length+' files…');let ok=0,fail=0,cut=0;
+    for(const f of files){try{
+      if(isImg(f)){ // images → downscaled base64 so the model actually SEES them
+        if(stateBytes()>3.2e6){s.files.push({n:f.name,c:'[image: '+f.name+' — too large to attach]'});ok++;continue}
+        const url=await imgToDataURL(f,1200,.78);
+        s.files.push({n:f.name,c:'[image: '+f.name+']',img:url});ok++;continue}
+      const c=await extractFile(f);
+      if(c&&c.trim()){if(c.length>20000)cut++;s.files.push({n:f.name,c:c.trim()});ok++}else fail++}catch(e){fail++}}
     s.updatedAt=Date.now();save();renderChips();
-    toast(ok?('Attached '+ok+' files'+(fail?' · '+fail+' files unreadable':'')):'Couldn’t read the files')}
+    toast(ok?('Attached '+ok+' files'+(fail?' · '+fail+' unreadable':'')+(cut?' · '+cut+' long file'+(cut>1?'s':'')+' will be read partially (~20K chars)':'')):'Couldn’t read the files')}
   function handleUpload(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs)}
   function removeFile(i){const s=cur();if(!s)return;s.files.splice(i,1);s.updatedAt=Date.now();save();renderChips()}
   function renderChips(){const s=cur();
@@ -909,14 +922,20 @@
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
     toast('Reading '+fs.length+' files…');const names=[];
-    for(const f of fs){try{const c=await extractFile(f);if(c.trim()){s.files.push({n:f.name,c:c.trim()});names.push(f.name)}}catch(e){}}
+    for(const f of fs){try{
+      if(isImg(f)){const url=await imgToDataURL(f,1200,.78);s.files.push({n:f.name,c:'[image: '+f.name+']',img:url});names.push(f.name);continue}
+      const c=await extractFile(f);if(c.trim()){s.files.push({n:f.name,c:c.trim()});names.push(f.name)}}catch(e){}}
     s.updatedAt=Date.now();save();
     if(!names.length){toast('Couldn’t read the files');return}
     pushUndo();_busy=true;
-    const newC=s.files.filter(f=>names.includes(f.n)).map(f=>'### '+f.n+'\n'+f.c.slice(0,20000)).join('\n\n');
-    const prompt='Original document:\n\n'+genMd()+'\n\nNewly attached data:\n'+newC+'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
+    const fresh=s.files.filter(f=>names.includes(f.n));
+    const imgs=fresh.filter(f=>f.img);
+    const newC=fresh.filter(f=>!f.img).map(f=>'### '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
+    const prompt='Original document:\n\n'+genMd()+'\n\nNewly attached data:\n'+newC
+      +(imgs.length?('\n\nNewly attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references'):'')
+      +'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging new files into the document…</div><div class="gen-body" id="genBody"></div></div>';
-    try{const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+    try{const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
       s.canvas=md;s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
     catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
     finally{_busy=false}}
@@ -957,7 +976,7 @@
     const beforeTxt=c.innerText.trim();
     pushUndo();_busy=true;s.secFiles=s.secFiles||{};s.secFiles[h]=s.secFiles[h]||[];
     toast('Reading files into “'+h+'”…');let merged='';
-    for(const f of files){try{const cc=await extractFile(f);s.secFiles[h].push(f.name);merged+='### '+f.name+'\n'+cc.slice(0,15000)+'\n\n'}catch(e){}}
+    for(const f of files){try{const cc=await extractFile(f);s.secFiles[h].push(f.name);merged+='### '+f.name+'\n'+capTxt(cc,15000)+'\n\n'}catch(e){}}
     secEl.classList.add('improving');c.innerHTML='<span class="cursor"></span>';
     const prompt='Document context: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nCurrent text:\n'+beforeTxt+'\n\nData from the files attached to this section:\n'+merged+'\n\nMerge the file data into this section smoothly. Return only the refined section body (markdown, no ## heading).';
     try{const text=await streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}));
@@ -1444,11 +1463,19 @@
     const p=projects.find(x=>x.id===s.projectId);
     if(p&&p.refs&&p.refs.length){ // reference library — permanent project context
       out+='\n\n# References for project "'+p.name+'" (permanent guidelines/reference — follow these)\n'
-        +p.refs.map(r=>'## '+r.n+'\n'+String(r.c).slice(0,6000)).join('\n\n')}
+        +p.refs.map(r=>'## '+r.n+'\n'+capTxt(r.c,6000)).join('\n\n')}
     const sibs=sessions.filter(x=>x.projectId===s.projectId&&x.id!==s.id&&x.canvas&&x.canvas.trim()).slice(0,3);
     if(sibs.length)out+='\n\n# Context from other work in the same project (background only, don’t re-summarize)\n'
-      +sibs.map(x=>'## '+x.title+'\n'+x.canvas.slice(0,1500)).join('\n\n');
+      +sibs.map(x=>'## '+x.title+'\n'+capTxt(x.canvas,1500)).join('\n\n');
     return out}
+  // long-text cap with an explicit marker so the model knows it's partial
+  const capTxt=(t,n)=>{t=String(t||'');return t.length>n?t.slice(0,n)+'\n…[truncated — file continues]':t};
+  // build message content — attach downscaled images as vision blocks
+  function msgContent(prompt,imgs){
+    imgs=(imgs||[]).filter(f=>f.img).slice(0,6);
+    if(!imgs.length)return prompt;
+    return [{type:'text',text:prompt},
+      ...imgs.map(f=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.img.split(',')[1]}}))]}
   async function runSumming(){
     if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
@@ -1456,13 +1483,16 @@
     if(!s.brief&&!s.files.length){toast('Write a brief or attach at least one file first');return}
     _busy=true;const go=$('sumBtn');go.disabled=true;go.textContent='Crystallizing…';
     const hadCanvas=!!(s.canvas&&s.canvas.trim());if(hadCanvas)pushUndo();
-    const src=s.files.map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+f.c.slice(0,20000)).join('\n\n');
-    const prompt=(s.brief?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')+projectContext(s);
+    const imgs=s.files.filter(f=>f.img);
+    const src=s.files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
+    const prompt=(s.brief?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
+      +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
+      +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> VÆST is crystallizing…</div><div class="gen-body" id="genBody"></div></div>';
     try{
-      const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
       s.canvas=md;
       const t=(md.match(/^#\s+(.+)/m)||[])[1];
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);

@@ -164,6 +164,14 @@
     border:1px solid var(--line2);border-radius:2px;padding:13px 22px;transition:.2s var(--ease)}
   .orions .olink:hover{background:var(--tx);color:#000;border-color:var(--tx)}
 
+  /* request access */
+  .wl{display:flex;flex-wrap:wrap;gap:10px;margin-top:36px;max-width:560px}
+  .wl input{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line2);border-radius:2px;color:var(--tx);
+    font-family:var(--mono);font-size:13px;letter-spacing:.03em;padding:15px 16px;outline:none;transition:border-color .2s var(--ease)}
+  .wl input:focus{border-color:var(--tx)}
+  .wl input::placeholder{color:var(--mute)}
+  .wl-msg{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--acc);margin-top:14px;min-height:16px}
+
   /* final */
   .final{text-align:center;padding:130px 0}
   .final h2{font-size:clamp(40px,8vw,110px);line-height:.94}
@@ -304,12 +312,25 @@
   <a class="olink" href="https://orions.agency" target="_blank" rel="noopener">ORIONS.Agency ↗</a>
 </div></section>
 
+<!-- REQUEST ACCESS -->
+<section id="access"><div class="wrap sec-pad">
+  <div class="lbl">Request access</div>
+  <h2>Invite-only.<br>Get on the list.</h2>
+  <p class="lead th">VÆST opens in small batches. Leave your email — the ORIONS team reaches out when a seat opens.</p>
+  <form class="wl" onsubmit="return wlSubmit(event)">
+    <input type="email" id="wlEmail" placeholder="you@studio.com" autocomplete="email" required>
+    <button class="btn solid" type="submit" id="wlGo">Request access</button>
+  </form>
+  <div class="wl-msg" id="wlMsg"></div>
+</div></section>
+
 <!-- FINAL -->
 <section class="final"><div class="wrap">
   <div class="eye" style="margin-bottom:24px">VÆST 1.0</div>
   <h2>Taste,<br>Operationalized.</h2>
   <p class="th">“Computation is nothing without taste.”</p>
   <a class="btn solid" href="/app">Open VÆST →</a>
+  <div style="margin-top:16px"><a href="#access" class="th" style="font-size:13px;color:var(--mute);text-decoration:underline;text-underline-offset:3px">No invite yet? Request access</a></div>
 </div></section>
 
 <footer><div class="wrap fin">
@@ -349,6 +370,21 @@
   }
   if(reduced){showScene(2);document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.add('on'));$('dRef').classList.add('on')}
   else runDemo();
+
+  // request-access waitlist → stored as wl:<email> rows
+  const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM'};
+  async function wlSubmit(e){
+    e.preventDefault();
+    const email=$('wlEmail').value.trim().toLowerCase();if(!email)return false;
+    const go=$('wlGo');go.disabled=true;go.textContent='Sending…';
+    try{
+      await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
+        headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+        body:JSON.stringify({email:'wl:'+email,data:{ts:Date.now(),source:'landing'},updated_at:new Date().toISOString()})});
+      $('wlMsg').textContent='ON THE LIST — WE\'LL REACH OUT.';$('wlEmail').value='';go.textContent='Requested ✓'}
+    catch(err){$('wlMsg').textContent='FAILED — TRY AGAIN.';go.disabled=false;go.textContent='Request access'}
+    return false}
+  window.wlSubmit=wlSubmit;
 </script>
 </body>
 </html>

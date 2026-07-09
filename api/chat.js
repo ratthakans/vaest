@@ -57,9 +57,13 @@ Propose 2–5 genuinely improving points (consistency, clarity, missed emotional
 Return markdown: each point starts with "- " then a **short title**, then 1–2 lines on how to fix it.`,
 };
 
-async function streamAnthropic(res, model, system, messages, maxTokens) {
+async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
   const params = { model, max_tokens: maxTokens, messages };
-  if (system) params.system = system;
+  // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
+  // the dynamic part (tone / project voice) rides in a second block
+  const system = [{ type: 'text', text: base, cache_control: { type: 'ephemeral' } }];
+  if (dynamic) system.push({ type: 'text', text: dynamic });
+  params.system = system;
   const stream = anthropic.messages.stream(params);
   let inTok = 0, outTok = 0;
   for await (const ev of stream) {
@@ -93,7 +97,6 @@ export default async function handler(req, res) {
 
   const route = ROUTE[mode] || ROUTE.summing;
   const base = TASK[mode] || TASK.summing;
-  const sys = base + (system ? '\n\n' + system : '');
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -101,7 +104,7 @@ export default async function handler(req, res) {
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
-    const { inTok, outTok } = await streamAnthropic(res, route.model, sys, messages, 8192);
+    const { inTok, outTok } = await streamAnthropic(res, route.model, base, system || '', messages, 8192);
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
     res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // lets the client show per-document cost
