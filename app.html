@@ -489,6 +489,21 @@
   body.share-light .tb.dark{color:#fff}
   body.share-light ::selection{background:#111110;color:#fff}
 
+  .bb-chain{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--mute);border:1px solid var(--line);border-radius:100px;padding:8px 14px;margin-right:10px;transition:.15s}
+  .bb-chain:hover{color:var(--ink);border-color:var(--line2)}
+  .bb-chain.on{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;border-color:var(--line2);font-weight:700}
+  .vc-taste{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:12px;color:var(--dim)}
+  .vc-taste b{color:var(--ink)}
+  .vc-taste button{font-size:11.5px;font-weight:650;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+  .vc-taste button:hover{color:var(--cin-d)}
+  .to-top{position:fixed;right:30px;bottom:30px;z-index:60;width:42px;height:42px;border-radius:50%;
+    background:rgba(22,22,25,.85);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);color:var(--ink);font-size:16px;
+    opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s var(--ease);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .to-top.show{opacity:1;visibility:visible;transform:none}
+  .to-top:hover{background:rgba(34,34,38,.95);border-color:rgba(255,255,255,.3)}
+  .ol-item.cur{background:rgba(255,255,255,.07);color:var(--snow)}
+  .ol-item.cur .on2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+
   /* comment badge + quota */
   .cbadge{flex:none;min-width:17px;height:17px;padding:0 5px;border-radius:100px;background:var(--cinnabar);color:#fff;
     font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:2px}
@@ -608,6 +623,7 @@
       </div>
     </header>
     <div class="cv-tabs" id="cvTabs"></div>
+    <button class="to-top" id="toTop" onclick="smoothTo($('cvView'),0)" title="Back to top" aria-label="Back to top">↑</button>
 
     <!-- HOME -->
     <section class="home" id="home">
@@ -627,6 +643,7 @@
           <div class="bb-foot">
             <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
             <span class="bb-hint">or drop files</span>
+            <button class="bb-chain" id="chainBtn" onclick="toggleChain()" title="Run Refined automatically after Summing">+ Refined</button>
             <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
         </div>
@@ -780,6 +797,7 @@
     <div style="padding:14px 16px 18px">
       <div style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:10px">Guidelines every session in this project must follow — tone of voice, vocabulary, banned words, formats. Applied to Summing, section edits and refinements.</div>
       <textarea class="vc-ta" id="voiceText" spellcheck="false" placeholder="e.g. Voice: confident, quiet, no exclamation marks.&#10;Always call it “the studio”, never “the agency”.&#10;Banned: synergy, world-class, elevate."></textarea>
+      <div class="vc-taste" id="vcTaste" style="display:none"></div>
     </div>
   </div>
 </div>
@@ -1371,7 +1389,13 @@
   let _voicePid=null;
   function openVoice(pid){const p=projects.find(x=>x.id===pid);if(!p)return;_voicePid=pid;
     $('voiceTitle').textContent='Voice — '+p.name;$('voiceText').value=p.voice||'';
+    const tEl=$('vcTaste');const n=(p.taste||[]).length;
+    if(tEl){if(n){tEl.style.display='';tEl.innerHTML='<span>Taste memory: learned from <b>'+n+'</b> decision'+(n>1?'s':'')+' — quietly biases every suggestion</span><button onclick="clearTaste()">Forget</button>'}
+      else{tEl.style.display='none'}}
     $('voiceView').classList.add('show');setTimeout(()=>$('voiceText').focus(),60)}
+  function clearTaste(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
+    if(!confirm('Forget the '+(p.taste||[]).length+' learned taste decisions for this project?'))return;
+    p.taste=[];save();$('vcTaste').style.display='none';toast('Taste memory cleared')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
     p.voice=$('voiceText').value.trim();save();closeVoice();
@@ -1490,9 +1514,19 @@
 
   /* ═══ views ═══ */
   function showHome(){const s=cur();
-    $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';
+    $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     document.querySelector('.main').classList.remove('has-top');
-    $('brief').value=s?s.brief:'';renderChips();renderTone();renderIdeas();renderOutline();renderTabs()}
+    $('brief').value=s?s.brief:'';renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs()}
+
+  /* scroll-spy — the outline follows where you are; back-to-top past 600px */
+  function initScrollSpy(){
+    const cv=$('cvView');if(!cv||cv._spy)return;cv._spy=true;
+    cv.addEventListener('scroll',raf(()=>{
+      const tt=$('toTop');if(tt)tt.classList.toggle('show',cv.scrollTop>600&&cv.style.display!=='none');
+      const cvTop=cv.getBoundingClientRect().top;let curH=null;
+      document.querySelectorAll('#doc .sec').forEach(sec=>{
+        if(sec.getAttribute('data-h')!=='_intro'&&sec.getBoundingClientRect().top-cvTop<=140)curH=sec.getAttribute('data-h')});
+      document.querySelectorAll('.ol-item').forEach(it=>it.classList.toggle('cur',it.getAttribute('data-oh')===curH))}))}
 
   /* document outline in the rail — click to jump */
   function renderOutline(){
@@ -1515,6 +1549,9 @@
     document.querySelector('.main').classList.add('has-top');
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
   function backToBrief(){showHome();toast('Edit the brief/files and Summing again — your document stays')}
+  function toggleChain(){const s=cur();if(!s)return;s.chain=!s.chain;save();renderChain();
+    toast(s.chain?'Refined will run automatically after Summing':'Chain off — Refined stays manual')}
+  function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
 
   /* brief templates — a scaffold that teaches a good brief */
@@ -1781,7 +1818,8 @@
       const t=(s.canvas.match(/^#\s+(.+)/m)||[])[1];
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
       s.updatedAt=Date.now();save();renderRail();showCanvas();
-      toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
+      if(s.chain){toast('Summed — Refined starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
+      else toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
         +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Summing</button>'
@@ -2009,7 +2047,7 @@
     }catch(e){setSync('off')}
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
-  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refined for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates';
+  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refined for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hit **Ø Think** (top right) — a Senior Creative rips this document and pushes it bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refined** for the final coherence check, then **Export → Share link** to see exactly what a client sees.';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
 
   /* share view — read-only */
@@ -2124,7 +2162,7 @@
     if(files.length)await embedImages(secEl,files);
   }
   (async function init(){
-    $('doc').addEventListener('input',schedulePersist);
+    $('doc').addEventListener('input',schedulePersist);initScrollSpy();
     $('doc').addEventListener('paste',handleDocPaste);
     // 1) set a new password from the email link
     const rec=recoveryTokenFromHash();
