@@ -1779,7 +1779,7 @@
     const dflt='Version '+(s.snaps.length+1);
     let name=nameArg;if(name===undefined){try{name=prompt('Name this version',dflt)}catch(e){name=dflt}if(name===null)return}
     name=(name||'').trim()||dflt;
-    s.snaps.unshift({id:uid('v'),name,md:genMd(),ts:Date.now()});if(s.snaps.length>25)s.snaps.length=25;
+    ensureCanvases(s);s.snaps.unshift({id:uid('v'),name,md:genMd(),cv:s.cvId,ts:Date.now()});if(s.snaps.length>25)s.snaps.length=25;
     s.updatedAt=Date.now();save();renderSnaps();toast('Saved version “'+name+'”')}
   function renderSnaps(){const s=cur();const list=$('snapList');const snaps=(s&&s.snaps)||[];
     if(!snaps.length){list.innerHTML='<div class="snap-empty">No saved versions yet<br>Hit “Save now” to keep a point you like, to roll back to</div>';return}
@@ -1834,16 +1834,24 @@
     $('diffView').classList.add('show')}
   function closeDiff(){$('diffView').classList.remove('show')}
   function restoreSnap(id){const s=cur();if(!s||!s.snaps)return;const v=s.snaps.find(x=>x.id===id);if(!v)return;
+    ensureCanvases(s);
+    if(v.cv&&v.cv!==s.cvId){
+      if(s.canvases.find(c=>c.id===v.cv))switchCanvas(v.cv); // the version belongs to another canvas — go there first
+      else{toast('This version belongs to a canvas that no longer exists');return}}
     pushUndo();setCanvasMd(s,v.md);s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('Restored to “'+v.name+'” (hit “Undo” if you change your mind)')}
   function delSnap(id){const s=cur();if(!s||!s.snaps)return;s.snaps=s.snaps.filter(x=>x.id!==id);s.updatedAt=Date.now();save();renderSnaps()}
 
   /* ═══ undo ═══ */
   const undoStack=[];
-  function pushUndo(){const s=cur();if(!s)return;undoStack.push({sid:s.id,md:genMd()});if(undoStack.length>30)undoStack.shift();updateUndo()}
+  function pushUndo(){const s=cur();if(!s)return;ensureCanvases(s);undoStack.push({sid:s.id,cv:s.cvId,md:genMd()});if(undoStack.length>30)undoStack.shift();updateUndo()}
   function undoCanvas(){
     if(_busy){toast('Working…');return}
     for(let i=undoStack.length-1;i>=0;i--){if(undoStack[i].sid===currentSid){
-      const u=undoStack.splice(i,1)[0];const s=cur();setCanvasMd(s,u.md);renderDoc(u.md);save();updateUndo();toast('Reverted');return}}
+      const u=undoStack.splice(i,1)[0];const s=cur();ensureCanvases(s);
+      if(u.cv&&u.cv!==s.cvId){
+        if(s.canvases.find(c=>c.id===u.cv))switchCanvas(u.cv); // the change happened on another canvas — undo it there
+        else{updateUndo();continue}} // that canvas is gone — skip this entry
+      setCanvasMd(s,u.md);renderDoc(u.md);save();updateUndo();toast('Reverted');return}}
     toast('Nothing to undo')}
   function updateUndo(){$('undoBtn').disabled=!undoStack.some(u=>u.sid===currentSid)}
 
