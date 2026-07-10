@@ -174,13 +174,30 @@
   .d-ref .ok{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
 
   /* ── process ── */
-  .rail{display:grid;grid-template-columns:repeat(4,1fr);gap:48px;margin-top:84px}
-  @media(max-width:760px){.rail{grid-template-columns:1fr 1fr;gap:48px 32px}}
+  .rail{display:grid;grid-template-columns:repeat(5,1fr);gap:40px;margin-top:84px}
+  @media(max-width:900px){.rail{grid-template-columns:1fr 1fr 1fr;gap:44px 28px}}
+  @media(max-width:640px){.rail{grid-template-columns:1fr 1fr;gap:44px 28px}}
   @media(max-width:440px){.rail{grid-template-columns:1fr}}
   .step{padding-top:24px;border-top:1px solid var(--line2)}
   .step .si{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .step .st{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
   .step .sd{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
+
+  /* taste demo + client loop */
+  .taste-demo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:56px}
+  .td-pill{font-family:var(--mono);font-size:12px;letter-spacing:.04em;border-radius:100px;padding:9px 16px;border:1px solid var(--line2)}
+  .td-pill.ok{color:var(--ink)}
+  .td-pill.no{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(255,90,31,.6)}
+  .td-arrow{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:20px;font-weight:700;
+    background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite;margin:0 4px}
+  .td-out{font-family:var(--th);font-style:italic;color:var(--dim);font-size:15px}
+  .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;margin-top:70px}
+  @media(max-width:760px){.loop{grid-template-columns:1fr;gap:44px}}
+  .lp{padding-top:24px;border-top:1px solid var(--line2)}
+  .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;
+    background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .lp-t{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
+  .lp-d{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
   /* ── before / after ── */
   .ba{display:grid;grid-template-columns:1fr 1fr;gap:76px;margin-top:84px}
@@ -247,6 +264,9 @@
   .rail.reveal.in .step:nth-child(2){transition-delay:.09s}
   .rail.reveal.in .step:nth-child(3){transition-delay:.18s}
   .rail.reveal.in .step:nth-child(4){transition-delay:.27s}
+  .rail.reveal.in .step:nth-child(5){transition-delay:.36s}
+  .eng.reveal.in .e-card:nth-child(3){transition-delay:.2s}
+  .eng.reveal.in .e-card:nth-child(4){transition-delay:.28s}
   .eng.reveal.in .e-card:nth-child(2){transition-delay:.12s}
 </style>
 </head>
@@ -275,7 +295,7 @@
 
 <!-- SPEC STRIP -->
 <div class="wrap"><div class="specs">
-  <div class="spec"><div class="n">2</div><div class="k">Frontier Models</div></div>
+  <div class="spec"><div class="n">4</div><div class="k">Frontier Models</div></div>
   <div class="spec"><div class="n">7<span class="u">+</span></div><div class="k">Input Formats</div></div>
   <div class="spec"><div class="n">1</div><div class="k">Source of Truth</div></div>
   <div class="spec"><div class="n">&infin;</div><div class="k">Revisions</div></div>
@@ -316,10 +336,11 @@
     </div>
   </div>
   <div class="rail reveal">
-    <div class="step"><div class="si">01</div><div class="st th">Ingest</div><div class="sd th">docx · pdf · xlsx · csv · md · html · images — drop them all at once</div></div>
-    <div class="step"><div class="si">02</div><div class="st th">Summing</div><div class="sd th">Crystallize every source into one document</div></div>
-    <div class="step"><div class="si">03</div><div class="st th">Canvas</div><div class="sd th">Edit whole sections, or highlight a sentence</div></div>
-    <div class="step"><div class="si">04</div><div class="st th">Refined</div><div class="sd th">A full taste check before it ships</div></div>
+    <div class="step"><div class="si">01</div><div class="st th">Idea</div><div class="sd th">A sandbox that spars back — raw pastes welcome</div></div>
+    <div class="step"><div class="si">02</div><div class="st th">Summing</div><div class="sd th">Files, moodboards, sparks — crystallized into one document</div></div>
+    <div class="step"><div class="si">03</div><div class="st th">Canvas</div><div class="sd th">Edit whole sections, or a single highlighted sentence</div></div>
+    <div class="step"><div class="si">04</div><div class="st th">Ø Think</div><div class="sd th">A senior creative rips it and pushes it bolder</div></div>
+    <div class="step"><div class="si">05</div><div class="st th">Refined</div><div class="sd th">The taste check before anything ships</div></div>
   </div>
 </div></section>
 
@@ -355,21 +376,62 @@
 <!-- ENGINE -->
 <section><div class="wrap sec-pad">
   <div class="lbl">Engine</div>
-  <h2>Two minds, one taste</h2>
+  <h2>Four minds, one taste</h2>
+  <p class="lead th">Each phase runs on the model built for it — never one generic brain for everything.</p>
   <div class="eng reveal">
     <div class="e-card">
+      <div class="em">Gemini Flash</div>
+      <h3 class="th">Idea — the sparring partner</h3>
+      <p class="th">Fast, generous riffs in the sandbox. Throw half-thoughts and raw pastes at it; keep what sparks, feed it into Summing.</p>
+      <span class="tag">Sandbox</span>
+    </div>
+    <div class="e-card">
       <div class="em">Claude Opus 4.8</div>
-      <h3 class="th">Think · Write · Refine</h3>
-      <p class="th">Summing, section edits, sentence-level polish, applying suggestions — all writing runs on the flagship model, strong on structure and language.</p>
-      <span class="tag">Write · Edit · Merge</span>
+      <h3 class="th">Think — the writer</h3>
+      <p class="th">Summing, section edits, sentence-level polish, and Ø Think — a Senior Creative pass that finds the braver version of the work.</p>
+      <span class="tag">Write · Edit · Push</span>
     </div>
     <div class="e-card">
       <div class="em">Claude Fable 5</div>
-      <h3 class="th">The final taste check</h3>
-      <p class="th">Refined runs on the model most sensitive to tone, coherence and emotional nuance — like a creative director’s last read before the work leaves the studio.</p>
+      <h3 class="th">Refine — the taste check</h3>
+      <p class="th">A bird's-eye audit for inconsistency, redundancy and logic — every point anchored to the exact sentence it lives in.</p>
       <span class="tag">Final Recheck</span>
     </div>
+    <div class="e-card">
+      <div class="em">Claude Sonnet 5</div>
+      <h3 class="th">Present — the deck builder</h3>
+      <p class="th">Reshapes the finished document into a presentation in the VÆST look — landscape or portrait, ready to save as PDF.</p>
+      <span class="tag">Presentation</span>
+    </div>
   </div>
+</div></section>
+
+<!-- TASTE MEMORY -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">Taste memory</div>
+  <h2>The more you judge, the more it becomes yours</h2>
+  <p class="lead th">Every approve and every skip is remembered per project — and quietly biases the next suggestion. Generic AI is smart the same way for everyone. <b>VÆST gets smart your way:</b> your studio’s taste stops living in one senior’s head and becomes infrastructure.</p>
+  <div class="taste-demo reveal">
+    <span class="td-pill ok">✓ bold naming</span>
+    <span class="td-pill ok">✓ cultural hooks</span>
+    <span class="td-pill no">✕ wordplay</span>
+    <span class="td-pill ok">✓ quiet luxury</span>
+    <span class="td-pill no">✕ pastel-safe</span>
+    <span class="td-arrow">→</span>
+    <span class="td-out th">the next document already knows</span>
+  </div>
+</div></section>
+
+<!-- CLIENT LOOP -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">The client loop</div>
+  <h2>Feedback stops living in email threads</h2>
+  <div class="loop reveal">
+    <div class="lp"><div class="lp-n">01</div><div class="lp-t th">Share a read-only link</div><div class="lp-d th">Night or paper mode — the client picks. No login, no account, no friction.</div></div>
+    <div class="lp"><div class="lp-n">02</div><div class="lp-t th">They comment on any section</div><div class="lp-d th">The note lands as a badge in your rail the moment you open VÆST.</div></div>
+    <div class="lp"><div class="lp-n">03</div><div class="lp-t th">Apply with VÆST</div><div class="lp-d th">One click turns the client’s note into the revision — you review, then resolve.</div></div>
+  </div>
+  <p class="lead th" style="margin-top:44px">Then hand off however they want it: <b>Word · PDF · a Sonnet-built presentation</b> in your look — and your work stays private: per-account isolation, optional device-only sessions, processed via Anthropic with no training on your data.</p>
 </div></section>
 
 <!-- ORIONS — the one white inversion -->

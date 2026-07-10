@@ -46,6 +46,9 @@
   .tb.dark{background:var(--ink);color:#0a0a0a;font-weight:600}
   .tb.dark:hover{background:#fff}
   .tb.accent{color:var(--ink);font-weight:600;border:1px solid var(--line2)}
+  .tb.think{background:var(--grad);background-size:230% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:700;border:1px solid var(--line2);animation:chromaflow 8s ease-in-out infinite}
+  .tb.think:hover{border-color:rgba(255,255,255,.5);background:var(--grad);background-size:230% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
   .tb.accent:hover{background:rgba(255,255,255,.05);border-color:var(--ink)}
   .top-title{font-family:var(--body);font-style:italic;font-size:16.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;text-align:center;padding:0 8px}
   .save-ind{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute);opacity:0;transition:opacity .35s;white-space:nowrap}
