@@ -471,6 +471,49 @@
   .vc-ta:focus{border-color:var(--ink)}
   .vc-ta::placeholder{color:var(--mute)}
 
+  /* flaw overlay — Refined/Ø Think anchors, three rotating hues */
+  mark.flaw{background:rgba(79,195,255,.16);color:inherit;border-bottom:2px solid rgba(79,195,255,.7);border-radius:2px;padding:0 1px;transition:background .3s}
+  mark.flaw.f1{background:rgba(255,161,75,.15);border-bottom-color:rgba(255,161,75,.7)}
+  mark.flaw.f2{background:rgba(255,90,31,.14);border-bottom-color:rgba(255,90,31,.7)}
+  mark.flaw.pulse{background:rgba(79,195,255,.36)}
+  mark.flaw.f1.pulse{background:rgba(255,161,75,.34)}
+  mark.flaw.f2.pulse{background:rgba(255,90,31,.32)}
+  .mi-dot.f1{background:#ffa14b}.mi-dot.f2{background:#ff5a1f}
+  .mi-t.hasq{cursor:pointer}
+  .mi-t.hasq:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--mute)}
+
+  /* canvas tabs — multi-canvas sessions */
+  .cv-tabs{display:none;align-items:center;gap:6px;padding:9px 22px 0;flex-wrap:wrap}
+  .cv-tabs.has{display:flex}
+  .cv-tab{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--dim);border:1px solid var(--line);border-radius:100px;padding:6px 14px;transition:.15s}
+  .cv-tab:hover{color:var(--ink);border-color:var(--line2)}
+  .cv-tab.on{background:var(--ink);color:#0a0a0a;border-color:var(--ink);font-weight:600}
+
+  /* idea sandbox — phase 1 */
+  .idea{margin-top:26px;background:rgba(255,255,255,.035);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden}
+  .id-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .id-lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;flex:none}
+  .id-hint{font-size:11.5px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .id-mode{margin-left:auto;display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px;flex:none}
+  .id-mode button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);padding:4px 10px;border-radius:4px}
+  .id-mode button.on{background:var(--ink);color:#0a0a0a;font-weight:600}
+  .id-thread{max-height:300px;overflow-y:auto;padding:6px 14px;display:none}
+  .id-thread.has{display:block}
+  .id-m{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .id-m:last-child{border-bottom:none}
+  .id-m .who{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--mute);margin-bottom:4px}
+  .id-m.ai .who{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .id-m .tx{font-size:13.5px;line-height:1.7;color:var(--ink);word-break:break-word}
+  .id-m.you .tx{color:#cfccc4}
+  .id-m .tx p{margin:4px 0}.id-m .tx ul,.id-m .tx ol{margin:4px 0 4px 18px}.id-m .tx li{margin:2px 0}
+  .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px}
+  .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:120px;padding:6px 4px}
+  .id-in textarea::placeholder{color:var(--mute)}
+  .id-send{flex:none;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#0a0a0a;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .id-send:hover{background:#fff}
+  .id-send:disabled{opacity:.4}
+
   /* brief templates */
   .tpl{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:-14px 0 18px}
   .tpl-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-right:3px}
@@ -517,6 +560,7 @@
       <button class="tb" onclick="openSnapshots()" title="Saved versions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg></button>
       <div class="top-title" id="topTitle"></div>
       <span class="save-ind" id="saveInd"></span>
+      <button class="tb accent" id="thinkBtn" onclick="runThink()" title="Senior Creative pass — Opus rips the canvas and pushes it bolder">Ø Think</button>
       <button class="tb dark" id="mastBtn" onclick="runMastering()">Refined</button>
       <div class="exp-wrap">
         <button class="tb accent" onclick="toggleExp(event)">Export <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -530,6 +574,7 @@
         </div>
       </div>
     </header>
+    <div class="cv-tabs" id="cvTabs"></div>
 
     <!-- HOME -->
     <section class="home" id="home">
@@ -552,12 +597,29 @@
             <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
         </div>
-        <div class="tone" id="toneBar">
+        <div class="tone" id="toneBar" title="Persona — governs tone &amp; word choice on every call">
           <button data-tone="" onclick="setTone('')">Standard</button>
           <button data-tone="formal" onclick="setTone('formal')">Formal</button>
           <button data-tone="playful" onclick="setTone('playful')">Playful</button>
-          <button data-tone="sharp" onclick="setTone('sharp')">Sharp</button>
         </div>
+
+        <!-- IDEA — brainstorming sandbox (Haiku / Sonnet) -->
+        <div class="idea" id="ideaBox">
+          <div class="id-hd">
+            <span class="id-lbl">Idea · sandbox</span>
+            <span class="id-hint">throw sparks here — raw pastes welcome · feeds Summing</span>
+            <div class="id-mode" id="ideaMode">
+              <button data-m="0" onclick="setIdeaDeep(false)">Quick</button>
+              <button data-m="1" onclick="setIdeaDeep(true)">Deep</button>
+            </div>
+          </div>
+          <div class="id-thread" id="ideaThread"></div>
+          <div class="id-in">
+            <textarea id="ideaInput" rows="1" placeholder="Spark an idea, paste anything…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
+            <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
+          </div>
+        </div>
+
         <div class="h-foot">“Computation is nothing without taste.” · VÆST 1.0</div>
       </div>
     </section>
@@ -664,6 +726,7 @@
     <div class="rate-row">
       <div class="rate-f"><label>Opus 4.8 · THB / 1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
       <div class="rate-f"><label>Fable 5 · THB / 1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>Idea · Haiku/Sonnet · THB / 1M</label><input id="rateIdea" type="number" min="0" oninput="saveRates();renderStats()"></div>
     </div>
     <div class="kpis" id="statsKpis"></div>
     <div class="st-h2">Cost per document (top 12)</div>
@@ -852,21 +915,21 @@
     catch(e){b.disabled=false;b.textContent='Request an invite';toast('Failed, try again')}}
 
   /* ═══ usage analytics — cost per document ═══ */
-  const RATE_DEF={opus:2600,fable:600}; // THB per 1M (in+out combined) — estimate, editable
-  function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r&&r.opus>=0&&r.fable>=0)return r}catch(e){}return {...RATE_DEF}}
-  function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
-  function docCost(s,rt){const t=s.tok||{opus:0,fable:0};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable}
+  const RATE_DEF={opus:2600,fable:600,idea:150}; // THB per 1M (in+out combined) — estimate, editable
+  function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r&&r.opus>=0&&r.fable>=0)return {...RATE_DEF,...r}}catch(e){}return {...RATE_DEF}}
+  function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0,idea:+$('rateIdea').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
+  function docCost(s,rt){const t=s.tok||{};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable+(t.idea||0)/1e6*(rt.idea||0)}
   const baht=n=>'฿'+(n>=1000?Math.round(n).toLocaleString():n.toFixed(n<10?2:1));
-  function openStats(){const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('statsView').classList.add('show');renderStats()}
+  function openStats(){const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('rateIdea').value=rt.idea||0;$('statsView').classList.add('show');renderStats()}
   function closeStats(){$('statsView').classList.remove('show')}
   function renderStats(){
     const rt=getRates();
     const docs=sessions.filter(s=>(s.ops||0)>0);
-    let tOpus=0,tFable=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOpus+=t.opus||0;tFable+=t.fable||0;cost+=docCost(s,rt)});
-    const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?(tOpus+tFable)/nDoc:0;
+    let tOpus=0,tFable=0,tIdea=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOpus+=t.opus||0;tFable+=t.fable||0;tIdea+=t.idea||0;cost+=docCost(s,rt)});
+    const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?(tOpus+tFable+tIdea)/nDoc:0;
     $('statsKpis').innerHTML=[
       ['Documents measured',nDoc],
-      ['Total tokens',fmtTok(tOpus+tFable)],
+      ['Total tokens',fmtTok(tOpus+tFable+tIdea)],
       ['Total cost',baht(cost)],
       ['Avg / document',baht(avg)+' <small>· '+fmtTok(avgTok)+'</small>'],
     ].map(k=>'<div class="kpi"><div class="kn">'+k[0]+'</div><div class="kv">'+k[1]+'</div></div>').join('');
@@ -874,7 +937,7 @@
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
-        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
+        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Summing / Refine / Refined and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage}}
@@ -922,8 +985,8 @@
     const i=full.indexOf('[[ERROR]]');if(i>=0)throw new Error(full.slice(i+9).trim()||'server error');
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
-    if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]),fable=/fable/.test(um[3]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};s.tok[fable?'fable':'opus']+=tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+    if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
+      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=/fable/.test(um[3])?'fable':/haiku|sonnet/.test(um[3])?'idea':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
@@ -984,7 +1047,7 @@
       +'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging new files into the document…</div><div class="gen-body" id="genBody"></div></div>';
     try{const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      s.canvas=md;s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
+      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
     catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
     finally{_busy=false}}
   // drop files onto a section → edit just that section
@@ -1229,11 +1292,22 @@
   addEventListener('keydown',e=>{if(e.key==='Escape')hideSelBar()});
 
   /* ═══ tone preset — session-level tone (Opus 4.8 for all writing) ═══ */
-  const TONES={formal:'formal, polite, trustworthy',playful:'playful, friendly, lively',sharp:'sharp, concise, on-point, no fluff'};
+  /* ═══ Dynamic Persona Engine — injected on top of EVERY call ═══ */
+  const PERSONA={
+    standard:'PERSONA — STANDARD: clear, direct, professionally sharp. Say things plainly; cut filler; every sentence earns its place. Confident without decoration.',
+    formal:'PERSONA — EDITORIAL: the measured voice of a world-class design magazine (think Monocle, Vogue). Composed, precise, quietly confident; rich vocabulary worn lightly; long thoughts allowed when they are earned. Never stiff, never bureaucratic — cultivated.',
+    playful:'PERSONA — PLAYFUL: a creative director who enjoys breaking frames. Industry slang welcome, vivid metaphors, a little mischief; provoke sideways thinking and challenge the obvious take. Never corny, never random for its own sake — the mischief must serve the idea.',
+  };
+  const personaKey=()=>{const s=cur();return PERSONA[(s&&s.tone)||'standard']?((s&&s.tone)||'standard'):'standard'};
+  // persona-flavored waiting lines (micro-copy while heavy calls run)
+  const PERSONA_WAIT={
+    standard:['Reading the whole board…','Weighing what’s missing…','Sharpening the angles…'],
+    formal:['Reading between the lines…','Considering the composition…','Letting the ideas settle…'],
+    playful:['Ripping it apart (kindly)…','Hunting for the cultural hook…','Bending the frame a little…'],
+  };
   function toneSys(){
     const s=cur(),parts=[];
-    const t=s&&s.tone;
-    if(t&&TONES[t])parts.push('Tone chosen for this work: '+TONES[t]+' — write and refine everything to match this tone');
+    parts.push(PERSONA[personaKey()]+' This persona governs word choice, tone and mood of everything you write here.');
     const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
     if(p&&p.voice&&p.voice.trim())parts.push('Project voice & guidelines (follow strictly):\n'+p.voice.trim());
     return parts.join('\n\n')}
@@ -1248,8 +1322,9 @@
     p.voice=$('voiceText').value.trim();save();closeVoice();
     toast(p.voice?'Voice saved — every session in this project follows it':'Voice cleared')}
   function setTone(t){const s=cur();if(!s)return;s.tone=t;s.updatedAt=Date.now();save();renderTone();
-    toast(t?('Tone set to “'+({formal:'Formal',playful:'Playful',sharp:'Sharp'}[t])+'” — applies to Summing / edits from now on'):'Back to standard tone')}
-  function renderTone(){const s=cur(),t=(s&&s.tone)||'';document.querySelectorAll('#toneBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-tone')||'')===t))}
+    toast('Persona: '+({'':'Standard',formal:'Formal — editorial',playful:'Playful — a little mischief'}[t]||'Standard')+' · rides on top of every call from now on')}
+  function renderTone(){const s=cur();let t=(s&&s.tone)||'';if(!PERSONA[t||'standard'])t='';
+    document.querySelectorAll('#toneBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-tone')||'')===t))}
 
   /* ═══ command palette (⌘K) ═══ */
   let _palItems=[],_palIdx=0;
@@ -1308,11 +1383,39 @@
   addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&(e.key==='k'||e.key==='K')){e.preventDefault();
     $('pal').classList.contains('show')?closePalette():openPalette()}});
 
+  /* ═══ multi-canvas — one session, several documents ═══ */
+  function ensureCanvases(s){
+    if(!s.canvases||!s.canvases.length){s.canvases=[{id:uid('cv'),t:'Main',md:s.canvas||''}];s.cvId=s.canvases[0].id}
+    if(!s.cvId||!s.canvases.find(c=>c.id===s.cvId))s.cvId=s.canvases[0].id;
+    return s.canvases}
+  function activeCv(s){ensureCanvases(s);return s.canvases.find(c=>c.id===s.cvId)}
+  function setCanvasMd(s,md){s.canvas=md;const c=activeCv(s);if(c)c.md=md}
+  function renderTabs(){
+    const s=cur();const el=$('cvTabs');if(!el)return;
+    const on=$('cvView').style.display!=='none';
+    const cvs=(s&&s.canvases)||[];
+    if(!on||cvs.length<2){el.classList.remove('has');el.innerHTML='';return}
+    el.classList.add('has');
+    el.innerHTML=cvs.map(c=>'<button class="cv-tab'+(c.id===s.cvId?' on':'')+'" onclick="switchCanvas(\''+c.id+'\')">'+esc(c.t)+'</button>').join('')}
+  function switchCanvas(id){
+    const s=cur();if(!s)return;ensureCanvases(s);
+    if(id===s.cvId)return;
+    closeMast();
+    const c0=activeCv(s);if(c0)c0.md=genMd();
+    s.cvId=id;const c=activeCv(s);s.canvas=c.md;
+    renderDoc(s.canvas);save();renderTabs();$('cvView').scrollTop=0}
+  // Summing may split the work: ===CANVAS: Title=== before each part
+  function splitCanvases(md){
+    const seg=String(md).split(/^===\s*CANVAS:\s*(.+?)\s*===\s*$/m);
+    if(seg.length<3)return null;
+    const out=[];for(let i=1;i<seg.length;i+=2){const body=(seg[i+1]||'').trim();if(body)out.push({t:seg[i].trim().slice(0,26),md:body})}
+    return out.length>1?out:null}
+
   /* ═══ views ═══ */
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';
     document.querySelector('.main').classList.remove('has-top');
-    $('brief').value=s?s.brief:'';renderChips();renderTone();renderOutline()}
+    $('brief').value=s?s.brief:'';renderChips();renderTone();renderIdeas();renderOutline();renderTabs()}
 
   /* document outline in the rail — click to jump */
   function renderOutline(){
@@ -1333,7 +1436,7 @@
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
-    renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;fetchComments(s)}
+    ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
   function backToBrief(){showHome();toast('Edit the brief/files and Summing again — your document stays')}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
 
@@ -1349,6 +1452,43 @@
     const b=$('brief');
     if(b.value.trim()&&!confirm('Replace the current brief with the '+k+' template?'))return;
     b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
+
+  /* ═══ IDEA — phase 1 sandbox · Haiku (quick) / Sonnet (deep) ═══ */
+  let _ideaBusy=false;
+  function renderIdeas(){
+    const s=cur();const th=$('ideaThread');if(!th)return;
+    const ideas=(s&&s.ideas)||[];
+    th.classList.toggle('has',!!ideas.length);
+    th.innerHTML=ideas.map(m=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')+'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
+    th.scrollTop=th.scrollHeight;
+    const deep=!!(s&&s.ideaDeep);
+    document.querySelectorAll('#ideaMode button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-m')==='1')===deep))}
+  function setIdeaDeep(b){const s=cur();if(!s)return;s.ideaDeep=b;save();renderIdeas();
+    toast(b?'Deep — Sonnet 5, thinks a bit harder':'Quick — Haiku 4.5, fast sparks')}
+  async function sendIdea(){
+    if(_ideaBusy)return;
+    const s=cur();if(!s)return;
+    const inp=$('ideaInput');const text=inp.value.trim();if(!text)return;
+    inp.value='';inp.style.height='';
+    s.ideas=s.ideas||[];s.ideas.push({r:'user',c:text,ts:Date.now()});
+    if(s.ideas.length>40)s.ideas=s.ideas.slice(-40);
+    renderIdeas();save();
+    _ideaBusy=true;$('ideaSend').disabled=true;
+    const th=$('ideaThread');th.classList.add('has');
+    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
+    th.appendChild(live);th.scrollTop=th.scrollHeight;
+    try{
+      const msgs=s.ideas.slice(-14).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
+      const out=await streamAPI(s.ideaDeep?'ideaplus':'idea',msgs,toneSys(),
+        raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full)+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}}));
+      s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now();save();renderIdeas()}
+    catch(e){live.remove();toast('Sandbox failed: '+e.message)}
+    finally{_ideaBusy=false;$('ideaSend').disabled=false;inp.focus()}}
+  // what Summing sees from the sandbox
+  function ideasContext(){
+    const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
+    return '\n\n# Ideas from the sandbox (raw sparks — curate: keep what serves the work, drop the rest)\n'
+      +capTxt(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
   function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show')}
@@ -1426,7 +1566,7 @@
         md+='\n'});
     });
     return md.replace(/\n{3,}/g,'\n\n').trim()+'\n'}
-  let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&$('cvView').style.display!=='none'){s.canvas=genMd();s.updatedAt=Date.now();save();savedTick()}},700)}
+  let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&$('cvView').style.display!=='none'){setCanvasMd(s,genMd());s.updatedAt=Date.now();save();savedTick()}},700)}
   let _si;function savedTick(){const el=$('saveInd');if(!el)return;el.textContent='Saved ✓';el.classList.add('show');clearTimeout(_si);_si=setTimeout(()=>el.classList.remove('show'),1600)}
 
   /* ═══ version snapshots ═══ */
@@ -1491,7 +1631,7 @@
     $('diffView').classList.add('show')}
   function closeDiff(){$('diffView').classList.remove('show')}
   function restoreSnap(id){const s=cur();if(!s||!s.snaps)return;const v=s.snaps.find(x=>x.id===id);if(!v)return;
-    pushUndo();s.canvas=v.md;s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('Restored to “'+v.name+'” (hit “Undo” if you change your mind)')}
+    pushUndo();setCanvasMd(s,v.md);s.updatedAt=Date.now();renderDoc(v.md);save();closeSnap();toast('Restored to “'+v.name+'” (hit “Undo” if you change your mind)')}
   function delSnap(id){const s=cur();if(!s||!s.snaps)return;s.snaps=s.snaps.filter(x=>x.id!==id);s.updatedAt=Date.now();save();renderSnaps()}
 
   /* ═══ undo ═══ */
@@ -1500,7 +1640,7 @@
   function undoCanvas(){
     if(_busy){toast('Working…');return}
     for(let i=undoStack.length-1;i>=0;i--){if(undoStack[i].sid===currentSid){
-      const u=undoStack.splice(i,1)[0];const s=cur();s.canvas=u.md;renderDoc(u.md);save();updateUndo();toast('Reverted');return}}
+      const u=undoStack.splice(i,1)[0];const s=cur();setCanvasMd(s,u.md);renderDoc(u.md);save();updateUndo();toast('Reverted');return}}
     toast('Nothing to undo')}
   function updateUndo(){$('undoBtn').disabled=!undoStack.some(u=>u.sid===currentSid)}
 
@@ -1535,14 +1675,18 @@
     const src=s.files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
     const prompt=(s.brief?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
+      +ideasContext()
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> VÆST is crystallizing…</div><div class="gen-body" id="genBody"></div></div>';
     try{
       const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      s.canvas=md;
-      const t=(md.match(/^#\s+(.+)/m)||[])[1];
+      const split=splitCanvases(md);
+      if(split){s.canvases=split.map(p=>({id:uid('cv'),t:p.t,md:p.md}));s.cvId=s.canvases[0].id;s.canvas=s.canvases[0].md;
+        toast('Split into '+split.length+' canvases — switch with the tabs up top')}
+      else{s.canvas=md;s.canvases=[{id:uid('cv'),t:'Main',md:md}];s.cvId=s.canvases[0].id}
+      const t=(s.canvas.match(/^#\s+(.+)/m)||[])[1];
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
       s.updatedAt=Date.now();save();renderRail();showCanvas();
       toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
@@ -1571,36 +1715,70 @@
     flow:'Focus only on "coherence and order" — do the parts flow, is anything self-contradicting?',
     complete:'Focus only on "completeness" — any important point missing, any section too thin?'};
   const LENS_LBL={'':'All',tone:'Tone',flow:'Coherence',complete:'Completeness'};
-  function runMastering(lens){
-    lens=lens||'';
+  function mastHeader(){
+    return _mast&&_mast.kind==='think'?'Ø Think · Senior Creative':'Refined · '+LENS_LBL[(_mast&&_mast.lens)||'']}
+  function startAudit(kind,lens,btn){
     if(_busy){toast('Working…');return}
     const s=cur();if(!s||!s.canvas.trim()){toast('No document yet');return}
-    _busy=true;const b=$('mastBtn');b.disabled=true;
-    const old=$('doc').querySelector('.mast');if(old)old.remove();
+    _busy=true;if(btn)btn.disabled=true;
+    const old=$('doc').querySelector('.mast');if(old)old.remove();unmarkFlaws();
+    const head=kind==='think'?'Ø Think · Senior Creative':'Refined · '+LENS_LBL[lens];
     const box=document.createElement('div');box.className='mast';
-    box.innerHTML='<div class="mast-top">Refined · '+LENS_LBL[lens]+'<span class="mast-count">Checking…</span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
+    box.innerHTML='<div class="mast-top">'+head+'<span class="mast-count" id="mastWait"></span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
     $('doc').prepend(box);$('cvView').scrollTop=0;
+    // persona-flavored waiting lines — the model is genuinely thinking, show it
+    const waits=PERSONA_WAIT[personaKey()];let wi=0;
+    const wEl=$('mastWait');wEl.textContent=waits[0];
+    const wt=setInterval(()=>{wi++;const el=$('mastWait');if(el)el.textContent=waits[wi%waits.length]},2600);
     const prompt='Here is the full document:\n\n'+genMd();
-    streamAPI('mastering',[{role:'user',content:prompt}],LENS[lens]||'',raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens};renderMast()})
-      .catch(e=>{box.remove();toast('Check failed: '+e.message)})
-      .finally(()=>{_busy=false;b.disabled=false})}
-  function parsePoints(t){const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));return pts.length?pts:[String(t).trim()]}
+    streamAPI(kind==='think'?'think':'mastering',[{role:'user',content:prompt}],
+        (kind==='think'?toneSys():(LENS[lens]||'')),
+        raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
+      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:kind};renderMast()})
+      .catch(e=>{box.remove();toast((kind==='think'?'Ø Think':'Check')+' failed: '+e.message)})
+      .finally(()=>{clearInterval(wt);_busy=false;if(btn)btn.disabled=false})}
+  function runMastering(lens){startAudit('mastering',lens||'',$('mastBtn'))}
+  function runThink(){startAudit('think','',$('thinkBtn'))}
+  function parsePoints(t){
+    const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));
+    const raw=pts.length?pts:[String(t).trim()];
+    return raw.map(p=>{const m=p.match(/\{\{(.+?)\}\}/);
+      return {t:p.replace(/\s*\{\{.+?\}\}\s*/,' ').replace(/\s{2,}/g,' ').trim(),q:m?m[1].trim():null}})}
   function renderMast(){
     const old=$('doc').querySelector('.mast');if(old)old.remove();
     if(!_mast)return;
     const remain=_mast.points.filter((p,i)=>!_mast.done[i]).length;
-    let h='<div class="mast-top">Refined · '+LENS_LBL[_mast.lens||'']+'<span class="mast-count">'+(remain?remain+' points':'all done')+'</span></div>';
+    let h='<div class="mast-top">'+mastHeader()+'<span class="mast-count">'+(remain?remain+' points':'all done')+'</span></div>';
     _mast.points.forEach((p,i)=>{const st=_mast.done[i];
-      h+='<div class="mi'+(st?' done':'')+(st==='fixed'?' fixed':'')+'" data-i="'+i+'"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t">'+mdInline(p)+'</div>';
+      h+='<div class="mi'+(st?' done':'')+(st==='fixed'?' fixed':'')+'" data-i="'+i+'"><span class="mi-dot f'+(i%3)+'"></span><div class="mi-b"><div class="mi-t'+(p.q&&!st?' hasq':'')+'"'+(p.q&&!st?' onclick="focusFlaw('+i+')" title="Jump to the highlighted spot"':'')+'>'+mdInline(p.t)+'</div>';
       if(st==='fixed')h+='<div class="mi-tag ok">✓ Applied'+((_mast.chg&&_mast.chg[i]&&_mast.chg[i].length)?' <button class="mi-peek" onclick="peekChanges('+i+')">View changes</button>':'')+'</div>';
       else if(st==='skip')h+='<div class="mi-tag skip">— Skipped</div>';
       else h+='<div class="mi-act"><button class="mi-ap" onclick="applyPoint('+i+')">Approve</button><button class="mi-sk" onclick="skipPoint('+i+')">Skip</button></div>';
       h+='</div></div>'});
     h+='<div class="mast-foot">'+(remain>1?'<button class="mi-all" onclick="applyAll()">Approve all ('+remain+')</button>':'')
       +'<button class="mi-close" onclick="closeMast()">Close</button></div>';
-    const box=document.createElement('div');box.className='mast';box.innerHTML=h;$('doc').prepend(box)}
-  function closeMast(){_mast=null;const b=$('doc').querySelector('.mast');if(b)b.remove()}
+    const box=document.createElement('div');box.className='mast';box.innerHTML=h;$('doc').prepend(box);
+    highlightFlaws()}
+  /* flaw overlay — anchor each pending point's {{quote}} in the canvas with a colored mark */
+  function unmarkFlaws(){document.querySelectorAll('#doc mark.flaw').forEach(m=>{m.replaceWith(document.createTextNode(m.textContent));})}
+  function highlightFlaws(){
+    unmarkFlaws();if(!_mast)return;
+    _mast.points.forEach((p,i)=>{
+      if(!p.q||_mast.done[i])return;
+      const walker=document.createTreeWalker($('doc'),NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('.sec-c')&&!n.parentElement.closest('.mast')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
+      let node;while((node=walker.nextNode())){
+        const idx=node.textContent.indexOf(p.q);
+        if(idx>=0){
+          const r=document.createRange();r.setStart(node,idx);r.setEnd(node,idx+p.q.length);
+          const mk=document.createElement('mark');mk.className='flaw f'+(i%3);mk.setAttribute('data-fi',i);
+          try{r.surroundContents(mk)}catch(e){}
+          break}}})}
+  function focusFlaw(i){
+    const mk=document.querySelector('#doc mark.flaw[data-fi="'+i+'"]');
+    if(!mk){toast('Spot not found in the current text');return}
+    const cv=$('cvView');const top=cv.scrollTop+mk.getBoundingClientRect().top-cv.getBoundingClientRect().top-cv.clientHeight/2;
+    smoothTo(cv,top);mk.classList.add('pulse');setTimeout(()=>mk.classList.remove('pulse'),1400)}
+  function closeMast(){_mast=null;unmarkFlaws();const b=$('doc').querySelector('.mast');if(b)b.remove()}
   function skipPoint(i){if(_mast){_mast.done[i]='skip';renderMast()}}
   function snapshot(){const b={};document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');b[hh?hh.innerText.trim():'_']=s.querySelector('.sec-c').innerText.trim()});return b}
   function flashChanged(before){const chg=[];document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');const k=hh?hh.innerText.trim():'_';
@@ -1612,14 +1790,14 @@
       if(keys.includes(k)){if(!first)first=s;s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),1300)}});
     if(first){const cv=$('cvView');const top=cv.scrollTop+first.getBoundingClientRect().top-cv.getBoundingClientRect().top-(cv.clientHeight-Math.min(first.offsetHeight,cv.clientHeight))/2;
       smoothTo(cv,top)}}
-  function applyMd(md,marks){const s=cur();s.canvas=md;s.updatedAt=Date.now();renderDoc(md);save()}
+  function applyMd(md,marks){const s=cur();setCanvasMd(s,md);s.updatedAt=Date.now();renderDoc(md);save()}
   function applyPoint(i){
     if(_busy){toast('Working…');return}
     if(!_mast)return;const point=_mast.points[i];
-    pushUndo();_busy=true;
+    pushUndo();_busy=true;unmarkFlaws();
     const it=$('doc').querySelector('.mi[data-i="'+i+'"] .mi-act');if(it)it.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying…</span>';
     const before=snapshot();
-    const prompt='Original document:\n\n'+genMd()+'\n\nApply just this one suggestion: '+point+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
+    const prompt='Original document:\n\n'+genMd()+'\n\nApply just this one suggestion: '+point.t+(point.q?(' (it concerns this part: "'+point.q+'")'):'')+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
       .then(md=>{applyMd(md);_mast.done[i]='fixed';_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})
@@ -1627,10 +1805,10 @@
   function applyAll(){
     if(_busy){toast('Working…');return}
     if(!_mast)return;const rem=_mast.points.map((p,i)=>({p,i})).filter(x=>!_mast.done[x.i]);if(!rem.length)return;
-    pushUndo();_busy=true;
+    pushUndo();_busy=true;unmarkFlaws();
     const foot=$('doc').querySelector('.mast-foot');if(foot)foot.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying across the whole document…</span>';
     const before=snapshot();
-    const prompt='Original document:\n\n'+genMd()+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
+    const prompt='Original document:\n\n'+genMd()+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p.t+(x.p.q?(' (concerns: "'+x.p.q+'")'):'')).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
       .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})

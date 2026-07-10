@@ -4,12 +4,16 @@ import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
 
-// VÆST 1.0 — all document work = Opus 4.8 · only Refined (full recheck) = Fable 5
+// VÆST 1.1 — three-phase pipeline
+// IDEA (sandbox chat) = Haiku 4.5 / Sonnet 5 · THINK (document work + Ø Think) = Opus 4.8 · REFINE = Fable 5
 const ROUTE = {
+  idea:      { model: 'claude-haiku-4-5-20251001', max: 2048 },
+  ideaplus:  { model: 'claude-sonnet-5',           max: 4096 },
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
+  think:     { model: 'claude-opus-4-8' },
   mastering: { model: 'claude-fable-5' },
 };
 
@@ -26,12 +30,27 @@ Always carried (about 30% of your instinct) is a creative director's lens:
 Respond in English by default; if the brief/source is in another language, match that language. Use clean markdown: clear headings, short paragraphs, tables/lists when they speed understanding.`;
 
 const TASK = {
+  idea: `${BASE}
+
+# CURRENT TASK: IDEA — the sandbox. You are a fast creative sparring partner.
+- Short, punchy replies: riff, throw 2–4 options, sharpen a spark — no essays, no long headers.
+- Raw pasted material (other models' output, prompts, scraps) is welcome: react to it, steal the good part, kill the weak part, say why in one line.
+- Ask at most one sharp question back when it genuinely unlocks the next move.
+- Plain text / light markdown lists only.`,
+  think: `${BASE}
+
+# CURRENT TASK: Ø THINK — a Senior Creative Director provocation pass over the document.
+Read the whole canvas like a CD reviewing a junior's deck: not proofreading — pushing. Find what would make the work braver and more shareable:
+- missing cultural hooks or tensions, safe choices that could be bent (e.g. minimalist → a brutalist clash), unclaimed naming/copy angles, places where the idea stops one step too early.
+Propose 3–6 pushes. Format each as: "- **short title** {{a short exact quote from the document this relates to}} — the push, 1–2 lines, concrete."
+The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
   summing: `${BASE}
 
 # CURRENT TASK: SUMMING — crystallize the brief + multiple sources into one working document.
 - Write in markdown: start with "# Document title", then split sections with "## ".
 - Let the structure follow the real content — don't force a fixed template. For creative work, cover the core idea/direction and the way to execute it (steps, deliverables).
-- Concise and readable; each section makes one clear point.`,
+- Concise and readable; each section makes one clear point.
+- If the work clearly spans multiple distinct deliverables (e.g. brand identity vs copywriting vs event visual), split them: put a line \`===CANVAS: Short Title===\` before each part, and give every part its own "# title" + "## " sections. Only split when the dimensions are genuinely separate — otherwise return one document with no marker.`,
   improve: `${BASE}
 
 # CURRENT TASK: IMPROVE — refine one section.
@@ -51,10 +70,11 @@ You get the full document + the suggestion. Adjust only what's relevant while ke
 Return the FULL markdown document only (keep the "# title" and "## " structure) — no explanation of changes.`,
   mastering: `${BASE}
 
-# CURRENT TASK: REFINED — a final recheck of the whole document.
-Read the entire document and check that the parts cohere: one tone, no self-contradiction, nothing important missing.
-Propose 2–5 genuinely improving points (consistency, clarity, missed emotional/aesthetic angles).
-Return markdown: each point starts with "- " then a **short title**, then 1–2 lines on how to fix it.`,
+# CURRENT TASK: REFINED — a holistic audit of the whole document, bird's-eye.
+Read the entire canvas and hunt three things: INCONSISTENCY (tone or claims that contradict across sections), REDUNDANCY (repeated words, ideas that circle), LOGIC (does the flow actually hold up).
+Propose 2–5 genuinely improving points.
+Format each as: "- **short title** {{a short exact quote from the document where the problem lives}} — 1–2 lines on how to fix it."
+The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
 };
 
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
@@ -104,7 +124,7 @@ export default async function handler(req, res) {
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
-    const { inTok, outTok } = await streamAnthropic(res, route.model, base, system || '', messages, 8192);
+    const { inTok, outTok } = await streamAnthropic(res, route.model, base, system || '', messages, route.max || 8192);
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
     res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // lets the client show per-document cost
