@@ -42,16 +42,16 @@
   .model .how li::before{content:"";position:absolute;left:0;top:16px;width:9px;height:2px;border-radius:2px;background:var(--chroma)}
   .model .how li b{color:var(--ink);font-weight:600}
   /* per-model aura tint */
-  .aura{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5}
-  .aura.skald{background:radial-gradient(38% 50% at 18% 30%,rgba(120,90,255,.16),transparent 70%),radial-gradient(30% 40% at 8% 70%,rgba(79,195,255,.12),transparent 72%)}
-  .aura.odin{background:radial-gradient(40% 52% at 20% 28%,rgba(255,161,75,.14),transparent 70%),radial-gradient(30% 40% at 6% 74%,rgba(255,90,31,.12),transparent 72%)}
-  .aura.norr{background:radial-gradient(40% 52% at 18% 30%,rgba(79,220,180,.15),transparent 70%),radial-gradient(32% 42% at 8% 72%,rgba(79,195,255,.12),transparent 72%)}
+  .aura{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.6}
+  .aura.skald{background:radial-gradient(34% 46% at 16% 32%,rgba(255,255,255,.06),transparent 70%)}
+  .aura.odin{background:radial-gradient(34% 46% at 16% 32%,rgba(255,255,255,.06),transparent 70%)}
+  .aura.norr{background:radial-gradient(34% 46% at 16% 32%,rgba(255,255,255,.06),transparent 70%)}
   .sig-anim{transform-origin:center;animation:sigrot 44s linear infinite}
   @keyframes sigrot{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body data-page="product">
-<nav class="nav" id="siteNav"><div class="wrap nav-in"><a class="brand" href="/"><svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ng" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ng)" stroke-width="3.6" stroke-linecap="round"/></svg><span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a><div class="nav-links" id="navLinks"><a href="/features">Features</a><a href="/product" class="on">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news">News</a></div><div class="nav-right"><a class="btn-try" href="/app">Try V&AElig;ST &rarr;</a><button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></nav>
+<nav class="nav" id="siteNav"><div class="wrap nav-in"><a class="brand" href="/"><svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ng" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ng)" stroke-width="3.6" stroke-linecap="round"/></svg><span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a><div class="nav-links" id="navLinks"><a href="/concept">Concept</a><a href="/features">Features</a><a href="/product" class="on">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news">News</a></div><div class="nav-right"><a class="btn-try" href="/app">Try V&AElig;ST &rarr;</a><button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></nav>
 
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
@@ -61,15 +61,15 @@
     <p class="sub th">VÆST doesn't run one generic brain. It runs a <b>trinity</b> — a poet who sparks, a mastermind who shapes, a light that perfects. Each is our own engine, tuned and versioned, named for the old north.</p>
     <div class="trinity reveal">
       <a href="#skald">
-        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6bff"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><path d="M50 12 L50 88 M50 30 L74 18 M50 52 L74 40 M50 30 L26 44" stroke="url(#tg1)" stroke-width="4" stroke-linecap="round"/></svg>
+        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><path d="M50 22 L78 74 L22 74 Z" stroke-linejoin="round"/><path d="M50 22 L50 74" stroke-opacity=".38"/><circle cx="50" cy="22" r="3.4" fill="#f2f1ee" stroke="none"/></svg>
         <div class="nm gtx">SKALD</div><div class="rl">the poet</div><div class="ph">Phase 1 · Idea</div>
       </a>
       <a href="#odin">
-        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa14b"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><circle cx="50" cy="50" r="30" stroke="url(#tg2)" stroke-width="4"/><path d="M50 8 L50 92 M8 50 L92 50" stroke="url(#tg2)" stroke-width="4" stroke-linecap="round"/></svg>
+        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><circle cx="50" cy="50" r="28"/><path d="M50 8 L50 92 M8 50 L92 50" stroke-opacity=".32" stroke-width="2"/><circle cx="50" cy="50" r="7"/></svg>
         <div class="nm gtx">ODIN</div><div class="rl">the mastermind</div><div class="ph">Phase 2 · Think</div>
       </a>
       <a href="#norrsken">
-        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fdcb4"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><path d="M14 66 Q34 30 50 46 Q66 62 86 30 M18 78 Q38 46 52 60 Q68 74 84 48" stroke="url(#tg3)" stroke-width="4" stroke-linecap="round"/></svg>
+        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3" stroke-linecap="round"><path d="M16 42 Q50 18 84 42"/><path d="M16 58 Q50 34 84 58" stroke-opacity=".62"/><path d="M16 74 Q50 50 84 74" stroke-opacity=".38"/></svg>
         <div class="nm gtx">NORRSKEN</div><div class="rl">the light</div><div class="ph">Phase 3 · Refine</div>
       </a>
     </div>
@@ -81,7 +81,7 @@
   <div class="aura skald"></div>
   <div class="wrap">
     <div>
-      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="sg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a68bff"/><stop offset=".5" stop-color="#6fb6ff"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="42" stroke="url(#sg1)" stroke-width="1.4" opacity=".45" stroke-dasharray="3 7"/><circle cx="50" cy="50" r="30" stroke="url(#sg1)" stroke-width="1.2" opacity=".6"/></g><path d="M50 14 L50 86 M50 30 L76 16 M50 50 L76 38 M50 30 L24 46 M50 66 L28 78" stroke="url(#sg1)" stroke-width="4.5" stroke-linecap="round"/></svg>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M50 22 L78 72 L22 72 Z" stroke="#f2f1ee" stroke-width="2" stroke-linejoin="round"/><path d="M50 22 L50 72" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><path d="M34 62 L66 62" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><circle cx="50" cy="22" r="3.2" fill="#f2f1ee"/></svg>
       <div class="ph">Phase 1 · Idea · Sandbox</div>
       <h2 class="gtx">SKALD</h2>
       <div class="kenning">The poet who sets the spark.</div>
@@ -110,7 +110,7 @@
   <div class="aura odin"></div>
   <div class="wrap">
     <div>
-      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="og1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd08a"/><stop offset=".5" stop-color="#ffa14b"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="44" stroke="url(#og1)" stroke-width="1.4" opacity=".45" stroke-dasharray="2 8"/></g><circle cx="50" cy="50" r="26" stroke="url(#og1)" stroke-width="4.5"/><path d="M50 6 L50 94 M6 50 L94 50 M22 22 L78 78 M78 22 L22 78" stroke="url(#og1)" stroke-width="3" stroke-linecap="round" opacity=".9"/><circle cx="50" cy="50" r="7" fill="url(#og1)"/></svg>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M50 12 L50 88 M12 50 L88 50" stroke="#f2f1ee" stroke-opacity=".22" stroke-width="1"/><circle cx="50" cy="50" r="27" stroke="#f2f1ee" stroke-width="2"/><circle cx="50" cy="50" r="8" stroke="#f2f1ee" stroke-width="2"/><circle cx="50" cy="50" r="2" fill="#f2f1ee"/></svg>
       <div class="ph">Phase 2 · Think · Synthesis</div>
       <h2 class="gtx">ODIN</h2>
       <div class="kenning">The all-seeing mind that brings order.</div>
@@ -139,7 +139,7 @@
   <div class="aura norr"></div>
   <div class="wrap">
     <div>
-      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="nr1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ef0c8"/><stop offset=".5" stop-color="#4fdcb4"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="44" stroke="url(#nr1)" stroke-width="1.4" opacity=".45" stroke-dasharray="3 7"/></g><path d="M10 62 Q30 24 48 44 Q64 62 90 24" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round"/><path d="M12 74 Q32 40 50 58 Q68 76 88 44" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round" opacity=".75"/><path d="M16 86 Q36 56 54 72 Q70 86 84 62" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round" opacity=".5"/></svg>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none" stroke-linecap="round"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M20 40 Q50 20 80 40" stroke="#f2f1ee" stroke-width="2"/><path d="M20 54 Q50 34 80 54" stroke="#f2f1ee" stroke-opacity=".6" stroke-width="2"/><path d="M20 68 Q50 48 80 68" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="2"/></svg>
       <div class="ph">Phase 3 · Refine · Quality gate</div>
       <h2 class="gtx">NORRSKEN</h2>
       <div class="kenning">The light that sweeps the work clean.</div>
