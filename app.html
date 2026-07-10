@@ -512,6 +512,42 @@
   .ol-item.cur{background:rgba(255,255,255,.07);color:var(--snow)}
   .ol-item.cur .on2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 
+  /* settings tabs + profile + usage */
+  .set-wide{max-width:520px}
+  .set-tabs{display:flex;gap:2px;padding:0 18px;border-bottom:1px solid var(--line)}
+  .set-tab{font-size:12.5px;font-weight:600;color:var(--mute);padding:12px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+  .set-tab:hover{color:var(--dim)}
+  .set-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .set-body{padding:20px 20px 24px}
+  .set-pane{display:none}.set-pane.on{display:block;animation:homeUp .3s var(--ease)}
+  .pf-row{display:flex;gap:16px;align-items:flex-start;margin-bottom:6px}
+  .pf-av{width:60px;height:60px;border-radius:50%;flex:none;background:var(--card) center/cover no-repeat;border:1px solid var(--line2);
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:650;color:var(--ink);cursor:pointer;transition:.2s}
+  .pf-av:hover{border-color:var(--ink)}
+  .pf-av.sm{width:20px;height:20px;font-size:10px;border-width:1px;margin-right:2px}
+  .pv-toggle{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:var(--dim);cursor:pointer}
+  .pv-toggle input{margin-top:2px;accent-color:var(--cinnabar)}
+  .usage-break{margin-top:12px}
+  .ub-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--dim)}
+  .ub-row b{color:var(--ink);font-family:var(--mono);font-size:12.5px}
+  .s-item .lock{flex:none;font-size:10px;opacity:.7;margin-right:2px}
+
+  /* CI dialog — replaces browser confirm/prompt */
+  .dlg{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+  .dlg.show{display:flex;animation:palBg .2s var(--ease)}
+  .dlg-box{width:100%;max-width:400px;background:rgba(22,22,25,.92);backdrop-filter:blur(26px) saturate(1.3);-webkit-backdrop-filter:blur(26px) saturate(1.3);
+    border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:24px 24px 18px;box-shadow:0 34px 90px rgba(0,0,0,.55);animation:palIn .26s var(--ease)}
+  .dlg-msg{font-size:15px;line-height:1.6;color:var(--ink);margin-bottom:18px}
+  .dlg-in{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:11px 14px;
+    font-family:var(--ui);font-size:14px;color:var(--ink);outline:none;margin-bottom:18px}
+  .dlg-in:focus{border-color:rgba(255,255,255,.5)}
+  .dlg-row{display:flex;justify-content:flex-end;gap:10px}
+  .dlg-cancel{font-size:13.5px;font-weight:600;color:var(--dim);padding:9px 16px;border-radius:8px}
+  .dlg-cancel:hover{color:var(--ink);background:var(--soft)}
+  .dlg-ok{font-size:13.5px;font-weight:650;color:#0a0a0a;background:var(--ink);padding:9px 18px;border-radius:8px}
+  .dlg-ok:hover{background:#fff}
+  .dlg-ok.danger{background:var(--cinnabar);color:#fff}.dlg-ok.danger:hover{background:#ff6a3c}
+
   /* paste tiles + settings + micro-motion */
   @keyframes chipIn{from{opacity:0;transform:translateY(5px) scale(.96)}}
   .chip{cursor:pointer;animation:chipIn .3s var(--ease);transition:transform .18s var(--ease),border-color .18s}
@@ -709,7 +745,7 @@
         <div class="r-lbl">Projects <button onclick="newProject()" title="New project" aria-label="New project">＋</button></div>
         <div id="projList"></div>
       </div>
-      <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.0</span><button class="r-gear" onclick="openSettings()" title="Settings" aria-label="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+      <div class="r-foot"><span class="pf-av sm" id="railAv" onclick="openSettings()" title="Profile"></span> <span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.0</span><button class="r-gear" onclick="openSettings()" title="Settings" aria-label="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
     </div>
   </aside>
   <div class="scrim" onclick="toggleRail()"></div>
@@ -803,6 +839,16 @@
     <div id="diffBody"></div>
   </div>
 </div>
+<div class="dlg" id="dlgView">
+  <div class="dlg-box">
+    <div class="dlg-msg" id="dlgMsg"></div>
+    <input class="dlg-in" id="dlgIn" spellcheck="false" style="display:none">
+    <div class="dlg-row">
+      <button class="dlg-cancel" id="dlgCancel">Cancel</button>
+      <button class="dlg-ok" id="dlgOk">Confirm</button>
+    </div>
+  </div>
+</div>
 <div class="snap" id="pasteView" onclick="if(event.target===this)closePaste()">
   <div class="snap-box">
     <div class="snap-hd"><b id="pasteTitle">Pasted</b><button class="save" onclick="closePaste()">Close</button></div>
@@ -810,20 +856,58 @@
   </div>
 </div>
 <div class="snap" id="setView" onclick="if(event.target===this)closeSettings()">
-  <div class="snap-box">
+  <div class="snap-box set-wide">
     <div class="snap-hd"><b>Settings</b><button class="save" onclick="closeSettings()">Done</button></div>
-    <div style="padding:16px 18px 20px">
-      <div class="set-lbl">Persona — rides on top of every call in this session</div>
-      <div class="tone" id="toneBar">
-        <button data-tone="" onclick="setTone('')">Standard</button>
-        <button data-tone="formal" onclick="setTone('formal')">Formal</button>
-        <button data-tone="playful" onclick="setTone('playful')">Playful</button>
+    <div class="set-tabs">
+      <button class="set-tab on" data-st="profile" onclick="setSetTab('profile')">Profile</button>
+      <button class="set-tab" data-st="persona" onclick="setSetTab('persona')">Persona</button>
+      <button class="set-tab" data-st="usage" onclick="setSetTab('usage')">Usage</button>
+      <button class="set-tab" data-st="privacy" onclick="setSetTab('privacy')">Privacy</button>
+    </div>
+    <div class="set-body">
+      <div class="set-pane on" data-sp="profile">
+        <div class="pf-row">
+          <div class="pf-av" id="pfAv" onclick="$('pfPic').click()"><span id="pfAvTxt"></span></div>
+          <div style="flex:1;min-width:0">
+            <div class="set-lbl">Display name</div>
+            <input class="dlg-in" id="pfName" style="display:block;margin:0" placeholder="Your name">
+            <button class="set-link" style="margin-top:8px" onclick="$('pfPic').click()">Upload photo</button>
+            <input type="file" id="pfPic" accept="image/*" hidden onchange="pfUpload(event)">
+          </div>
+        </div>
+        <div class="set-note" id="pfEmail"></div>
+        <button class="dlg-ok" style="margin-top:16px" onclick="saveProfile()">Save profile</button>
       </div>
-      <div class="set-note">Standard — clear and direct · Formal — editorial, Monocle-grade · Playful — a creative director with mischief</div>
-      <div class="set-lbl" style="margin-top:22px">Language</div>
-      <div class="set-note">VÆST mirrors you: ask in Thai, get Thai · ask in English, get English</div>
-      <div class="set-lbl" style="margin-top:22px">Usage</div>
-      <button class="set-link" onclick="closeSettings();openStats()">Usage &amp; cost →</button>
+      <div class="set-pane" data-sp="persona">
+        <div class="set-lbl">Persona — rides on top of every call</div>
+        <div class="tone" id="toneBar">
+          <button data-tone="" onclick="setTone('')">Standard</button>
+          <button data-tone="formal" onclick="setTone('formal')">Formal</button>
+          <button data-tone="playful" onclick="setTone('playful')">Playful</button>
+        </div>
+        <div class="set-note">Standard — clear and direct · Formal — editorial, Monocle-grade · Playful — a creative director with mischief</div>
+        <div class="set-lbl" style="margin-top:24px">Reply language</div>
+        <div class="tone" id="langBar">
+          <button data-lang="" onclick="setLang('')">Auto</button>
+          <button data-lang="th" onclick="setLang('th')">ไทย</button>
+          <button data-lang="en" onclick="setLang('en')">English</button>
+        </div>
+        <div class="set-note">Auto mirrors you — Thai in, Thai out. Or lock every reply to one language.</div>
+      </div>
+      <div class="set-pane" data-sp="usage">
+        <div class="quota-row" id="quotaRow2" style="display:none"></div>
+        <div class="set-lbl">This month · by engine</div>
+        <div id="usageBreak" class="usage-break"></div>
+        <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
+      </div>
+      <div class="set-pane" data-sp="privacy">
+        <div class="set-lbl">Private session</div>
+        <label class="pv-toggle"><input type="checkbox" id="pvPrivate" onchange="togglePrivate(this.checked)"> <span>🔒 Keep this session on this device only — no cloud sync, excluded from taste memory</span></label>
+        <div class="set-lbl" style="margin-top:24px">Your data</div>
+        <button class="set-link" onclick="exportAllData()">Export everything (JSON) →</button><br>
+        <button class="set-link" style="margin-top:10px;color:var(--cin-d)" onclick="wipeCloud()">Delete my cloud copy →</button>
+        <div class="set-note">Deleting the cloud copy keeps what's on this device. <a href="/privacy.html" style="color:var(--dim)">Privacy policy</a></div>
+      </div>
     </div>
   </div>
 </div>
@@ -900,6 +984,23 @@
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
   let projects=[],sessions=[],currentSid=null,usage=0,_busy=false,_renaming=false;
   function setBusy(b){_busy=b;const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
+  /* ═══ CI dialog — promise-based confirm/prompt ═══ */
+  let _dlgResolve=null;
+  function uiDialog(opts){
+    return new Promise(res=>{
+      _dlgResolve=res;
+      $('dlgMsg').textContent=opts.msg;
+      const inp=$('dlgIn'),isPrompt='value' in opts;
+      inp.style.display=isPrompt?'':'none';
+      if(isPrompt){inp.value=opts.value||'';inp.placeholder=opts.placeholder||''}
+      const ok=$('dlgOk');ok.textContent=opts.ok||'Confirm';ok.classList.toggle('danger',!!opts.danger);
+      $('dlgCancel').textContent=opts.cancel||'Cancel';
+      $('dlgView').classList.add('show');
+      setTimeout(()=>{(isPrompt?inp:ok).focus();if(isPrompt)inp.select()},60);
+    })}
+  function dlgClose(val){$('dlgView').classList.remove('show');const r=_dlgResolve;_dlgResolve=null;if(r)r(val)}
+  const uiConfirm=(msg,opts)=>uiDialog({msg,...(opts||{})}).then(v=>v!==null&&v!==false);
+  const uiPrompt=(msg,value,opts)=>uiDialog({msg,value:value||'',...(opts||{})});
   const cur=()=>sessions.find(s=>s.id===currentSid)||null;
 
   /* ═══ auth — Supabase email+password ═══ */
@@ -1061,7 +1162,7 @@
         if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null};
       const viaJwt=AUTH&&AUTH.access_token?await get(AUTH.access_token):null;
       return viaJwt||await get(SB.key)}catch(e){return null}}
-  let _ct;function cloudSave(){clearTimeout(_ct);_ct=setTimeout(async()=>{try{
+  let _ct;function cloudSave(){const cs=cur();if(cs&&cs.private){setSync('ok');return}clearTimeout(_ct);_ct=setTimeout(async()=>{try{
     await ensureAuth();
     const post=b=>fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+b,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
       body:JSON.stringify({email:SB.who,data:stateBlob(),updated_at:new Date().toISOString()})});
@@ -1254,20 +1355,20 @@
     if(_renaming)return;
     const s=sessions.find(x=>x.id===id);if(!s)return;currentSid=id;save();renderRail();
     if(s.canvas&&s.canvas.trim())showCanvas();else showHome();closeRailMobile()}
-  function deleteSession(id){
+  async function deleteSession(id){
     const s=sessions.find(x=>x.id===id);if(!s)return;
-    if(!confirm('Delete “'+s.title+'”?'))return;
+    if(!await uiConfirm('Delete “'+s.title+'”?',{ok:'Delete',danger:true}))return;
     sessions=sessions.filter(x=>x.id!==id);
     if(currentSid===id){currentSid=(sessions[0]||{}).id||null;if(!currentSid){newSession();return}openSession(currentSid)}
     save();renderRail();toast('Deleted')}
   function moveSession(id,pid){const s=sessions.find(x=>x.id===id);if(!s)return;s.projectId=pid;s.updatedAt=Date.now();save();renderRail();
     toast(pid?'Moved into the project — the next Summing will see this project’s context':'Removed from the project')}
-  function newProject(){const n=(prompt('Project name','')||'').trim();if(!n)return;
+  async function newProject(){const n=((await uiPrompt('Name the project','',{ok:'Create',placeholder:'Project name'}))||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
-  function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
-    const n=(prompt('Rename project',p.name)||'').trim();if(!n)return;p.name=n;save();renderRail()}
-  function deleteProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
-    if(!confirm('Delete project “'+p.name+'”? (its sessions become standalone)'))return;
+  async function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
+    const n=((await uiPrompt('Rename project',p.name,{ok:'Rename'}))||'').trim();if(!n)return;p.name=n;save();renderRail()}
+  async function deleteProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
+    if(!await uiConfirm('Delete project “'+p.name+'”? Its sessions become standalone.',{ok:'Delete',danger:true}))return;
     sessions.forEach(s=>{if(s.projectId===id)s.projectId=null});
     projects=projects.filter(x=>x.id!==id);save();renderRail()}
 
@@ -1278,7 +1379,7 @@
   function sItem(s){const n=_cmtCounts[s.id]||0;
     return '<div class="s-item'+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
     +'<span class="dot"></span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
-    +(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
+    +(s.private?'<span class="lock" title="Private — on this device only">🔒</span>':'')+(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
     +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
   // sweep shared sessions for fresh client comments (badge in the rail)
   async function sweepCommentCounts(){
@@ -1368,7 +1469,11 @@
       sel.removeAllRanges();sel.addRange(r);
       if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
     }});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste()}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();if($('dlgView').classList.contains('show'))dlgClose(null)}
+    if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
+  $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
+  $('dlgCancel').onclick=()=>dlgClose(null);
+  $('dlgView').onclick=e=>{if(e.target===$('dlgView'))dlgClose(null)};
   // ⌥↑ / ⌥↓ — switch sessions in the order shown in the rail
   addEventListener('keydown',e=>{
     if(!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
@@ -1448,9 +1553,15 @@
     formal:['Reading between the lines…','Considering the composition…','Letting the ideas settle…'],
     playful:['Ripping it apart (kindly)…','Hunting for the cultural hook…','Bending the frame a little…'],
   };
+  const LANGS={th:'Reply in Thai (ภาษาไทย) regardless of the input language.',en:'Reply in English regardless of the input language.'};
+  function getLang(){try{return localStorage.getItem('vaest_lang')||''}catch(e){return ''}}
+  function setLang(l){try{localStorage.setItem('vaest_lang',l)}catch(e){}
+    document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===l));
+    toast(l==='th'?'ทุกคำตอบเป็นภาษาไทย':l==='en'?'Replies locked to English':'Auto — mirrors your language')}
   function toneSys(){
     const s=cur(),parts=[];
     parts.push(PERSONA[personaKey()]+' This persona governs word choice, tone and mood of everything you write here.');
+    if(LANGS[getLang()])parts.push(LANGS[getLang()]);
     const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
     if(p&&p.voice&&p.voice.trim())parts.push('Project voice & guidelines (follow strictly):\n'+p.voice.trim());
     const taste=[...((p&&p.taste)||[]),...((s&&s.taste)||[])].slice(-14);
@@ -1468,10 +1579,49 @@
     if(tEl){if(n){tEl.style.display='';tEl.innerHTML='<span>Taste memory: learned from <b>'+n+'</b> decision'+(n>1?'s':'')+' — quietly biases every suggestion</span><button onclick="clearTaste()">Forget</button>'}
       else{tEl.style.display='none'}}
     $('voiceView').classList.add('show');setTimeout(()=>$('voiceText').focus(),60)}
-  function clearTaste(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
-    if(!confirm('Forget the '+(p.taste||[]).length+' learned taste decisions for this project?'))return;
+  async function clearTaste(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
+    if(!await uiConfirm('Forget the '+(p.taste||[]).length+' learned taste decisions for this project?',{ok:'Forget',danger:true}))return;
     p.taste=[];save();$('vcTaste').style.display='none';toast('Taste memory cleared')}
-  function openSettings(){renderTone();$('setView').classList.add('show')}
+  function setSetTab(t){
+    document.querySelectorAll('.set-tab').forEach(b=>b.classList.toggle('on',b.getAttribute('data-st')===t));
+    document.querySelectorAll('.set-pane').forEach(p=>p.classList.toggle('on',p.getAttribute('data-sp')===t));
+    if(t==='usage')renderUsageBreak()}
+  function openSettings(){renderTone();
+    document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===getLang()));
+    const pr=getProfile();$('pfName').value=pr.name||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
+    $('pvPrivate').checked=!!(cur()&&cur().private);
+    setSetTab('profile');$('setView').classList.add('show')}
+  /* profile — name + avatar in the user's own state (stays with the account) */
+  function getProfile(){try{return JSON.parse(localStorage.getItem('vaest_profile:'+(AUTH&&AUTH.email)))||{}}catch(e){return {}}}
+  function saveProfileObj(p){try{localStorage.setItem('vaest_profile:'+(AUTH&&AUTH.email),JSON.stringify(p))}catch(e){}}
+  function paintAvatar(){const p=getProfile();const av=$('pfAv'),txt=$('pfAvTxt');const foot=$('railAv');
+    const set=el=>{if(!el)return;if(p.pic){el.style.backgroundImage='url('+p.pic+')';el.classList.add('has');el.textContent=''}
+      else{el.style.backgroundImage='';el.classList.remove('has');el.textContent=(p.name||(AUTH&&AUTH.email)||'?').trim()[0].toUpperCase()}};
+    set(av);set(foot);if(txt&&!p.pic)txt.textContent=(p.name||(AUTH&&AUTH.email)||'?').trim()[0].toUpperCase();else if(txt)txt.textContent=''}
+  function saveProfile(){const p=getProfile();p.name=$('pfName').value.trim().slice(0,40);saveProfileObj(p);paintAvatar();
+    const w=$('whoLbl');if(w)w.textContent=p.name||AUTH.email;toast('Profile saved')}
+  async function pfUpload(e){const f=(e.target.files||[])[0];e.target.value='';if(!f)return;
+    try{const url=await imgToDataURL(f,128,.8);const p=getProfile();p.pic=url;saveProfileObj(p);paintAvatar();toast('Photo updated')}
+    catch(err){toast('Couldn’t read that image')}}
+  /* privacy */
+  function togglePrivate(on){const s=cur();if(!s)return;s.private=on;save();
+    renderRail();toast(on?'🔒 Private — this session stays on this device':'Sync re-enabled for this session')}
+  function exportAllData(){
+    const blob=new Blob([JSON.stringify(stateBlob(),null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vaest-data-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Exported your data')}
+  async function wipeCloud(){
+    if(!await uiConfirm('Delete your cloud copy? What’s on this device stays; other devices will lose the sync.',{ok:'Delete cloud',danger:true}))return;
+    try{await ensureAuth();
+      await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent(SB.who),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+((AUTH&&AUTH.access_token)||SB.key)}});
+      toast('Cloud copy deleted')}catch(e){toast('Couldn’t delete, try again')}}
+  function renderUsageBreak(){
+    const rt=getRates();let o=0,f=0,idea=0;sessions.forEach(x=>{const t=x.tok||{};o+=t.opus||0;f+=t.fable||0;idea+=t.idea||0});
+    const q=window.QUOTA;const qe=$('quotaRow2');
+    if(qe){if(q&&!q.internal&&q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));qe.style.display='';
+      qe.innerHTML='<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>'}else qe.style.display='none'}
+    $('usageBreak').innerHTML=[['Opus 4.8 · writing',o],['Fable 5 · refine',f],['Idea · Gemini',idea]]
+      .map(r=>'<div class="ub-row"><span>'+r[0]+'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
   function closeSettings(){$('setView').classList.remove('show')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
@@ -1563,16 +1713,16 @@
     const c={id:uid('cv'),t:'Untitled',md:'# Untitled\n\n## Notes\n\n—'};
     s.canvases.push(c);s.cvId=c.id;s.canvas=c.md;
     renderDoc(s.canvas);save();renderTabs();toast('New canvas — double-click the tab to name it')}
-  function renameCanvas(id){
+  async function renameCanvas(id){
     const s=cur();if(!s)return;const c=(s.canvases||[]).find(x=>x.id===id);if(!c)return;
-    let n=null;try{n=prompt('Canvas name',c.t)}catch(e){}
+    const n=await uiPrompt('Canvas name',c.t,{ok:'Rename'});
     if(n===null||!String(n).trim())return;
     c.t=String(n).trim().slice(0,26);save();renderTabs()}
-  function deleteCanvas(id){
+  async function deleteCanvas(id){
     const s=cur();if(!s)return;ensureCanvases(s);
     if(s.canvases.length<2)return;
     const c=s.canvases.find(x=>x.id===id);if(!c)return;
-    if(!confirm('Delete canvas “'+c.t+'”? Its content goes with it.'))return;
+    if(!await uiConfirm('Delete canvas “'+c.t+'”? Its content goes with it.',{ok:'Delete',danger:true}))return;
     s.canvases=s.canvases.filter(x=>x.id!==id);
     if(s.cvId===id){s.cvId=s.canvases[0].id;s.canvas=s.canvases[0].md;renderDoc(s.canvas)}
     save();renderTabs()}
@@ -1639,10 +1789,10 @@
     website:"Website for [brand].\nJob of the site: [convert / present / sell]\nAudience: [who lands here, and why]\nMust-have sections: [pages]\nTone: [voice in 3 words]\nReferences we like: [links + why]",
     deck:"Deck for [pitch / report].\nWho's in the room: [audience]\nThe decision we want: [goal]\nStory in one line: [narrative]\nSlide count: [~N]\nData attached: [files]",
   };
-  function useTpl(k){
+  async function useTpl(k){
     const t=TPL[k];if(!t)return;
     const b=$('brief');
-    if(b.value.trim()&&!confirm('Replace the current brief with the '+k+' template?'))return;
+    if(b.value.trim()&&!await uiConfirm('Replace the current brief with the '+k+' template?',{ok:'Replace'}))return;
     b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
 
   /* ═══ IDEA — phase 1 sandbox · Haiku (quick) / Sonnet (deep) ═══ */
@@ -1694,7 +1844,7 @@
   async function revokeShare(){
     $('expMenu').classList.remove('show');
     const s=cur();if(!s||!s.shareId)return;
-    if(!confirm('Revoke this share link? Anyone with the URL loses access.'))return;
+    if(!await uiConfirm('Revoke this share link? Anyone with the URL loses access.',{ok:'Revoke',danger:true}))return;
     try{await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('share:'+s.shareId),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
       s.shareId=null;_cmtCounts[s.id]=0;_cmtCache[s.id]=[];save();renderRail();renderOwnerComments();toast('Link revoked')}
     catch(e){toast('Couldn’t revoke, try again')}}
@@ -1778,9 +1928,9 @@
   /* ═══ version snapshots ═══ */
   function openSnapshots(){const s=cur();if(!s){toast('No document yet');return}if($('cvView').style.display==='none'){toast('Open a document first');return}$('snapView').classList.add('show');renderSnaps()}
   function closeSnap(){$('snapView').classList.remove('show')}
-  function saveSnapshot(nameArg){const s=cur();if(!s)return;s.snaps=s.snaps||[];
+  async function saveSnapshot(nameArg){const s=cur();if(!s)return;s.snaps=s.snaps||[];
     const dflt='Version '+(s.snaps.length+1);
-    let name=nameArg;if(name===undefined){try{name=prompt('Name this version',dflt)}catch(e){name=dflt}if(name===null)return}
+    let name=nameArg;if(name===undefined){name=await uiPrompt('Name this version',dflt,{ok:'Save'});if(name===null)return}
     name=(name||'').trim()||dflt;
     ensureCanvases(s);s.snaps.unshift({id:uid('v'),name,md:genMd(),cv:s.cvId,ts:Date.now()});if(s.snaps.length>25)s.snaps.length=25;
     s.updatedAt=Date.now();save();renderSnaps();toast('Saved version “'+name+'”')}
@@ -1996,7 +2146,7 @@
     smoothTo(cv,top);mk.classList.add('pulse');setTimeout(()=>mk.classList.remove('pulse'),1400)}
   // taste memory — every approve/skip teaches the system what this team wants
   function tasteLog(verdict,point){
-    if(!point)return;const s=cur();if(!s)return;
+    if(!point)return;const s=cur();if(!s||s.private)return;
     const tgt=(s.projectId&&projects.find(x=>x.id===s.projectId))||s;
     tgt.taste=(tgt.taste||[]).concat({v:verdict,t:String(point.t||'').replace(/\*\*/g,'').slice(0,90),k:(_mast&&_mast.kind)||'mastering',ts:Date.now()}).slice(-40);
     save()}
@@ -2103,7 +2253,7 @@
       if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null}catch(e){return null}}
   async function boot(){
     SB.who=AUTH.email; // per-user state
-    $('whoLbl').textContent=AUTH.email;
+    const _pf=getProfile();$('whoLbl').textContent=_pf.name||AUTH.email;paintAvatar();
     if(!loadLocal()){projects=[];sessions=[];usage=0}
     if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}]}
     if(!currentSid||!cur())currentSid=sessions[0].id;
