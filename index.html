@@ -137,8 +137,8 @@
   .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:14px}
 
   /* ── section frame ── */
-  .sec-pad{padding:150px 0}
-  @media(max-width:640px){.sec-pad{padding:104px 0}}
+  .sec-pad{padding-top:150px;padding-bottom:150px}
+  @media(max-width:640px){.sec-pad{padding-top:104px;padding-bottom:104px}}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:30px;display:flex;align-items:center;gap:13px}
   .lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
   h2{font-weight:650;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
@@ -157,7 +157,7 @@
   .win-bar .url{margin-left:12px;font-family:var(--mono);font-size:10.5px;color:var(--mute);letter-spacing:.04em}
   .win-body{position:relative;min-height:452px}
   @media(max-width:640px){.win-body{min-height:512px}}
-  .scene{position:absolute;inset:0;padding:50px 58px;opacity:0;visibility:hidden;transition:opacity .55s var(--ease)}
+  .scene{position:absolute;inset:0;padding:50px 58px;opacity:0;visibility:hidden;transition:opacity .4s var(--ease)}
   @media(max-width:640px){.scene{padding:30px 24px}}
   .scene.on{opacity:1;visibility:visible}
   .d-eye{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
@@ -269,7 +269,7 @@
   footer{padding:44px 0}
   footer .fin{display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 
-  .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .reveal{opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
   .reveal.in{opacity:1;transform:none}
   .rail .step,.eng .e-card{opacity:0;transform:translateY(12px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
   .rail.reveal.in .step,.eng.reveal.in .e-card{opacity:1;transform:none}
@@ -302,7 +302,7 @@
   <div class="prism"><div class="glow"></div><div class="strips"></div><div class="sweep"></div><div class="ripple"></div></div>
   <div class="wrap">
     <span class="eye">VÆST — a studio instrument by ORIONS.Agency</span>
-    <h1>Aesthetic intelligence<span class="dot">.</span></h1>
+    <h1>Aesthetic Intelligence<span class="dot">.</span></h1>
     <p class="sub th">Drop your brief, files, spreadsheets, moodboards into VÆST and hit Summing — you get <b>one document</b> that’s sharp, readable, editable sentence by sentence, and passes a final taste check before it ships.</p>
     <div class="row">
       <a class="btn" href="/app" id="heroCta">Start VÆST</a>
@@ -313,7 +313,7 @@
 
 <!-- SPEC STRIP -->
 <div class="wrap"><div class="specs">
-  <div class="spec"><div class="n">4</div><div class="k">Frontier Models</div></div>
+  <div class="spec"><div class="n">3</div><div class="k">Minds · One Taste</div></div>
   <div class="spec"><div class="n">7<span class="u">+</span></div><div class="k">Input Formats</div></div>
   <div class="spec"><div class="n">1</div><div class="k">Source of Truth</div></div>
   <div class="spec"><div class="n">&infin;</div><div class="k">Revisions</div></div>
@@ -501,12 +501,14 @@
 
   // typing demo
   const BRIEF='Rebrand a coffee shop in Ari — warm tone but not corny, audience 25–40 creatives; old audit file and sales attached.';
-  function showScene(n){$('sc1').classList.toggle('on',n===1);$('sc2').classList.toggle('on',n===2)}
+  async function showScene(n){const cur=$('sc1').classList.contains('on')?1:($('sc2').classList.contains('on')?2:0);
+    if(cur===n)return;if(cur){$('sc'+cur).classList.remove('on');await wait(360)}
+    $('sc'+n).classList.add('on')}
   function wait(ms){return new Promise(r=>setTimeout(r,ms))}
   async function typeText(el,t,sp){for(let i=0;i<=t.length;i++){el.textContent=t.slice(0,i);await wait(sp+Math.random()*26)}}
   async function runDemo(){
     for(;;){
-      showScene(1);$('typed').textContent='';
+      $('typed').textContent='';await showScene(1);
       ['ch1','ch2','ch3'].forEach(c=>$(c).classList.remove('on'));
       document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.remove('on'));
       $('dRef').classList.remove('on');$('dSum').classList.remove('press');
@@ -516,10 +518,10 @@
       await wait(300);$('ch2').classList.add('on');
       await wait(300);$('ch3').classList.add('on');
       await wait(640);$('dSum').classList.add('press');await wait(170);$('dSum').classList.remove('press');
-      await wait(420);showScene(2);
+      await wait(420);await showScene(2);await wait(200);
       for(const ln of document.querySelectorAll('#sc2 .ln')){ln.classList.add('on');await wait(420)}
       await wait(680);$('dRef').classList.add('on');
-      await wait(4200);
+      await wait(2800);
     }
   }
   if(reduced){showScene(2);document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.add('on'));$('dRef').classList.add('on')}

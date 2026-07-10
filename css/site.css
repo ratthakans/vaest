@@ -78,8 +78,8 @@ img{max-width:100%}
 .phead .sub b{color:var(--ink);font-weight:600}
 
 /* ── sections ── */
-.sec-pad{padding:110px 0}
-@media(max-width:640px){.sec-pad{padding:72px 0}}
+.sec-pad{padding-top:110px;padding-bottom:110px}
+@media(max-width:640px){.sec-pad{padding-top:72px;padding-bottom:72px}}
 section{border-bottom:1px solid var(--line)}
 .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:26px;display:flex;align-items:center;gap:13px}
 .lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
@@ -158,5 +158,5 @@ footer{padding:56px 0 44px}
 .foot-base{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
   font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 
-.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .reveal.in{opacity:1;transform:none}
