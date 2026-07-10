@@ -267,7 +267,7 @@
     <h1>Aesthetic intelligence<span class="dot">.</span></h1>
     <p class="sub th">Drop your brief, files, spreadsheets, moodboards into VÆST and hit Summing — you get <b>one document</b> that’s sharp, readable, editable sentence by sentence, and passes a final taste check before it ships.</p>
     <div class="row">
-      <a class="btn" href="/app">Start VÆST</a>
+      <a class="btn" href="/app" id="heroCta">Start VÆST</a>
       <a class="lnk" href="#how">See how it works ↓</a>
     </div>
   </div>
@@ -406,12 +406,16 @@
 
 <footer><div class="wrap fin">
   <span>VÆST — Aesthetic Intelligence</span>
+  <span>Processed via Anthropic API — no training on your data · stored privately</span>
   <span>© ORIONS.Agency</span>
 </div></footer>
 
 <script>
   const $=id=>document.getElementById(id);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // no session on this device → the primary CTA routes to Request access instead of a login wall
+  try{if(!localStorage.getItem('vaest_auth')){const h=$('heroCta');h.href='#access';h.textContent='Request access'}}catch(e){}
+
   // reveal on scroll
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.16});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));

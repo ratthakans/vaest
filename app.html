@@ -471,6 +471,24 @@
   .vc-ta:focus{border-color:var(--ink)}
   .vc-ta::placeholder{color:var(--mute)}
 
+  /* share view — client-side paper mode */
+  body.share-light{--ink:#111110;--charcoal:#f4f3f0;--snow:#111110;--app:#ffffff;--paper:#ffffff;--sheet:#ffffff;--card:#ffffff;
+    --line:rgba(17,17,16,.1);--line2:rgba(17,17,16,.2);--dim:#55544f;--mute:#9b9a94;--soft:rgba(17,17,16,.045);--cin-d:#c94e26}
+  body.share-light .sec-c,body.share-light .gen-body{color:#26251f}
+  body.share-light .top{background:rgba(255,255,255,.86)}
+  body.share-light .tb.dark{color:#fff}
+  body.share-light ::selection{background:#111110;color:#fff}
+
+  /* comment badge + quota */
+  .cbadge{flex:none;min-width:17px;height:17px;padding:0 5px;border-radius:100px;background:var(--cinnabar);color:#fff;
+    font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:2px}
+  .quota-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px;font-size:12px;color:var(--dim)}
+  .quota-row .qn{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+  .quota-row .qbar{flex:1;max-width:220px;height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+  .quota-row .qbar i{display:block;height:100%;border-radius:4px;background:var(--grad)}
+  .quota-row .qbar i.hot{background:var(--cinnabar)}
+  .quota-row .qv{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+
   /* fluid chroma — same breath as the landing */
   @keyframes chromaflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
   .id-lbl,.id-m.ai .who{background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
@@ -682,7 +700,7 @@
       <button type="submit" class="auth-go" id="authGo">Sign in</button>
     </form>
     <div class="auth-sw"><button type="button" onclick="forgotPassword()">Forgot password?</button></div>
-    <div class="auth-foot">Invite-only access · contact the ORIONS team</div>
+    <div class="auth-foot">Invite-only access · contact the ORIONS team<br><a href="/#access" style="color:var(--dim);text-decoration:underline;text-underline-offset:3px">No invite yet? Request access →</a></div>
   </div>
 </div>
 <div class="auth" id="npView">
@@ -730,6 +748,7 @@
     <div class="rate-row">
       <div class="rate-f"><label>Opus 4.8 · THB / 1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
       <div class="rate-f"><label>Fable 5 · THB / 1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="quota-row" id="quotaRow" style="display:none"></div>
       <div class="rate-f"><label>Idea · Haiku/Sonnet · THB / 1M</label><input id="rateIdea" type="number" min="0" oninput="saveRates();renderStats()"></div>
     </div>
     <div class="kpis" id="statsKpis"></div>
@@ -906,7 +925,7 @@
     if(!AUTH)return false;if(!await ensureAuth())return false;
     // only an explicit allowed:false gates · error/offline → let through (server /api/chat still enforces)
     try{const r=await fetch('/api/access',{headers:{Authorization:'Bearer '+AUTH.access_token}});
-      if(r.status===200){const d=await r.json();return d.allowed!==false}
+      if(r.status===200){const d=await r.json();window.QUOTA=d;return d.allowed!==false}
       return true}catch(e){return true}}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';$('gateView').classList.add('show')}
@@ -937,6 +956,11 @@
       ['Total cost',baht(cost)],
       ['Avg / document',baht(avg)+' <small>· '+fmtTok(avgTok)+'</small>'],
     ].map(k=>'<div class="kpi"><div class="kn">'+k[0]+'</div><div class="kv">'+k[1]+'</div></div>').join('');
+    // fair-use quota (invitees) — visible before the wall, not after
+    const q=window.QUOTA;const qEl=$('quotaRow');
+    if(qEl){if(q&&!q.internal&&q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));
+      qEl.style.display='';qEl.innerHTML='<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>'}
+      else qEl.style.display='none'}
     // per-doc
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
@@ -1161,9 +1185,20 @@
   function fmtAgo(ts){if(!ts)return '';const d=Date.now()-ts;const m=Math.floor(d/6e4),h=Math.floor(d/36e5),day=Math.floor(d/864e5);
     if(m<1)return 'just now';if(m<60)return m+' min ago';if(h<24)return h+' hr ago';if(day<7)return day+' days ago';
     return Math.floor(day/7)+' weeks ago'}
-  function sItem(s){return '<div class="s-item'+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
+  let _cmtCounts={};
+  function sItem(s){const n=_cmtCounts[s.id]||0;
+    return '<div class="s-item'+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
     +'<span class="dot"></span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
+    +(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
     +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
+  // sweep shared sessions for fresh client comments (badge in the rail)
+  async function sweepCommentCounts(){
+    const shared=sessions.filter(x=>x.shareId).slice(0,12);
+    if(!shared.length)return;
+    await Promise.all(shared.map(async x=>{
+      const d=await loadShare(x.shareId);
+      _cmtCounts[x.id]=((d&&d.comments)||[]).length}));
+    renderRail()}
   function renderRail(){
     const free=sessions.filter(s=>!s.projectId);
     $('freeList').innerHTML=free.length?free.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>';
@@ -1911,7 +1946,8 @@
         const empty=!sessions.some(x=>(x.canvas&&x.canvas.trim())||x.files.length||(x.brief&&x.brief.trim()));
         if(empty){seedSample();renderRail();showCanvas()}
         cloudSave()}
-    }catch(e){setSync('off')}}
+    }catch(e){setSync('off')}
+    sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
   const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refined for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
@@ -1935,7 +1971,10 @@
     // disable editing + show read-only banner
     document.querySelectorAll('#doc [contenteditable]').forEach(e=>e.setAttribute('contenteditable','false'));
     document.querySelectorAll('#doc .sec-tools').forEach(e=>e.remove());
-    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';
+    $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme">☀︎</button><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';
+    try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
+    // privacy note — earn the client's trust in one line
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · STORED PRIVATELY · INVITE-ONLY</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;
@@ -1968,12 +2007,19 @@
         f.remove();renderShareComments(data.comments);toast('Comment sent')}
       catch(e){btn.disabled=false;btn.textContent='Send';toast('Failed to send, try again')}}}
 
+  function toggleShareTheme(silent){
+    const light=!document.body.classList.contains('share-light');
+    document.body.classList.toggle('share-light',light);
+    const b=$('shTheme');if(b)b.textContent=light?'☾':'☀︎';
+    try{localStorage.setItem('vaest_share_theme',light?'light':'night')}catch(e){}
+    if(!silent&&typeof toast==='function')toast(light?'Paper mode':'Night mode')}
+
   /* owner side — see & resolve comments from the share link */
   let _cmtCache={};
   async function fetchComments(s){
     if(!s||!s.shareId)return;
     const data=await loadShare(s.shareId);
-    _cmtCache[s.id]=(data&&data.comments)||[];
+    _cmtCache[s.id]=(data&&data.comments)||[];_cmtCounts[s.id]=_cmtCache[s.id].length;renderRail();
     if(cur()&&cur().id===s.id)renderOwnerComments()}
   function renderOwnerComments(){
     const s=cur();if(!s)return;
@@ -1993,7 +2039,7 @@
     try{const data=await loadShare(s.shareId)||{};
       data.comments=(data.comments||[]).filter(c=>c.id!==cid);
       await writeShareData(s.shareId,data);
-      _cmtCache[s.id]=data.comments;renderOwnerComments();toast('Resolved')}
+      _cmtCache[s.id]=data.comments;_cmtCounts[s.id]=data.comments.length;renderRail();renderOwnerComments();toast('Resolved')}
     catch(e){toast('Failed, try again')}}
 
   // paste an image into the canvas → embed as an image block in that section
