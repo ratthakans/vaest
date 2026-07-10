@@ -1347,6 +1347,21 @@
   function hideCtx(){$('ctx').classList.remove('show')}
   addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.more'))hideCtx();
     if(!e.target.closest('.exp-wrap'))$('expMenu').classList.remove('show')});
+  // ⌘A inside an editable box selects that box only — not the whole page (Safari especially)
+  addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&(e.key==='a'||e.key==='A')){
+      const el=document.activeElement;
+      if(el&&(el.tagName==='TEXTAREA'||el.tagName==='INPUT'))return; // native fields scope themselves
+      const sel=getSelection();const n=sel&&sel.anchorNode;
+      let host=n&&(n.nodeType===1?n:n.parentElement);
+      while(host&&!host.isContentEditable)host=host.parentElement;
+      if(!host)return; // not editing → normal page select-all
+      let box=host;while(box.parentElement&&box.parentElement.isContentEditable)box=box.parentElement;
+      e.preventDefault();
+      const r=document.createRange();r.selectNodeContents(box);
+      sel.removeAllRanges();sel.addRange(r);
+      if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
+    }});
   addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste()}});
   // ⌥↑ / ⌥↓ — switch sessions in the order shown in the rail
   addEventListener('keydown',e=>{
