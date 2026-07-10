@@ -512,6 +512,10 @@
   .ol-item.cur{background:rgba(255,255,255,.07);color:var(--snow)}
   .ol-item.cur .on2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 
+  .exp-sep{height:1px;background:var(--line);margin:5px 8px}
+  .exp-item.present .mo{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+  .exp-item.present{font-weight:600}
+
   /* settings tabs + profile + usage */
   .set-wide{max-width:520px}
   .set-tabs{display:flex;gap:2px;padding:0 18px;border-bottom:1px solid var(--line)}
@@ -678,11 +682,12 @@
         <div class="exp-menu" id="expMenu">
           <button class="exp-item" onclick="shareDoc()">Share link · read-only <span class="mo">link</span></button>
           <button class="exp-item" id="expRevoke" style="display:none" onclick="revokeShare()">Revoke share link <span class="mo">off</span></button>
+          <div class="exp-sep"></div>
           <button class="exp-item" onclick="copyRich()">Copy as rich text <span class="mo">docs</span></button>
-          <button class="exp-item" onclick="copyFullPage()">Copy full page <span class="mo">md</span></button>
-          <button class="exp-item" onclick="downloadMD()">Markdown <span class="mo">.md</span></button>
           <button class="exp-item" onclick="downloadDOC()">Word <span class="mo">.doc</span></button>
-          <button class="exp-item" onclick="exportPDF()">Print · portrait <span class="mo">PDF</span></button>
+          <button class="exp-item" onclick="exportPDF()">PDF · document <span class="mo">PDF</span></button>
+          <div class="exp-sep"></div>
+          <button class="exp-item present" onclick="openPresent()">Presentation <span class="mo">Sonnet</span></button>
         </div>
       </div>
     </header>
@@ -837,6 +842,20 @@
     <div class="diff-hd"><b>What changed</b><button class="x" onclick="closeDiff()" aria-label="Close">✕</button></div>
     <div class="diff-sub" id="diffSub"></div>
     <div id="diffBody"></div>
+  </div>
+</div>
+<div class="snap" id="presView" onclick="if(event.target===this)closePresent()">
+  <div class="snap-box">
+    <div class="snap-hd"><b>Presentation</b><button class="save" onclick="closePresent()">Close</button></div>
+    <div style="padding:18px 20px 22px">
+      <div class="set-note" style="margin-top:0">Sonnet 5 reshapes this document into a deck, styled in the VÆST look. Pick an orientation, then Save as PDF from the print dialog.</div>
+      <div class="set-lbl" style="margin-top:18px">Orientation</div>
+      <div class="tone" id="presOrient">
+        <button data-o="landscape" class="on" onclick="setPresOrient('landscape')">Landscape 16:9</button>
+        <button data-o="portrait" onclick="setPresOrient('portrait')">Portrait A4</button>
+      </div>
+      <button class="dlg-ok" id="presGo" style="margin-top:20px" onclick="runPresent()">Build presentation</button>
+    </div>
   </div>
 </div>
 <div class="dlg" id="dlgView">
@@ -1469,7 +1488,7 @@
       sel.removeAllRanges();sel.addRange(r);
       if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
     }});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();if($('dlgView').classList.contains('show'))dlgClose(null)}
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
     if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
   $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
   $('dlgCancel').onclick=()=>dlgClose(null);
@@ -1651,7 +1670,7 @@
       c.push({t:'Share link · read-only',run:()=>shareDoc(),k:'export'});
       c.push({t:'Settings · persona',run:()=>openSettings(),k:'app'});
       c.push({t:'Copy as rich text',run:()=>copyRich(),k:'export'});
-      c.push({t:'Copy full page',run:()=>copyFullPage(),k:'export'});
+      c.push({t:'Presentation · Sonnet',run:()=>openPresent(),k:'export'});
       c.push({t:'Download Markdown (.md)',run:()=>downloadMD(),k:'export'});
       c.push({t:'Download Word (.doc)',run:()=>downloadDOC(),k:'export'});
       c.push({t:'Print / save PDF',run:()=>exportPDF(),k:'export'});
@@ -2245,7 +2264,67 @@
     const w=window.open('','_blank');
     if(!w){toast('The browser blocked the popup — allow it and try again');return}
     w.document.write(buildDocHTML(true));w.document.close();w.focus();setTimeout(()=>{try{w.print()}catch(e){}},500);
-    toast('Opened the A4 portrait print view — choose “Save as PDF”')}
+    toast('Opened the A4 print view — choose “Save as PDF”')}
+
+  /* ═══ PRESENTATION — Sonnet builds slides, rendered in VÆST CI ═══ */
+  let _presOrient='landscape';
+  function openPresent(){$('expMenu').classList.remove('show');
+    const s=cur();if(!s||!s.canvas.trim()){toast('No document yet');return}
+    $('presView').classList.add('show')}
+  function closePresent(){$('presView').classList.remove('show')}
+  function setPresOrient(o){_presOrient=o;document.querySelectorAll('#presOrient button').forEach(b=>b.classList.toggle('on',b.getAttribute('data-o')===o))}
+  async function runPresent(){
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s||!s.canvas.trim())return;
+    const btn=$('presGo');btn.disabled=true;btn.textContent='Building the deck…';setBusy(true);
+    try{
+      const raw=await streamAPI('present',[{role:'user',content:'Turn this into a presentation:\n\n'+genMd()}],toneSys());
+      let slides;try{slides=JSON.parse(raw.replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){
+        const m=raw.match(/\[[\s\S]*\]/);slides=m?JSON.parse(m[0]):null}
+      if(!Array.isArray(slides)||!slides.length)throw new Error('couldn’t shape the slides');
+      const w=window.open('','_blank');
+      if(!w){toast('Allow popups, then try again');return}
+      w.document.write(buildDeckHTML(slides,$('mhTitle')?$('mhTitle').innerText.trim():s.title));w.document.close();w.focus();
+      closePresent();toast('Deck ready — use ⌘P → Save as PDF ('+_presOrient+')')}
+    catch(e){toast('Presentation failed: '+e.message)}
+    finally{btn.disabled=false;btn.textContent='Build presentation';setBusy(false)}}
+  function buildDeckHTML(slides,title){
+    const land=_presOrient==='landscape';
+    const page=land?'297mm 167mm':'210mm 297mm'; // 16:9-ish landscape / A4 portrait
+    const esc2=t=>String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    const slideHTML=s=>{
+      if(s.kind==='cover')return '<section class="sl cover"><div class="sl-eye">ORIONS · VÆST</div><h1>'+esc2(s.title)+'</h1>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="rule"></div></section>';
+      if(s.kind==='quote')return '<section class="sl quote"><blockquote>“'+esc2(s.quote)+'”</blockquote>'+(s.by?'<cite>— '+esc2(s.by)+'</cite>':'')+'</section>';
+      if(s.kind==='close')return '<section class="sl close"><div class="rule"></div><h2>'+esc2(s.title)+'</h2>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="sl-foot">VÆST · ORIONS.Agency</div></section>';
+      return '<section class="sl"><div class="sl-eye">'+esc2(s.title)+'</div><h2>'+esc2(s.title)+'</h2><ul>'+((s.bullets||[]).map(b=>'<li>'+esc2(b)+'</li>').join(''))+'</ul>'+(s.note?'<p class="note">'+esc2(s.note)+'</p>':'')+'</section>';
+    };
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc2(title)+' — VÆST</title>'
+      +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@1,6..72,500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">'
+      +'<style>'
+      +'@page{size:'+page+';margin:0}*{box-sizing:border-box;margin:0;padding:0}'
+      +'body{font-family:Inter,"IBM Plex Sans Thai",sans-serif;background:#222}'
+      +'.sl{position:relative;width:'+(land?'297mm':'210mm')+';height:'+(land?'167mm':'297mm')+';padding:'+(land?'20mm 24mm':'26mm 22mm')+';background:#050506;color:#f2f1ee;overflow:hidden;page-break-after:always;display:flex;flex-direction:column;justify-content:center}'
+      +'.sl::before{content:"";position:absolute;top:0;bottom:0;right:0;width:34%;pointer-events:none;'
+      +'background:repeating-linear-gradient(90deg,rgba(255,90,31,.28) 0 1.6px,transparent 1.6px 30px),repeating-linear-gradient(90deg,rgba(240,250,255,.34) 4px 5.6px,transparent 5.6px 33px),repeating-linear-gradient(90deg,rgba(79,195,255,.3) 8px 9.6px,transparent 9.6px 36px);'
+      +'-webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent),linear-gradient(90deg,transparent,#000 60%);-webkit-mask-composite:source-in;mask-composite:intersect;opacity:.9}'
+      +'.sl::after{content:"";position:absolute;inset:-20%;pointer-events:none;background:radial-gradient(40% 46% at 82% 26%,rgba(64,150,255,.18),transparent 72%),radial-gradient(32% 40% at 92% 74%,rgba(255,90,31,.15),transparent 72%);filter:blur(50px)}'
+      +'.sl>*{position:relative;z-index:2}'
+      +'.sl-eye{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#83827b;margin-bottom:18px}'
+      +'.sl h1{font-weight:800;font-size:'+(land?'46px':'40px')+';line-height:1.04;letter-spacing:-.03em;max-width:16ch}'
+      +'.sl h2{font-weight:750;font-size:'+(land?'32px':'28px')+';line-height:1.1;letter-spacing:-.02em;margin-bottom:18px;max-width:20ch}'
+      +'.sl ul{list-style:none;display:flex;flex-direction:column;gap:13px;max-width:'+(land?'62%':'88%')+'}'
+      +'.sl li{font-family:"IBM Plex Sans Thai",Inter,sans-serif;font-size:'+(land?'18px':'17px')+';line-height:1.4;color:#d7d5ce;padding-left:20px;position:relative}'
+      +'.sl li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:2px;border-radius:2px;background:linear-gradient(90deg,#4fc3ff,#ff5a1f)}'
+      +'.sl .note{margin-top:22px;font-family:"Newsreader","Noto Serif Thai",serif;font-style:italic;font-size:16px;color:#a8a7a1}'
+      +'.sl .sub{font-family:"Newsreader","Noto Serif Thai",serif;font-style:italic;font-size:19px;color:#a8a7a1;margin-top:16px;max-width:40ch}'
+      +'.rule{width:56px;height:3px;border-radius:3px;background:linear-gradient(90deg,#4fc3ff,#dff4ff,#ffa14b,#ff5a1f);margin:22px 0}'
+      +'.cover h1{font-size:'+(land?'58px':'48px')+'}'
+      +'.quote{justify-content:center}.quote blockquote{font-family:"Newsreader","Noto Serif Thai",serif;font-style:italic;font-size:'+(land?'34px':'28px')+';line-height:1.3;max-width:20ch}'
+      +'.quote cite{display:block;margin-top:20px;font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:12px;letter-spacing:.1em;color:#83827b}'
+      +'.close h2{font-size:'+(land?'40px':'34px')+'}.sl-foot{position:absolute;left:'+(land?'24mm':'22mm')+';bottom:'+(land?'16mm':'20mm')+';font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;color:#66655f}'
+      +'@media screen{body{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}.sl{box-shadow:0 20px 60px rgba(0,0,0,.5);border-radius:6px}}'
+      +'</style></head><body>'+slides.map(slideHTML).join('')+'</body></html>';
+  }
 
   /* ═══ init — auth first, then boot ═══ */
   async function loadLegacy(){ // pre-login data — migrated into the account on first sign-in
