@@ -655,3 +655,43 @@
   @media(hover:none){.sec-tools,.s-item .more,.p-row .more{opacity:1}}
   /* real iOS viewport */
   @supports(height:100dvh){.app,.main{height:100dvh}}
+
+  /* ═══ phones ═══ */
+  @media(max-width:560px){
+    /* workspace topbar — horizontally scrollable, tighter, no middle title stealing space */
+    .top{gap:4px;padding:10px 12px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .top::-webkit-scrollbar{display:none}
+    .top .tb{flex:none;padding:8px 11px;font-size:12.5px}
+    .top .top-title{display:none}
+    .top .save-ind{display:none}
+    .cv-tabs{padding:8px 12px 0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+    .cv-tabs::-webkit-scrollbar{display:none}
+    /* share topbar — collapse the verbose label, keep icon + theme + open */
+    .sh-lbl{display:none}
+    .sh-open{padding:8px 12px}
+    /* document reading */
+    .doc{padding:40px 20px 100px}
+    .mh-title{font-size:30px}
+    .d-mast{font-size:22px}
+    /* home */
+    .home{padding:24px 16px 60px}
+    .h-title{font-size:clamp(30px,10vw,44px)}
+    .brief-box{padding:16px 16px 12px}
+    .bb-foot{flex-wrap:wrap;gap:8px}
+    .bb-foot .go{margin-left:auto}
+    .idea{margin-top:20px}
+    .id-thread{max-height:220px}
+    /* floating actions clear of the iOS bottom bar */
+    .to-top,.stop-btn{right:16px;bottom:calc(16px + env(safe-area-inset-bottom))}
+    /* modals go near full-screen sheets */
+    .snap,.stats,.diffv{padding:0}
+    .snap-box,.stats-box,.diff-box,.pal-box,.set-wide{max-width:100%;width:100%;border-radius:16px 16px 0 0;
+      position:fixed;left:0;right:0;bottom:0;top:auto;max-height:92vh;overflow-y:auto;animation:sheetUp .3s var(--ease)}
+    .dlg-box{max-width:100%;margin:auto 12px}
+    .set-tabs{overflow-x:auto;scrollbar-width:none}.set-tabs::-webkit-scrollbar{display:none}
+    /* comment forms + inputs at ≥16px so iOS doesn't zoom-on-focus */
+    .cmt-form input,.cmt-form textarea,.auth-f input,.dlg-in,.wl input,.vc-ta,#brief,#ideaInput{font-size:16px}
+    /* rail a hair narrower than the phone so the scrim shows */
+    .rail{width:86vw;max-width:320px}
+  }
+  @keyframes sheetUp{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
