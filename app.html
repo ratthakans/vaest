@@ -1008,7 +1008,7 @@
   /* ═══ state — sessions/projects · localStorage + Supabase ═══ */
   const STORE='vaest_v2',DB_V=4,TOKEN_CAP=5e6,LEGACY_WHO='orions-workspace';
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
-  let projects=[],sessions=[],currentSid=null,usage=0,_busy=false,_renaming=false;
+  let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
   function setBusy(b){_busy=b;const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);const sb=$('stopBtn');if(sb)sb.classList.toggle('show',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
   /* ═══ CI dialog — promise-based confirm/prompt ═══ */
   let _dlgResolve=null;
@@ -1161,10 +1161,11 @@
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Summing / Refine / Refined and cost shows up here</td></tr></tbody>'}
 
-  function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash}}
+  function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile}}
   function applyBlob(b){
     if(!b)return false;
-    if(b.v>=4&&Array.isArray(b.sessions)){projects=b.projects||[];sessions=b.sessions;currentSid=b.currentSid;usage=b.usage||0;return true}
+    if(b.v>=4&&Array.isArray(b.sessions)){projects=b.projects||[];sessions=b.sessions;currentSid=b.currentSid;usage=b.usage||0;
+      trash=Array.isArray(b.trash)?b.trash:[];profile=(b.profile&&typeof b.profile==='object')?b.profile:{};return true}
     if(Array.isArray(b.projects)&&(b.LIB||b.CANVAS)){ // migrate v1
       projects=[];sessions=[];
       b.projects.forEach(p=>{
@@ -1439,6 +1440,7 @@
       _cmtCounts[x.id]=((d&&d.comments)||[]).length}));
     renderRail()}
   function renderRail(){
+    if(typeof paintAvatar==='function'){paintAvatar();const w=$('whoLbl');if(w&&AUTH)w.textContent=(profile&&profile.name)||AUTH.email}
     const free=sessions.filter(s=>!s.projectId);
     $('freeList').innerHTML=free.length?free.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>';
     $('projList').innerHTML=projects.length?projects.map(p=>{
@@ -1642,8 +1644,8 @@
     $('pvPrivate').checked=!!(cur()&&cur().private);renderTrash();
     setSetTab('profile');$('setView').classList.add('show')}
   /* profile — name + avatar in the user's own state (stays with the account) */
-  function getProfile(){try{return JSON.parse(localStorage.getItem('vaest_profile:'+(AUTH&&AUTH.email)))||{}}catch(e){return {}}}
-  function saveProfileObj(p){try{localStorage.setItem('vaest_profile:'+(AUTH&&AUTH.email),JSON.stringify(p))}catch(e){}}
+  function getProfile(){return profile||{}}
+  function saveProfileObj(p){profile=p||{};save()} // rides the cloud sync — follows the account across devices
   function paintAvatar(){const p=getProfile();const av=$('pfAv'),txt=$('pfAvTxt');const foot=$('railAv');
     const set=el=>{if(!el)return;if(p.pic){el.style.backgroundImage='url('+p.pic+')';el.classList.add('has');el.textContent=''}
       else{el.style.backgroundImage='';el.classList.remove('has');el.textContent=(p.name||(AUTH&&AUTH.email)||'?').trim()[0].toUpperCase()}};
@@ -2377,6 +2379,9 @@
       if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null}catch(e){return null}}
   async function boot(){
     SB.who=AUTH.email; // per-user state
+    // migrate any device-local profile from the previous build into synced state
+    try{const legacy=JSON.parse(localStorage.getItem('vaest_profile:'+AUTH.email)||'null');
+      if(legacy&&(legacy.name||legacy.pic)&&!(profile&&(profile.name||profile.pic))){profile=legacy;save();localStorage.removeItem('vaest_profile:'+AUTH.email)}}catch(e){}
     const _pf=getProfile();$('whoLbl').textContent=_pf.name||AUTH.email;paintAvatar();
     if(!loadLocal()){projects=[];sessions=[];usage=0}
     if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}]}
