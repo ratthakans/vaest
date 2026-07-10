@@ -742,7 +742,7 @@
       <button type="submit" class="auth-go" id="authGo">Sign in</button>
     </form>
     <div class="auth-sw"><button type="button" onclick="forgotPassword()">Forgot password?</button></div>
-    <div class="auth-foot">Invite-only access · contact the ORIONS team<br><a href="/#access" style="color:var(--dim);text-decoration:underline;text-underline-offset:3px">No invite yet? Request access →</a></div>
+    <div class="auth-foot">Invite-only access · <a href="mailto:rakan@orions.agency" style="color:inherit">contact the ORIONS team</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/terms.html" style="color:inherit">Terms</a><br><a href="/#access" style="color:var(--dim);text-decoration:underline;text-underline-offset:3px">No invite yet? Request access →</a></div>
   </div>
 </div>
 <div class="auth" id="npView">
@@ -778,7 +778,7 @@
     </div>
     <div class="auth-h">Not invited yet</div>
     <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:8px">VÆST is invite-only · the account <b id="giEmail" style="color:var(--ink)"></b> isn’t on the list yet</p>
-    <p style="font-size:13px;color:var(--mute);margin-bottom:26px">Contact the ORIONS team for access</p>
+    <p style="font-size:13px;color:var(--mute);margin-bottom:26px">Contact <a href="mailto:rakan@orions.agency" style="color:var(--dim)">rakan@orions.agency</a> for access</p>
     <button class="auth-go" id="giReq" onclick="requestInvite()">Request an invite</button>
     <div class="auth-sw" style="margin-top:14px"><button type="button" onclick="logout()">Sign out / use another account</button></div>
   </div>
@@ -1055,13 +1055,20 @@
     try{if(applyBlob(JSON.parse(localStorage.getItem(STORE)))){save();return true}}catch(e){} // pre-login
     try{if(applyBlob(JSON.parse(localStorage.getItem('vaest_v1')))){save();return true}}catch(e){}
     return false}
+  // dual-path sync: user JWT first (RLS-ready) → anon fallback (pre-migration) — correct in both worlds
   async function cloudLoad(){
-    try{const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+SB.who+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
-      if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null}catch(e){return null}}
+    try{await ensureAuth();
+      const get=async b=>{const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+SB.who+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+b}});
+        if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null};
+      const viaJwt=AUTH&&AUTH.access_token?await get(AUTH.access_token):null;
+      return viaJwt||await get(SB.key)}catch(e){return null}}
   let _ct;function cloudSave(){clearTimeout(_ct);_ct=setTimeout(async()=>{try{
-    await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+    await ensureAuth();
+    const post=b=>fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+b,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
       body:JSON.stringify({email:SB.who,data:stateBlob(),updated_at:new Date().toISOString()})});
-    setSync('ok')}catch(e){setSync('off')}},700)}
+    let r=await post((AUTH&&AUTH.access_token)||SB.key);
+    if(!r.ok)r=await post(SB.key); // pre-migration fallback
+    setSync(r.ok?'ok':'off')}catch(e){setSync('off')}},700)}
   function setSync(s){const el=$('syncDot');if(el)el.className='sync '+s}
   function fmtTok(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?Math.round(n/1e3)+'K':n}
 
@@ -2154,7 +2161,7 @@
     $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> Read-only · shared from VÆST</div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme">☀︎</button><a class="tb dark" href="/app" style="text-decoration:none">Open VÆST →</a>';
     try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
     // privacy note — earn the client's trust in one line
-    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · STORED PRIVATELY · INVITE-ONLY</div>');
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · <a href=\'/privacy.html\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;

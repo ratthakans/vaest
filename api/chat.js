@@ -77,6 +77,17 @@ Format each as: "- **short title** {{a short exact quote from the document where
 The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
 };
 
+// sliding-window burst guard (per warm serverless instance)
+const _hits = new Map();
+function rateLimited(email) {
+  const now = Date.now();
+  const arr = (_hits.get(email) || []).filter(t => now - t < 60_000);
+  if (arr.length >= 12) { _hits.set(email, arr); return true; }
+  arr.push(now); _hits.set(email, arr);
+  if (_hits.size > 500) _hits.clear(); // memory backstop
+  return false;
+}
+
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
   const params = { model, max_tokens: maxTokens, messages };
   // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
@@ -103,6 +114,9 @@ export default async function handler(req, res) {
 
   // invite-only — must be on the allowlist
   if (!isAllowed(user.email)) { res.status(403).json({ error: 'This account is not invited to VÆST' }); return; }
+
+  // burst guard — 12 calls/min/user (per warm instance; coarse but real)
+  if (rateLimited(user.email)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
 
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }

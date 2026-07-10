@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Privacy — VÆST</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#050506;--ink:#f2f1ee;--dim:#a1a09b;--mute:#5c5b57;--line:rgba(255,255,255,.09);
+    --ui:"Inter","IBM Plex Sans Thai",sans-serif;--mono:"IBM Plex Mono",monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--ui);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:80px 28px 100px}
+  .eye{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+  h1{font-weight:650;font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;margin:16px 0 10px}
+  .upd{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-bottom:44px}
+  h2{font-weight:650;font-size:19px;letter-spacing:-.01em;margin:40px 0 12px;padding-top:24px;border-top:1px solid var(--line)}
+  p,li{font-size:14.5px;line-height:1.85;color:var(--dim)}
+  b{color:var(--ink);font-weight:600}
+  ul{margin:10px 0 10px 20px}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .th{font-family:"IBM Plex Sans Thai",sans-serif}
+  .back{display:inline-block;margin-bottom:34px;font-size:13.5px;color:var(--dim);text-decoration:none}
+  .back:hover{color:var(--ink)}
+</style>
+</head>
+<body><div class="wrap">
+  <a class="back" href="/">← VÆST</a>
+  <div class="eye">VÆST · by ORIONS.Agency</div>
+  <h1>Privacy</h1>
+  <div class="upd">LAST UPDATED — JULY 2026</div>
+
+  <p class="th"><b>สรุปภาษาไทย:</b> งานของคุณเป็นของคุณ — เก็บแบบ private ต่อบัญชี, ประมวลผล AI ผ่าน Anthropic API ซึ่ง<b>ไม่นำข้อมูลไปเทรนโมเดล</b>, เราไม่ขายข้อมูล, ลบบัญชีและข้อมูลได้ทุกเมื่อโดยติดต่อทีม ORIONS</p>
+
+  <h2>What we store</h2>
+  <ul>
+    <li><b>Account</b> — your email and a hashed password, held by Supabase (our auth and database provider).</li>
+    <li><b>Your work</b> — briefs, attached file contents, documents, sandbox threads and settings, stored privately per account so your workspace follows you across devices.</li>
+    <li><b>Usage counters</b> — monthly token totals per account, kept for fair-use limits. We do not store your prompts on the server beyond processing.</li>
+    <li><b>Waitlist</b> — the email you submit when requesting access.</li>
+  </ul>
+
+  <h2>AI processing</h2>
+  <p>Documents and instructions are processed through the <b>Anthropic API</b> (Claude models). Under Anthropic's API terms, <b>your data is not used to train their models</b>. Our API keys live server-side only — your content never carries our credentials through your browser.</p>
+
+  <h2>Sharing</h2>
+  <p>Nothing is public unless <b>you create a share link</b>. A share link exposes a read-only copy of that document (and comments left on it) to anyone holding the URL. You can revoke a link at any time from Export → Revoke; revoked links stop working immediately.</p>
+
+  <h2>What we don't do</h2>
+  <ul>
+    <li>No selling or renting of your data. No advertising trackers.</li>
+    <li>No training of AI models on your work — by us or by Anthropic.</li>
+    <li>No reading of your workspace by the team, except with your consent to debug an issue you report.</li>
+  </ul>
+
+  <h2>Your rights (including PDPA)</h2>
+  <p>You may request a copy of your data, correction, or full deletion at any time — email <a href="mailto:rakan@orions.agency">rakan@orions.agency</a>. Deletion removes your account, workspace state and usage counters; share links you created are revoked. We aim to complete requests within 30 days.</p>
+
+  <h2>Sub-processors</h2>
+  <p><b>Supabase</b> (auth + database), <b>Vercel</b> (hosting + serverless), <b>Anthropic</b> (AI processing), <b>Google Fonts</b> (typefaces). Each processes only what its role requires.</p>
+
+  <h2>Contact</h2>
+  <p>ORIONS.Agency — <a href="mailto:rakan@orions.agency">rakan@orions.agency</a></p>
+</div></body>
+</html>
