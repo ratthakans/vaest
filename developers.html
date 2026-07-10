@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Developers — VÆST</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="How to use VÆST end to end — a detailed guide from brief to hand-off, plus keyboard shortcuts and the coming API.">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+  .kbd-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:40px}
+  @media(max-width:600px){.kbd-grid{grid-template-columns:1fr}}
+  .kbd-grid .kr{background:#0a0a0c;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 20px}
+  .kbd-grid .kr span{font-family:var(--th);font-size:14px;color:var(--dim)}
+  .kbd-grid .kr kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line2);border-radius:6px;padding:3px 9px;color:var(--ink);white-space:nowrap}
+</style>
+</head>
+<body data-page="developers">
+
+<header class="phead">
+  <div class="prism"><div class="glow"></div><div class="strips"></div></div>
+  <div class="wrap">
+    <span class="eye">Developers · Guide</span>
+    <h1>How to drive VÆST<span class="dot">.</span></h1>
+    <p class="sub th">A working guide from a blank brief to a document you hand off — and the shortcuts that make it fast. No install, no config: it runs in the browser.</p>
+  </div>
+</header>
+
+<section><div class="wrap sec-pad">
+  <div class="lbl">The workflow</div>
+  <h2>Brief to hand-off, step by step</h2>
+  <div class="step-list th">
+    <div class="st"><h3>Start a session &amp; write the brief</h3><p>Hit <kbd>New</kbd> and describe the work in plain language — what you need, the context, who it's for. Attach files (docx, pdf, xlsx, csv, md, html, images) by clicking <b>Attach</b> or dropping them in. Images become real visual references. Long pastes turn into tiles automatically.</p></div>
+    <div class="st"><h3>Spark in the Idea sandbox (optional)</h3><p>Below the brief, use <b>Idea</b> to riff. Throw options, paste a ChatGPT/Midjourney fragment, argue a concept. Promote any good reply with <b>→ brief</b>. Everything here feeds the next step as curated raw material.</p></div>
+    <div class="st"><h3>Summing → the document</h3><p>Press <b>Summing</b> (or <kbd>⌘↵</kbd>). VÆST crystallizes the brief, files and ideas into one sectioned document, streaming live. If the work spans distinct deliverables it splits into <b>canvas tabs</b>. Toggle <b>+ Refined</b> first to auto-run the taste check right after.</p></div>
+    <div class="st"><h3>Edit on the canvas</h3><p>Edit any section directly. Highlight a sentence for the toolbar — <b>Shorten · Formal · Expand</b> or an open <b>Ask VÆST…</b>. <kbd>⌘A</kbd> selects just the section you're in. Add more files anytime with <b>Add files</b>; they merge into the document.</p></div>
+    <div class="st"><h3>Ø Think — push it bolder</h3><p>Hit <b>Ø Think</b> for a Senior Creative pass. Opus proposes braver moves, each anchored to a highlighted quote. <b>Approve</b> the ones you want (VÆST learns your taste), <b>Skip</b> the rest.</p></div>
+    <div class="st"><h3>Refined — the quality gate</h3><p>Hit <b>Refined</b> for a holistic audit — inconsistency, redundancy, logic. Approve findings one at a time or <b>Approve all</b>. Use <b>View changes</b> to see what moved. Save a <b>version</b> anytime; compare with <b>Diff</b>.</p></div>
+    <div class="st"><h3>Share &amp; collect feedback</h3><p><b>Export → Share link</b> gives the client a read-only view (they can pick paper or night mode, no login). Their comments appear as a badge in your rail. Hit <b>Apply with VÆST</b> to turn a note into a revision, then <b>Resolve</b>. <b>Revoke</b> the link when done.</p></div>
+    <div class="st"><h3>Hand off</h3><p>Export as <b>Word</b>, a print-ready <b>PDF</b>, <b>rich text</b> for Docs/Slack, or build a <b>Presentation</b> (Sonnet, landscape or portrait). Save as PDF from the print dialog.</p></div>
+  </div>
+
+  <div class="callout">
+    <div class="lbl">Persona &amp; language</div>
+    <p>Open <b>Settings</b> (gear, bottom-left, or <kbd>⌘K</kbd> → “Settings”). Choose a persona — <b>Standard / Formal / Playful</b> — that governs tone on every call, and lock the reply language to Auto, ไทย or English. Set a project's <b>voice &amp; guidelines</b> from the project menu; it applies to every session inside it.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap sec-pad">
+  <div class="lbl">Shortcuts</div>
+  <h2>Keys that keep you moving</h2>
+  <div class="kbd-grid">
+    <div class="kr"><span>Command palette / search</span><kbd>⌘K</kbd></div>
+    <div class="kr"><span>Run Summing</span><kbd>⌘↵</kbd></div>
+    <div class="kr"><span>Select the current section</span><kbd>⌘A</kbd></div>
+    <div class="kr"><span>Switch sessions</span><kbd>⌥↑ / ⌥↓</kbd></div>
+    <div class="kr"><span>Stop a running generation</span><kbd>Stop button</kbd></div>
+    <div class="kr"><span>Close any dialog</span><kbd>Esc</kbd></div>
+    <div class="kr"><span>Find &amp; replace in the document</span><kbd>⌘K → “Find”</kbd></div>
+    <div class="kr"><span>Rename a session or canvas</span><kbd>Double-click</kbd></div>
+  </div>
+</div></section>
+
+<section><div class="wrap sec-pad">
+  <div class="lbl">API · coming</div>
+  <h2>Bring VÆST into your own workflow</h2>
+  <p class="lead th">The same pipeline that powers the app is being opened as an API — so your studio's tools, agents and integrations can call it directly. On the roadmap:</p>
+  <div class="code">POST /v1/summing     brief + files      → document
+POST /v1/think       document           → creative pushes
+POST /v1/refine      document           → suggestions
+POST /v1/present     document           → slides
+
+Auth:      Authorization: Bearer vst_live_…   (per-org key)
+Webhooks:  client.commented · document.approved
+MCP:       VÆST as a tool your agents can call</div>
+  <div class="callout">
+    <div class="lbl">Want early access?</div>
+    <p>The API opens to Platform-tier studios first. Tell us what you'd integrate — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a> — and you'll be first in line.</p>
+  </div>
+</div></section>
+
+<section class="cta">
+  <div class="prism"><div class="glow"></div><div class="strips" style="left:0;opacity:.5"></div></div>
+  <div class="wrap">
+    <h2>The best way to learn it is to use it<span class="dot">.</span></h2>
+    <a class="btn-try" href="/app">Try VÆST →</a>
+  </div>
+</section>
+
+<script src="/js/site.js"></script>
+</body>
+</html>
