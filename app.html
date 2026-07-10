@@ -24,7 +24,7 @@
       <button class="tb" onclick="openSnapshots()" title="Saved versions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg></button>
       <div class="top-title" id="topTitle"></div>
       <span class="save-ind" id="saveInd"></span>
-      <button class="tb think" id="thinkBtn" onclick="runThink()" title="Senior Creative pass — Opus rips the canvas and pushes it bolder">Ø Think</button>
+      <button class="tb think" id="thinkBtn" onclick="runThink()" title="Ø Think — ODIN wakes as a Senior Creative and pushes the work bolder">Ø Think</button>
       <button class="tb dark" id="mastBtn" onclick="runMastering()">Refined</button>
       <div class="exp-wrap">
         <button class="tb accent" onclick="toggleExp(event)">Export <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -36,7 +36,7 @@
           <button class="exp-item" onclick="downloadDOC()">Word <span class="mo">.doc</span></button>
           <button class="exp-item" onclick="exportPDF()">PDF · document <span class="mo">PDF</span></button>
           <div class="exp-sep"></div>
-          <button class="exp-item present" onclick="openPresent()">Presentation <span class="mo">Sonnet</span></button>
+          <button class="exp-item present" onclick="openPresent()">Presentation <span class="mo">deck</span></button>
         </div>
       </div>
     </header>
@@ -60,7 +60,7 @@
           </div>
         </div>
 
-        <!-- IDEA — brainstorming sandbox (Gemini Flash) -->
+        <!-- IDEA — SKALD sandbox -->
         <div class="idea" id="ideaBox">
           <div class="id-hd">
             <span class="id-lbl">Idea</span>
@@ -177,10 +177,10 @@
     <div class="stats-hd"><b>Usage & cost</b><button class="x" onclick="closeStats()" aria-label="Close">✕</button></div>
     <div class="stats-note">Measure real cost per document · enter <b>your real rate (THB per 1M tokens, in+out)</b> from your Anthropic bill · counting starts from when this shipped — run it live 1–2 weeks for stable data.</div>
     <div class="rate-row">
-      <div class="rate-f"><label>Opus 4.8 · THB / 1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
-      <div class="rate-f"><label>Fable 5 · THB / 1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>ODIN · THB / 1M</label><input id="rateOpus" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>NORRSKEN · THB / 1M</label><input id="rateFable" type="number" min="0" oninput="saveRates();renderStats()"></div>
       <div class="quota-row" id="quotaRow" style="display:none"></div>
-      <div class="rate-f"><label>Idea · Haiku/Sonnet · THB / 1M</label><input id="rateIdea" type="number" min="0" oninput="saveRates();renderStats()"></div>
+      <div class="rate-f"><label>SKALD · THB / 1M</label><input id="rateIdea" type="number" min="0" oninput="saveRates();renderStats()"></div>
     </div>
     <div class="kpis" id="statsKpis"></div>
     <div class="st-h2">Cost per document (top 12)</div>
@@ -198,7 +198,7 @@
   <div class="snap-box">
     <div class="snap-hd"><b>Presentation</b><button class="save" onclick="closePresent()">Close</button></div>
     <div style="padding:18px 20px 22px">
-      <div class="set-note" style="margin-top:0">Sonnet 5 reshapes this document into a deck, styled in the VÆST look. Pick an orientation, then Save as PDF from the print dialog.</div>
+      <div class="set-note" style="margin-top:0">VÆST reshapes this document into a deck, styled in the VÆST look. Pick an orientation, then Save as PDF from the print dialog.</div>
       <div class="set-lbl" style="margin-top:18px">Orientation</div>
       <div class="tone" id="presOrient">
         <button data-o="landscape" class="on" onclick="setPresOrient('landscape')">Landscape 16:9</button>

@@ -2,29 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Product — VÆST</title>
+<title>Product — VÆST · The Creative Trinity</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="The four minds of VÆST — the instrument itself, Idea, Ø Think and Refine. What each is, how it works, and its version.">
+<meta name="description" content="The Creative Trinity of VÆST — SKALD the poet, ODIN the mastermind, NORRSKEN the light. Three engines, one flow of taste.">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-  .prod{position:relative;padding:96px 0;border-bottom:1px solid var(--line)}
-  .prod .wrap{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:start}
-  @media(max-width:820px){.prod .wrap{grid-template-columns:1fr;gap:32px}}
-  .prod .badge{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line2);border-radius:100px;padding:5px 12px;display:inline-block;margin-bottom:22px}
-  .prod h2{font-size:clamp(30px,4.6vw,52px)}
-  .prod .role{font-family:var(--serif);font-style:italic;font-size:clamp(18px,2vw,23px);color:var(--dim);margin-top:14px}
-  .prod .how h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:0 0 14px}
-  .prod .how li{font-family:var(--th);font-size:14.5px;line-height:1.7;color:var(--dim);list-style:none;padding:9px 0 9px 24px;position:relative;border-top:1px solid var(--line)}
-  .prod .how li:first-child{border-top:none}
-  .prod .how li::before{content:"";position:absolute;left:0;top:16px;width:9px;height:2px;border-radius:2px;background:var(--chroma)}
-  .prod .how li b{color:var(--ink);font-weight:600}
-  .prod .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
-  .prod .meta .m{font-family:var(--mono);font-size:10.5px;color:var(--dim);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
-  .prod .meta .m b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  /* trinity overview strip */
+  .trinity{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:56px}
+  @media(max-width:760px){.trinity{grid-template-columns:1fr}}
+  .trinity a{background:#0a0a0c;padding:34px 26px;text-align:center;transition:background .25s var(--ease)}
+  .trinity a:hover{background:#0f0f13}
+  .trinity .gl{width:64px;height:64px;margin:0 auto 18px}
+  .trinity .nm{font-family:var(--mono);font-size:15px;letter-spacing:.24em;font-weight:600}
+  .trinity .rl{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--dim);margin-top:8px}
+  .trinity .ph{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:14px}
+
+  /* model chapter */
+  .model{position:relative;padding:100px 0;border-bottom:1px solid var(--line);overflow:hidden}
+  .model .wrap{position:relative;z-index:2;display:grid;grid-template-columns:0.85fr 1.15fr;gap:60px;align-items:start}
+  @media(max-width:820px){.model .wrap{grid-template-columns:1fr;gap:34px}}
+  .model .sigil{width:150px;height:150px;margin-bottom:26px}
+  @media(max-width:820px){.model .sigil{width:110px;height:110px;margin-bottom:16px}}
+  .model .ph{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:16px}
+  .model h2{font-family:var(--mono);font-size:clamp(30px,4.6vw,50px);letter-spacing:.16em;font-weight:600}
+  .model .kenning{font-family:var(--serif);font-style:italic;font-size:clamp(18px,2.1vw,25px);color:var(--dim);margin-top:14px}
+  .model .meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+  .model .meta .m{font-family:var(--mono);font-size:10.5px;color:var(--dim);border:1px solid var(--line2);border-radius:100px;padding:6px 13px}
+  .model .meta .m b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .model .lore{font-family:var(--th);font-size:15px;line-height:1.9;color:var(--dim)}
+  .model .lore .drop{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--ink);display:block;margin-bottom:20px;line-height:1.5}
+  .model .how{margin-top:26px}
+  .model .how h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+  .model .how li{list-style:none;font-family:var(--th);font-size:14.5px;line-height:1.7;color:var(--dim);padding:9px 0 9px 24px;position:relative;border-top:1px solid var(--line)}
+  .model .how li:first-child{border-top:none}
+  .model .how li::before{content:"";position:absolute;left:0;top:16px;width:9px;height:2px;border-radius:2px;background:var(--chroma)}
+  .model .how li b{color:var(--ink);font-weight:600}
+  /* per-model aura tint */
+  .aura{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5}
+  .aura.skald{background:radial-gradient(38% 50% at 18% 30%,rgba(120,90,255,.16),transparent 70%),radial-gradient(30% 40% at 8% 70%,rgba(79,195,255,.12),transparent 72%)}
+  .aura.odin{background:radial-gradient(40% 52% at 20% 28%,rgba(255,161,75,.14),transparent 70%),radial-gradient(30% 40% at 6% 74%,rgba(255,90,31,.12),transparent 72%)}
+  .aura.norr{background:radial-gradient(40% 52% at 18% 30%,rgba(79,220,180,.15),transparent 70%),radial-gradient(32% 42% at 8% 72%,rgba(79,195,255,.12),transparent 72%)}
+  .sig-anim{transform-origin:center;animation:sigrot 44s linear infinite}
+  @keyframes sigrot{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body data-page="product">
@@ -32,120 +55,127 @@
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
   <div class="wrap">
-    <span class="eye">Product</span>
-    <h1>Four minds,<br>one taste<span class="dot">.</span></h1>
-    <p class="sub th">VÆST isn't one generic brain doing everything. Each phase runs on the model built for it — and each capability carries its own version, so you always know what you're working with.</p>
+    <span class="eye">Product · The Creative Trinity</span>
+    <h1>Three minds<br>one flow of taste<span class="dot">.</span></h1>
+    <p class="sub th">VÆST doesn't run one generic brain. It runs a <b>trinity</b> — a poet who sparks, a mastermind who shapes, a light that perfects. Each is our own engine, tuned and versioned, named for the old north.</p>
+    <div class="trinity reveal">
+      <a href="#skald">
+        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6bff"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><path d="M50 12 L50 88 M50 30 L74 18 M50 52 L74 40 M50 30 L26 44" stroke="url(#tg1)" stroke-width="4" stroke-linecap="round"/></svg>
+        <div class="nm gtx">SKALD</div><div class="rl">the poet</div><div class="ph">Phase 1 · Idea</div>
+      </a>
+      <a href="#odin">
+        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa14b"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><circle cx="50" cy="50" r="30" stroke="url(#tg2)" stroke-width="4"/><path d="M50 8 L50 92 M8 50 L92 50" stroke="url(#tg2)" stroke-width="4" stroke-linecap="round"/></svg>
+        <div class="nm gtx">ODIN</div><div class="rl">the mastermind</div><div class="ph">Phase 2 · Think</div>
+      </a>
+      <a href="#norrsken">
+        <svg class="gl" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="tg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fdcb4"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><path d="M14 66 Q34 30 50 46 Q66 62 86 30 M18 78 Q38 46 52 60 Q68 74 84 48" stroke="url(#tg3)" stroke-width="4" stroke-linecap="round"/></svg>
+        <div class="nm gtx">NORRSKEN</div><div class="rl">the light</div><div class="ph">Phase 3 · Refine</div>
+      </a>
+    </div>
   </div>
 </header>
 
-<!-- VÆST -->
-<section class="prod">
+<!-- SKALD -->
+<section class="model" id="skald">
+  <div class="aura skald"></div>
   <div class="wrap">
     <div>
-      <span class="badge">The instrument · v1.2</span>
-      <h2>VÆST</h2>
-      <p class="role th">The workspace that turns chaos into a document.</p>
-      <div class="meta"><span class="m">Aesthetic Intelligence</span><span class="m">by <b>ORIONS.Agency</b></span></div>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="sg1" gradientUnits="userSpaceOnUse" x1="20" y1="12" x2="80" y2="88"><stop offset="0" stop-color="#a68bff"/><stop offset=".5" stop-color="#6fb6ff"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="42" stroke="url(#sg1)" stroke-width="1" opacity=".35"/><circle cx="50" cy="50" r="30" stroke="url(#sg1)" stroke-width="1" opacity=".55"/></g><path d="M50 14 L50 86 M50 30 L76 16 M50 50 L76 38 M50 30 L24 46 M50 66 L28 78" stroke="url(#sg1)" stroke-width="4.5" stroke-linecap="round"/></svg>
+      <div class="ph">Phase 1 · Idea · Sandbox</div>
+      <h2 class="gtx">SKALD</h2>
+      <div class="kenning th">สกาลด์ — กวีผู้จุดประกาย</div>
+      <div class="meta"><span class="m">Engine <b>SKALD v3</b></span><span class="m">Sparking Idea</span><span class="m">Persona-aware</span></div>
     </div>
-    <div class="how th">
-      <h4>What it is · how it works</h4>
-      <ul>
-        <li>The whole surface: a <b>document canvas</b>, not a chat — briefs and files in, one crystallized document out.</li>
-        <li>Carries context everywhere — persona, project voice, reference library and <b>taste memory</b> ride on every call.</li>
-        <li>Orchestrates the four engines below across one clean flow: Idea → Summing → Canvas → Ø Think → Refined → hand off.</li>
-        <li>Stores your work privately per account and syncs it across devices.</li>
-      </ul>
+    <div>
+      <div class="lore th">
+        <span class="drop">In the old courts, the skald was the poet who turned history, culture and raw feeling into verse. VÆST's SKALD does the same for your ideas.</span>
+        This is where the work begins — a living sandbox that recites options back, argues art theory with you, catches half-thoughts and raw fragments pasted from anywhere. It doesn't judge yet; it <b>flows</b> — throwing sparks freely until the first true idea lands.
+      </div>
+      <div class="how">
+        <h4>What it does · how it works</h4>
+        <ul class="th">
+          <li>A fast, generous <b>brainstorm mode</b> on the home screen — riff, debate, paste raw source from outside.</li>
+          <li>Keeps the good part, kills the weak part, and says why — then curates the thread into <b>Summing</b>.</li>
+          <li>Promote any line with <b>“→ brief.”</b> Speaks your chosen persona and language on every reply.</li>
+          <li>Tuned for speed and flow; if it ever stumbles, a backup voice carries on — SKALD never falls silent.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- IDEA -->
-<section class="prod">
+<!-- ODIN -->
+<section class="model" id="odin">
+  <div class="aura odin"></div>
   <div class="wrap">
     <div>
-      <span class="badge">Phase 1 · Idea</span>
-      <h2 class="gtx">Idea</h2>
-      <p class="role th">The sparring partner.</p>
-      <div class="meta"><span class="m"><b>Gemini Flash</b></span><span class="m">Sandbox</span><span class="m">Fallback: Haiku 4.5</span></div>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="og1" gradientUnits="userSpaceOnUse" x1="20" y1="12" x2="80" y2="88"><stop offset="0" stop-color="#ffd08a"/><stop offset=".5" stop-color="#ffa14b"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="44" stroke="url(#og1)" stroke-width="1" opacity=".3"/></g><circle cx="50" cy="50" r="26" stroke="url(#og1)" stroke-width="4.5"/><path d="M50 6 L50 94 M6 50 L94 50 M22 22 L78 78 M78 22 L22 78" stroke="url(#og1)" stroke-width="3" stroke-linecap="round" opacity=".9"/><circle cx="50" cy="50" r="7" fill="url(#og1)"/></svg>
+      <div class="ph">Phase 2 · Think · Synthesis</div>
+      <h2 class="gtx">ODIN</h2>
+      <div class="kenning th">โอดิน — มหาเทพผู้คุมปัญญา</div>
+      <div class="meta"><span class="m">Engine <b>ODIN v4.8</b></span><span class="m">Summing · Multi-canvas</span><span class="m">Ø Think</span></div>
     </div>
-    <div class="how th">
-      <h4>What it is · how it works</h4>
-      <ul>
-        <li>A fast, generous <b>sandbox</b> on the home screen — throw sparks, options, and raw pastes from any other model.</li>
-        <li>It riffs long when the idea deserves it, keeps the good part, kills the weak part and says why.</li>
-        <li>Any reply can be promoted <b>“→ brief”</b> as a tile; the whole thread feeds Summing as curated raw material.</li>
-        <li>Runs on Gemini Flash for speed and low cost; if it ever hiccups, it falls back to Haiku automatically — it never breaks.</li>
-      </ul>
+    <div>
+      <div class="lore th">
+        <span class="drop">Odin traded an eye for wisdom and hung nine nights to grasp the runes. VÆST's ODIN is the all-seeing mind that turns a mountain of input into order.</span>
+        When ideas settle, ODIN takes over — reading every file, crystallizing chaos into one clean document, splitting distinct deliverables into their own canvases. And when you press <b>Ø Think</b>, ODIN wakes as a Senior Creative and rips the work open, injecting master-level provocations to make it braver.
+      </div>
+      <div class="how">
+        <h4>What it does · how it works</h4>
+        <ul class="th">
+          <li><b>Summing</b> — brief, files and ideas become one sharp, sectioned document, streamed live.</li>
+          <li><b>Multi-canvas</b> — identity vs copy vs event split into tabs, each standing on its own.</li>
+          <li><b>Ø Think</b> — a CD-grade pass: missing cultural hooks, safe choices to bend, angles that stop too early — each anchored to the exact line.</li>
+          <li>Learns your studio's <b>taste</b> from every push you approve or skip.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Ø THINK -->
-<section class="prod">
+<!-- NORRSKEN -->
+<section class="model" id="norrsken">
+  <div class="aura norr"></div>
   <div class="wrap">
     <div>
-      <span class="badge">Phase 2 · Ø Think</span>
-      <h2 class="gtx">Ø Think</h2>
-      <p class="role th">The senior creative director.</p>
-      <div class="meta"><span class="m"><b>Claude Opus 4.8</b></span><span class="m">Provocation pass</span></div>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="nr1" gradientUnits="userSpaceOnUse" x1="14" y1="20" x2="86" y2="80"><stop offset="0" stop-color="#7ef0c8"/><stop offset=".5" stop-color="#4fdcb4"/><stop offset="1" stop-color="#4fc3ff"/></linearGradient></defs><g class="sig-anim"><circle cx="50" cy="50" r="44" stroke="url(#nr1)" stroke-width="1" opacity=".3"/></g><path d="M10 62 Q30 24 48 44 Q64 62 90 24" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round"/><path d="M12 74 Q32 40 50 58 Q68 76 88 44" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round" opacity=".75"/><path d="M16 86 Q36 56 54 72 Q70 86 84 62" stroke="url(#nr1)" stroke-width="4.5" stroke-linecap="round" opacity=".5"/></svg>
+      <div class="ph">Phase 3 · Refine · Quality gate</div>
+      <h2 class="gtx">NORRSKEN</h2>
+      <div class="kenning th">นอร์เชน — แสงเหนือผู้เจียระไน</div>
+      <div class="meta"><span class="m">Engine <b>NORRSKEN v5</b></span><span class="m">Editorial critic</span><span class="m">Suggest &amp; approve</span></div>
     </div>
-    <div class="how th">
-      <h4>What it is · how it works</h4>
-      <ul>
-        <li>The signature move. Opus reads the whole canvas <b>like a CD reviewing a junior's deck</b> — not proofreading, pushing.</li>
-        <li>Finds the braver version: missing cultural hooks, safe choices to bend (minimalist → a brutalist clash), angles that stop one step early.</li>
-        <li>Each push is <b>anchored to an exact quote</b> in the document and highlighted in place — click a card to jump to the spot.</li>
-        <li>Approve the pushes you like; VÆST writes them in and <b>remembers your taste</b> from every decision.</li>
-      </ul>
+    <div>
+      <div class="lore th">
+        <span class="drop">Norrsken is the northern lights — the sky sweeping the dark clean. VÆST's NORRSKEN is the final light that passes over the whole canvas before it ships.</span>
+        The most sensitive read of all: NORRSKEN scans the entire document from above, hunting inconsistency, redundancy and broken logic. It doesn't rewrite blindly — it shows each flaw exactly where it lives and offers a change to approve, polishing the work to an editorial, pixel-clean finish before it reaches the client.
+      </div>
+      <div class="how">
+        <h4>What it does · how it works</h4>
+        <ul class="th">
+          <li>A <b>bird's-eye audit</b> for inconsistency (tone that contradicts), redundancy (ideas that circle), and logic (does the flow hold).</li>
+          <li>Every finding <b>quotes the exact line</b> and highlights it in the document — nothing hidden.</li>
+          <li>Track-changes style: <b>approve</b> one at a time or all at once; view exactly what moved.</li>
+          <li>The last light before the work leaves the studio.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- REFINE -->
-<section class="prod">
-  <div class="wrap">
-    <div>
-      <span class="badge">Phase 3 · Refine</span>
-      <h2 class="gtx">Refine</h2>
-      <p class="role th">The final taste check.</p>
-      <div class="meta"><span class="m"><b>Claude Fable 5</b></span><span class="m">Holistic audit</span></div>
-    </div>
-    <div class="how th">
-      <h4>What it is · how it works</h4>
-      <ul>
-        <li>A bird's-eye read of the entire document, on the model most sensitive to tone and coherence.</li>
-        <li>Hunts three things: <b>inconsistency</b> (claims that contradict across sections), <b>redundancy</b> (ideas that circle), <b>logic</b> (does the flow hold up).</li>
-        <li>Every finding quotes the exact line and highlights it — a track-changes style card you approve one at a time or all at once.</li>
-        <li>The last read before the work leaves the studio.</li>
-      </ul>
-    </div>
+<!-- The instrument + Present -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">The instrument &amp; the hand-off</div>
+  <h2>VÆST binds the trinity into one flow</h2>
+  <div class="grid c2">
+    <div class="card"><div class="k">VÆST · v1.2</div><h3>The instrument</h3><p>The document canvas that carries a brief from spark to sign-off — orchestrating SKALD → ODIN → NORRSKEN across one clean flow, with persona, project voice and taste memory riding on every call.</p><span class="ver">Aesthetic Intelligence</span></div>
+    <div class="card"><div class="k">Hand-off · Present</div><h3>The saga, retold as slides</h3><p>When the work is done, VÆST reshapes the document into a presentation in its own night-prismatic look — landscape or portrait, Thai or English — rendered by our own template, ready to save as PDF.</p><span class="ver">Deck builder</span></div>
   </div>
-</section>
-
-<!-- PRESENT (bonus) -->
-<section class="prod">
-  <div class="wrap">
-    <div>
-      <span class="badge">Hand off · Present</span>
-      <h2 class="gtx">Present</h2>
-      <p class="role th">The deck builder.</p>
-      <div class="meta"><span class="m"><b>Claude Sonnet 5</b></span><span class="m">Presentation</span></div>
-    </div>
-    <div class="how th">
-      <h4>What it is · how it works</h4>
-      <ul>
-        <li>Reshapes the finished document into a <b>presentation</b> — cover, content, quote and close slides.</li>
-        <li>Sonnet plans the slides; VÆST renders them in its own night-prismatic look (never model-authored HTML).</li>
-        <li>Choose <b>landscape 16:9 or portrait A4</b>, then save as PDF from the print dialog. Thai and English supported.</li>
-      </ul>
-    </div>
-  </div>
-</section>
+</div></section>
 
 <section class="cta">
   <div class="prism"><div class="glow"></div><div class="strips" style="left:0;opacity:.5"></div></div>
   <div class="wrap">
-    <h2>Put the four to work<span class="dot">.</span></h2>
+    <h2>Summon the trinity<span class="dot">.</span></h2>
     <p class="th">One brief, one afternoon, one document you'd actually send.</p>
     <a class="btn-try" href="/app">Try VÆST →</a>
   </div>

@@ -591,7 +591,7 @@
     i=e.key==='ArrowDown'?(i<0?0:Math.min(ids.length-1,i+1)):(i<0?0:Math.max(0,i-1));
     if(ids[i]!==currentSid){e.preventDefault();openSession(ids[i])}});
 
-  /* ═══ selection toolbar — refine highlighted text (Opus 4.8) ═══ */
+  /* ═══ selection toolbar — refine highlighted text (ODIN) ═══ */
   let _selRange=null;
   const SELBTNS='<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'make it more concise while keeping the meaning\')">Shorten</button>'
     +'<button onmousedown="event.preventDefault()" onclick="runSelEdit(\'make the tone more formal and polished\')">Formal</button>'
@@ -645,7 +645,7 @@
   document.addEventListener('scroll',()=>{if(!$('selBar').classList.contains('busy'))hideSelBar()},true);
   addEventListener('keydown',e=>{if(e.key==='Escape')hideSelBar()});
 
-  /* ═══ tone preset — session-level tone (Opus 4.8 for all writing) ═══ */
+  /* ═══ tone preset — session-level persona (ODIN for all writing) ═══ */
   /* ═══ Dynamic Persona Engine — injected on top of EVERY call ═══ */
   const PERSONA={
     standard:'PERSONA — STANDARD: clear, direct, professionally sharp. Say things plainly; cut filler; every sentence earns its place. Confident without decoration.',
@@ -727,7 +727,7 @@
     const q=window.QUOTA;const qe=$('quotaRow2');
     if(qe){if(q&&!q.internal&&q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));qe.style.display='';
       qe.innerHTML='<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>'}else qe.style.display='none'}
-    $('usageBreak').innerHTML=[['Opus 4.8 · writing',o],['Fable 5 · refine',f],['Idea · Gemini',idea]]
+    $('usageBreak').innerHTML=[['ODIN · think',o],['NORRSKEN · refine',f],['SKALD · idea',idea]]
       .map(r=>'<div class="ub-row"><span>'+r[0]+'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
   function closeSettings(){$('setView').classList.remove('show')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
@@ -758,7 +758,7 @@
       c.push({t:'Share link · read-only',run:()=>shareDoc(),k:'export'});
       c.push({t:'Settings · persona',run:()=>openSettings(),k:'app'});
       c.push({t:'Copy as rich text',run:()=>copyRich(),k:'export'});
-      c.push({t:'Presentation · Sonnet',run:()=>openPresent(),k:'export'});
+      c.push({t:'Presentation · deck',run:()=>openPresent(),k:'export'});
       c.push({t:'Find & replace in document',run:()=>findReplace(),k:'doc'});
       c.push({t:'Download Markdown (.md)',run:()=>downloadMD(),k:'export'});
       c.push({t:'Download Word (.doc)',run:()=>downloadDOC(),k:'export'});
@@ -903,7 +903,7 @@
     if(b.value.trim()&&!await uiConfirm('Replace the current brief with the '+k+' template?',{ok:'Replace'}))return;
     b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
 
-  /* ═══ IDEA — phase 1 sandbox · Haiku (quick) / Sonnet (deep) ═══ */
+  /* ═══ IDEA — SKALD sandbox ═══ */
   let _ideaBusy=false;
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
@@ -1368,7 +1368,7 @@
     pushUndo();applyMd(md.split(find).join(rep));
     toast('Replaced '+n+' occurrence'+(n>1?'s':''))}
 
-  /* ═══ PRESENTATION — Sonnet builds slides, rendered in VÆST CI ═══ */
+  /* ═══ PRESENTATION — deck builder, rendered in VÆST CI ═══ */
   let _presOrient='landscape';
   function openPresent(){$('expMenu').classList.remove('show');
     const s=cur();if(!s||!s.canvas.trim()){toast('No document yet');return}
