@@ -471,6 +471,16 @@
   .vc-ta:focus{border-color:var(--ink)}
   .vc-ta::placeholder{color:var(--mute)}
 
+  .cv-tab .tx{margin-left:8px;opacity:.6;font-size:10px}
+  .cv-tab .tx:hover{opacity:1}
+  .cv-tab.addt{padding:6px 12px;color:var(--mute);border-style:dashed}
+  .cv-tab.addt:hover{color:var(--ink)}
+  .id-use{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:2px 8px;float:right}
+  .id-use:hover{color:var(--ink);border-color:var(--line2)}
+  .id-m .who{display:flex;align-items:center;gap:8px}
+  .cmt .cr.ca{margin-left:auto;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-decoration:none;font-weight:700}
+  .cmt .cr.ca+.cr{margin-left:12px}
+
   /* share view — client-side paper mode */
   body.share-light{--ink:#111110;--charcoal:#f4f3f0;--snow:#111110;--app:#ffffff;--paper:#ffffff;--sheet:#ffffff;--card:#ffffff;
     --line:rgba(17,17,16,.1);--line2:rgba(17,17,16,.2);--dim:#55544f;--mute:#9b9a94;--soft:rgba(17,17,16,.045);--cin-d:#c94e26}
@@ -588,6 +598,7 @@
         <button class="tb accent" onclick="toggleExp(event)">Export <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="exp-menu" id="expMenu">
           <button class="exp-item" onclick="shareDoc()">Share link · read-only <span class="mo">link</span></button>
+          <button class="exp-item" id="expRevoke" style="display:none" onclick="revokeShare()">Revoke share link <span class="mo">off</span></button>
           <button class="exp-item" onclick="copyRich()">Copy as rich text <span class="mo">docs</span></button>
           <button class="exp-item" onclick="copyFullPage()">Copy full page <span class="mo">md</span></button>
           <button class="exp-item" onclick="downloadMD()">Markdown <span class="mo">.md</span></button>
@@ -1349,6 +1360,11 @@
     parts.push(PERSONA[personaKey()]+' This persona governs word choice, tone and mood of everything you write here.');
     const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
     if(p&&p.voice&&p.voice.trim())parts.push('Project voice & guidelines (follow strictly):\n'+p.voice.trim());
+    const taste=[...((p&&p.taste)||[]),...((s&&s.taste)||[])].slice(-14);
+    if(taste.length){
+      const ap=taste.filter(x=>x.v==='approved').map(x=>x.t),rj=taste.filter(x=>x.v==='skipped').map(x=>x.t);
+      parts.push(capTxt('Taste memory — how this team judged earlier suggestions (let it quietly bias your choices):'
+        +(ap.length?'\nAPPROVED: '+ap.join(' · '):'')+(rj.length?'\nPASSED ON: '+rj.join(' · '):''),1200))}
     return parts.join('\n\n')}
 
   /* project voice modal */
@@ -1435,7 +1451,29 @@
     const cvs=(s&&s.canvases)||[];
     if(!on||cvs.length<2){el.classList.remove('has');el.innerHTML='';return}
     el.classList.add('has');
-    el.innerHTML=cvs.map(c=>'<button class="cv-tab'+(c.id===s.cvId?' on':'')+'" onclick="switchCanvas(\''+c.id+'\')">'+esc(c.t)+'</button>').join('')}
+    el.innerHTML=cvs.map(c=>{const on=c.id===s.cvId;
+      return '<button class="cv-tab'+(on?' on':'')+'" onclick="switchCanvas(\''+c.id+'\')" ondblclick="renameCanvas(\''+c.id+'\')" title="Double-click to rename">'+esc(c.t)
+        +(on&&cvs.length>1?'<span class="tx" onclick="event.stopPropagation();deleteCanvas(\''+c.id+'\')" title="Delete this canvas">✕</span>':'')+'</button>'}).join('')
+      +'<button class="cv-tab addt" onclick="addCanvas()" title="New canvas">+</button>'}
+  function addCanvas(){
+    const s=cur();if(!s)return;ensureCanvases(s);
+    const c0=activeCv(s);if(c0&&$('cvView').style.display!=='none')c0.md=genMd();
+    const c={id:uid('cv'),t:'Untitled',md:'# Untitled\n\n## Notes\n\n—'};
+    s.canvases.push(c);s.cvId=c.id;s.canvas=c.md;
+    renderDoc(s.canvas);save();renderTabs();toast('New canvas — double-click the tab to name it')}
+  function renameCanvas(id){
+    const s=cur();if(!s)return;const c=(s.canvases||[]).find(x=>x.id===id);if(!c)return;
+    let n=null;try{n=prompt('Canvas name',c.t)}catch(e){}
+    if(n===null||!String(n).trim())return;
+    c.t=String(n).trim().slice(0,26);save();renderTabs()}
+  function deleteCanvas(id){
+    const s=cur();if(!s)return;ensureCanvases(s);
+    if(s.canvases.length<2)return;
+    const c=s.canvases.find(x=>x.id===id);if(!c)return;
+    if(!confirm('Delete canvas “'+c.t+'”? Its content goes with it.'))return;
+    s.canvases=s.canvases.filter(x=>x.id!==id);
+    if(s.cvId===id){s.cvId=s.canvases[0].id;s.canvas=s.canvases[0].md;renderDoc(s.canvas)}
+    save();renderTabs()}
   function switchCanvas(id){
     const s=cur();if(!s)return;ensureCanvases(s);
     if(id===s.cvId)return;
@@ -1498,7 +1536,9 @@
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&s.ideas)||[];
     th.classList.toggle('has',!!ideas.length);
-    th.innerHTML=ideas.map(m=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')+'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
+    th.innerHTML=ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
+      +(m.r!=='user'?'<button class="id-use" onclick="ideaToBrief('+i+')" title="Add this to the brief">→ brief</button>':'')
+      +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
     th.scrollTop=th.scrollHeight;
     const deep=!!(s&&s.ideaDeep);
     document.querySelectorAll('#ideaMode button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-m')==='1')===deep))}
@@ -1523,6 +1563,11 @@
       s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now();save();renderIdeas()}
     catch(e){live.remove();toast('Sandbox failed: '+e.message)}
     finally{_ideaBusy=false;$('ideaSend').disabled=false;inp.focus()}}
+  function ideaToBrief(i){
+    const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
+    const b=$('brief');
+    b.value=((b.value.trim()?b.value.trim()+'\n\n':'')+s.ideas[i].c).slice(0,9000);
+    briefChanged();toast('Added to the brief');b.scrollTop=b.scrollHeight}
   // what Summing sees from the sandbox
   function ideasContext(){
     const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
@@ -1530,7 +1575,15 @@
       +capTxt(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
-  function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show')}
+  function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show');
+    const rv=$('expRevoke');if(rv){const s=cur();rv.style.display=(s&&s.shareId)?'':'none'}}
+  async function revokeShare(){
+    $('expMenu').classList.remove('show');
+    const s=cur();if(!s||!s.shareId)return;
+    if(!confirm('Revoke this share link? Anyone with the URL loses access.'))return;
+    try{await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('share:'+s.shareId),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
+      s.shareId=null;_cmtCounts[s.id]=0;_cmtCache[s.id]=[];save();renderRail();renderOwnerComments();toast('Link revoked')}
+    catch(e){toast('Couldn’t revoke, try again')}}
 
   /* ═══ doc render / serialize ═══ */
   function renderDoc(md){
@@ -1731,7 +1784,8 @@
       toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
-        +'<button class="tb dark" onclick="backToBrief()">← Back to brief</button></div>';
+        +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Summing</button>'
+        +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
     }finally{_busy=false;go.disabled=false;go.innerHTML='Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
   /* ═══ IMPROVE (per section) ═══ */
@@ -1817,8 +1871,14 @@
     if(!mk){toast('Spot not found in the current text');return}
     const cv=$('cvView');const top=cv.scrollTop+mk.getBoundingClientRect().top-cv.getBoundingClientRect().top-cv.clientHeight/2;
     smoothTo(cv,top);mk.classList.add('pulse');setTimeout(()=>mk.classList.remove('pulse'),1400)}
+  // taste memory — every approve/skip teaches the system what this team wants
+  function tasteLog(verdict,point){
+    if(!point)return;const s=cur();if(!s)return;
+    const tgt=(s.projectId&&projects.find(x=>x.id===s.projectId))||s;
+    tgt.taste=(tgt.taste||[]).concat({v:verdict,t:String(point.t||'').replace(/\*\*/g,'').slice(0,90),k:(_mast&&_mast.kind)||'mastering',ts:Date.now()}).slice(-40);
+    save()}
   function closeMast(){_mast=null;unmarkFlaws();const b=$('doc').querySelector('.mast');if(b)b.remove()}
-  function skipPoint(i){if(_mast){_mast.done[i]='skip';renderMast()}}
+  function skipPoint(i){if(_mast){_mast.done[i]='skip';tasteLog('skipped',_mast.points[i]);renderMast()}}
   function snapshot(){const b={};document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');b[hh?hh.innerText.trim():'_']=s.querySelector('.sec-c').innerText.trim()});return b}
   function flashChanged(before){const chg=[];document.querySelectorAll('#doc .sec').forEach(s=>{const hh=s.querySelector('.sec-h');const k=hh?hh.innerText.trim():'_';
     if(before[k]===undefined||before[k]!==s.querySelector('.sec-c').innerText.trim()){chg.push(k);s.classList.add('flash');setTimeout(()=>s.classList.remove('flash'),1300)}});return chg}
@@ -1838,7 +1898,7 @@
     const before=snapshot();
     const prompt='Original document:\n\n'+genMd()+'\n\nApply just this one suggestion: '+point.t+(point.q?(' (it concerns this part: "'+point.q+'")'):'')+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);_mast.done[i]='fixed';_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
+      .then(md=>{applyMd(md);_mast.done[i]='fixed';tasteLog('approved',point);_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{_busy=false})}
   function applyAll(){
@@ -1849,7 +1909,7 @@
     const before=snapshot();
     const prompt='Original document:\n\n'+genMd()+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p.t+(x.p.q?(' (concerns: "'+x.p.q+'")'):'')).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
+      .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';tasteLog('approved',x.p);_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{_busy=false})}
 
@@ -2032,8 +2092,20 @@
       const sec=secs.find(x=>x.getAttribute('data-h')===h)||secs[secs.length-1];if(!sec)return;
       const box=document.createElement('div');box.className='own-cmts';
       box.innerHTML=list.map(c=>'<div class="cmt"><div class="ch"><b>'+esc(c.name||'Anonymous')+'</b>'+fmtAgo(c.ts)
+        +'<button class="cr ca" onclick="applyComment(\''+c.id+'\')">Apply with VÆST</button>'
         +'<button class="cr" onclick="resolveComment(\''+c.id+'\')">Resolve</button></div><div class="ct">'+esc(c.text)+'</div></div>').join('');
       sec.appendChild(box)})}
+  // the client's note becomes the instruction — one click
+  async function applyComment(cid){
+    if(_busy){toast('Working…');return}
+    const s=cur();const c=(_cmtCache[s.id]||[]).find(x=>x.id===cid);if(!c)return;
+    pushUndo();_busy=true;toast('Applying the client’s note…');
+    const before=snapshot();
+    const prompt='Original document:\n\n'+genMd()+'\n\nA client left this comment on the section "'+c.h+'":\n"'+c.text+'"\n\nRevise the document to address the comment (adjust only what’s relevant; keep the "# title" and "## " structure). Return the full markdown.';
+    try{const md=await streamAPI('apply',[{role:'user',content:prompt}],toneSys());
+      applyMd(md);flashChanged(before);toast('Client note applied — review it, then Resolve the comment')}
+    catch(e){toast('Failed: '+e.message)}
+    finally{_busy=false}}
   async function resolveComment(cid){
     const s=cur();if(!s||!s.shareId)return;
     try{const data=await loadShare(s.shareId)||{};
