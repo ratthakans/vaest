@@ -4,17 +4,17 @@ import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
 
-// VÆST 1.1 — three-phase pipeline
-// IDEA (sandbox chat) = Haiku 4.5 / Sonnet 5 · THINK (document work + Ø Think) = Opus 4.8 · REFINE = Fable 5
+// VÆST 1.2 — IDEA (sandbox) = Gemini Flash · THINK/write = Opus 4.8 · REFINE = Fable 5 · PRESENT = Sonnet 5
+const GEMINI_MODEL = 'gemini-flash-latest';
 const ROUTE = {
-  idea:      { model: 'claude-haiku-4-5-20251001', max: 2048 },
-  ideaplus:  { model: 'claude-sonnet-5',           max: 4096 },
+  idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
   think:     { model: 'claude-opus-4-8' },
   mastering: { model: 'claude-fable-5' },
+  present:   { model: 'claude-sonnet-5', max: 8192 },
 };
 
 // ── Persona ~30% ORIONS ──
@@ -32,11 +32,20 @@ Mirror the user's language: Thai question → Thai answer, English question → 
 const TASK = {
   idea: `${BASE}
 
-# CURRENT TASK: IDEA — the sandbox. You are a fast creative sparring partner.
-- Short, punchy replies: riff, throw 2–4 options, sharpen a spark — no essays, no long headers.
-- Raw pasted material (other models' output, prompts, scraps) is welcome: react to it, steal the good part, kill the weak part, say why in one line.
-- Ask at most one sharp question back when it genuinely unlocks the next move.
-- Plain text / light markdown lists only.`,
+# CURRENT TASK: IDEA — the sandbox. You are a generous creative sparring partner.
+- Riff freely and go long when the spark deserves it: open 3–6 angles, take the two strongest further, explain the thinking behind each so the user can build on it.
+- Raw pasted material (other models' output, prompts, scraps) is welcome: react to it, keep the good part, kill the weak part, say why.
+- End with one sharp question or a concrete next move when it helps.
+- Markdown lists and short paragraphs; stay lively, never a wall of corporate prose.`,
+  present: `${BASE}
+
+# CURRENT TASK: PRESENT — turn the document into presentation slides.
+Read the whole document and reshape it into a tight deck. Return ONLY a JSON array (no prose, no code fence) of slide objects:
+[{"kind":"cover","title":"...","subtitle":"..."},
+ {"kind":"content","title":"Section title","bullets":["short point","short point","short point"],"note":"one-line takeaway (optional)"},
+ {"kind":"quote","quote":"a single strong line pulled from the work","by":"optional attribution"},
+ {"kind":"close","title":"closing line","subtitle":"optional"}]
+Rules: 6–12 slides total. One cover, one close. Bullets are 3–6 words each, max 5 per slide — compress, don't copy sentences. Keep the document's language. Titles are sharp and sentence-case.`,
   think: `${BASE}
 
 # CURRENT TASK: Ø THINK — a Senior Creative Director provocation pass over the document.
@@ -88,6 +97,49 @@ function rateLimited(email) {
   return false;
 }
 
+// Gemini (Idea sandbox) — streamed via SSE, rough token estimate. Throws on any error so the caller can fall back.
+async function streamGemini(res, base, dynamic, messages, maxTokens) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('no-gemini-key');
+  const sys = base + (dynamic ? '\n\n' + dynamic : '');
+  const contents = messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: typeof m.content === 'string' ? m.content : (m.content || []).map(c => c.text || '').join('\n') }],
+  }));
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${key}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: sys }] },
+      contents,
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 1.0 },
+    }),
+  });
+  if (!r.ok || !r.body) throw new Error('gemini-http-' + r.status);
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', out = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let nl;
+    while ((nl = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+      if (!line.startsWith('data:')) continue;
+      const js = line.slice(5).trim(); if (js === '[DONE]') continue;
+      try {
+        const d = JSON.parse(js);
+        const t = d.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+        if (t) { out += t; res.write(t); }
+      } catch (e) {}
+    }
+  }
+  if (!out) throw new Error('gemini-empty');
+  const inTok = Math.ceil(JSON.stringify(contents).length / 4), outTok = Math.ceil(out.length / 4);
+  return { inTok, outTok, model: GEMINI_MODEL };
+}
+
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
   const params = { model, max_tokens: maxTokens, messages };
   // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
@@ -131,17 +183,27 @@ export default async function handler(req, res) {
 
   const route = ROUTE[mode] || ROUTE.summing;
   const base = TASK[mode] || TASK.summing;
+  const maxTok = route.max || 8192;
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('X-Model', route.model);
+  res.setHeader('X-Model', route.gemini ? GEMINI_MODEL : route.model);
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
-    const { inTok, outTok } = await streamAnthropic(res, route.model, base, system || '', messages, route.max || 8192);
+    let usage;
+    if (route.gemini) {
+      // Idea sandbox → Gemini Flash, but never let a Gemini hiccup break the flow: fall back to Haiku
+      try { usage = await streamGemini(res, base, system || '', messages, maxTok); }
+      catch (ge) { usage = await streamAnthropic(res, route.fallback, base, system || '', messages, 2048); usage.model = route.fallback; }
+    } else {
+      usage = await streamAnthropic(res, route.model, base, system || '', messages, maxTok);
+      usage.model = route.model;
+    }
+    const { inTok, outTok } = usage;
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
-    res.write(`\n[[USAGE]]${inTok},${outTok},${route.model}`); // lets the client show per-document cost
+    res.write(`\n[[USAGE]]${inTok},${outTok},${usage.model}`); // lets the client show per-document cost
     res.end();
   } catch (e) {
     res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
