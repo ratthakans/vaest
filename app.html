@@ -927,7 +927,9 @@
       <div class="set-pane" data-sp="privacy">
         <div class="set-lbl">Private session</div>
         <label class="pv-toggle"><input type="checkbox" id="pvPrivate" onchange="togglePrivate(this.checked)"> <span>🔒 Keep this session on this device only — no cloud sync, excluded from taste memory</span></label>
-        <div class="set-lbl" style="margin-top:24px">Recently deleted · 30 days</div>
+        <div class="set-lbl" style="margin-top:24px">Storage</div>
+        <div class="set-note" id="storeLine" style="margin-top:6px"></div>
+        <div class="set-lbl" style="margin-top:24px">Recently deleted · 30 days <button class="set-link" style="font-size:11.5px;margin-left:8px" onclick="emptyTrash()">Empty now</button></div>
         <div id="trashList" class="usage-break"></div>
         <div class="set-lbl" style="margin-top:24px">Your data</div>
         <button class="set-link" onclick="exportAllData()">Export everything (JSON) →</button><br>
@@ -1176,7 +1178,10 @@
       usage=b.usage||0;currentSid=(sessions[0]||{}).id||null;return true}
     return false}
   const storeKey=()=>STORE+':'+((AUTH&&AUTH.email)||'anon');
-  function save(){try{localStorage.setItem(storeKey(),JSON.stringify(stateBlob()))}catch(e){}cloudSave()}
+  let _sizeWarned=false;
+  function save(){try{localStorage.setItem(storeKey(),JSON.stringify(stateBlob()))}catch(e){}
+    if(!_sizeWarned&&stateBytes()>4.2e6){_sizeWarned=true;toast('Your workspace is getting large — trim old sessions or empty the trash in Settings › Privacy to keep syncing fast')}
+    cloudSave()}
   function loadLocal(){
     try{if(applyBlob(JSON.parse(localStorage.getItem(storeKey()))))return true}catch(e){}
     try{if(applyBlob(JSON.parse(localStorage.getItem(STORE)))){save();return true}}catch(e){} // pre-login
@@ -1200,6 +1205,13 @@
   function fmtTok(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?Math.round(n/1e3)+'K':n}
 
   /* ═══ API ═══ */
+  let _lastErr=0;
+  function logErr(msg,where){
+    const now=Date.now();if(now-_lastErr<4000)return;_lastErr=now; // throttle
+    try{fetch('/api/log',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Authorization:'Bearer '+((typeof AUTH!=='undefined'&&AUTH&&AUTH.access_token)||'')},
+      body:JSON.stringify({msg:String(msg).slice(0,400),where:where||''})})}catch(e){}}
+  addEventListener('error',e=>logErr(e.message||'error',(e.filename||'')+':'+(e.lineno||'')));
+  addEventListener('unhandledrejection',e=>logErr((e.reason&&(e.reason.message||e.reason))||'rejection','promise'));
   let _abort=null,_origTitle=null;
   function stopGen(){if(_abort){_abort.abort();_abort=null}}
   function notifyDone(what){if(_origTitle===null)_origTitle=document.title;document.title='✓ '+what+' done — VÆST'}
@@ -1402,6 +1414,9 @@
   function restoreTrash(at){const t=(trash||[]).find(x=>x.at===at);if(!t)return;
     t.s.id=uid('s');t.s.updatedAt=Date.now();sessions.unshift(t.s);trash=trash.filter(x=>x.at!==at);
     currentSid=t.s.id;save();renderRail();openSession(t.s.id);renderTrash();toast('Restored')}
+  async function emptyTrash(){if(!(trash&&trash.length))return;
+    if(!await uiConfirm('Empty the trash? '+trash.length+' item'+(trash.length>1?'s':'')+' will be permanently removed.',{ok:'Empty',danger:true}))return;
+    trash=[];save();renderTrash();toast('Trash emptied')}
   function renderTrash(){const el=$('trashList');if(!el)return;
     trash=(trash||[]).filter(t=>Date.now()-t.at<30*864e5);
     el.innerHTML=trash.length?trash.map(t=>'<div class="ub-row"><span>'+esc((t.s.title||'Untitled').slice(0,32))+'</span><button class="set-link" style="font-size:12px" onclick="restoreTrash('+t.at+')">Restore</button></div>').join(''):'<div class="set-note" style="margin-top:8px">Trash is empty</div>'}
@@ -1642,6 +1657,7 @@
     document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===getLang()));
     const pr=getProfile();$('pfName').value=pr.name||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
     $('pvPrivate').checked=!!(cur()&&cur().private);renderTrash();
+    const kb=Math.round(stateBytes()/1024);$('storeLine').innerHTML='Workspace state: <b style="color:var(--ink)">'+(kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB')+'</b>'+(kb>4096?' — consider trimming':'');
     setSetTab('profile');$('setView').classList.add('show')}
   /* profile — name + avatar in the user's own state (stays with the account) */
   function getProfile(){return profile||{}}
