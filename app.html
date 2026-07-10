@@ -20,7 +20,7 @@
     --body:"Newsreader","Noto Serif Thai",Georgia,"Times New Roman",serif;
     --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
     /* chromatic dispersion — the one accent */
-    --grad:linear-gradient(100deg,#1f9de0 0%,#4fc3ff 30%,#ff7a3c 72%,#ff4a14 100%);
+    --grad:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
     --pop:0 1px 0 rgba(255,255,255,.06) inset,0 30px 80px rgba(0,0,0,.6);
     --ease:cubic-bezier(.22,1,.36,1);
   }
@@ -83,14 +83,14 @@
     filter:blur(70px);animation:agl 24s ease-in-out infinite alternate}
   .home::after{content:"";position:fixed;top:-6%;bottom:-6%;right:0;width:34%;pointer-events:none;z-index:0;
     background:
-      repeating-linear-gradient(90deg,rgba(255,90,31,.12) 0 1.5px,transparent 1.5px 32px),
-      repeating-linear-gradient(90deg,rgba(240,250,255,.16) 4px 5.4px,transparent 5.4px 35px),
-      repeating-linear-gradient(90deg,rgba(79,195,255,.14) 8px 9.4px,transparent 9.4px 38px);
+      repeating-linear-gradient(90deg,rgba(255,90,31,.12) 0 1.5px,transparent 1.5px 30px),
+      repeating-linear-gradient(90deg,rgba(240,250,255,.16) 4px 5.4px,transparent 5.4px 33px),
+      repeating-linear-gradient(90deg,rgba(79,195,255,.14) 8px 9.4px,transparent 9.4px 36px);
     filter:blur(.9px);
     -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
     -webkit-mask-composite:source-in;
     mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
-    mask-composite:intersect;animation:adrift 48s ease-in-out infinite alternate}
+    mask-composite:intersect;animation:adrift 14s linear infinite}
   .home>*{position:relative;z-index:1}
   .home-in{width:100%;max-width:660px;padding-bottom:7vh}
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
@@ -358,8 +358,8 @@
       radial-gradient(38% 46% at 78% 24%,rgba(64,150,255,.22),transparent 72%),
       radial-gradient(30% 40% at 20% 84%,rgba(255,90,31,.16),transparent 72%),
       radial-gradient(26% 34% at 66% 88%,rgba(79,195,255,.12),transparent 72%);
-    filter:blur(70px);animation:agl 22s ease-in-out infinite alternate}
-  @keyframes agl{to{transform:translate(-2.5%,1.5%) scale(1.07)}}
+    filter:blur(70px);animation:agl 20s ease-in-out infinite}
+  @keyframes agl{0%,100%{transform:none}33%{transform:translate(-2.5%,1.8%) scale(1.07)}66%{transform:translate(2%,-1.5%) scale(1.04)}}
   .auth::after{content:"";position:absolute;top:-6%;bottom:-6%;right:0;width:44%;pointer-events:none;
     background:
       repeating-linear-gradient(90deg,rgba(255,90,31,.2) 0 1.6px,transparent 1.6px 30px),
@@ -370,8 +370,8 @@
     -webkit-mask-composite:source-in;
     mask-image:linear-gradient(180deg,transparent 0%,#000 30%,#000 70%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 42%);
     mask-composite:intersect;
-    animation:adrift 44s ease-in-out infinite alternate}
-  @keyframes adrift{to{background-position:36px 0,26px 0,16px 0}}
+    animation:adrift 14s linear infinite}
+  @keyframes adrift{to{background-position:30px 0,33px 0,36px 0}}
   .auth.show{display:flex}
   .auth-in{position:relative;z-index:2;width:100%;max-width:404px;animation:viewIn .5s var(--ease) both;
     background:rgba(255,255,255,.055);backdrop-filter:blur(28px) saturate(1.35);-webkit-backdrop-filter:blur(28px) saturate(1.35);
@@ -470,6 +470,10 @@
     padding:12px 14px;font-family:var(--ui);font-size:13.5px;line-height:1.7;color:var(--ink);outline:none}
   .vc-ta:focus{border-color:var(--ink)}
   .vc-ta::placeholder{color:var(--mute)}
+
+  /* fluid chroma — same breath as the landing */
+  @keyframes chromaflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .id-lbl,.id-m.ai .who{background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
 
   /* flaw overlay — Refined/Ø Think anchors, three rotating hues */
   mark.flaw{background:rgba(79,195,255,.16);color:inherit;border-bottom:2px solid rgba(79,195,255,.7);border-radius:2px;padding:0 1px;transition:background .3s}
