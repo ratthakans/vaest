@@ -504,6 +504,25 @@
   .ol-item.cur{background:rgba(255,255,255,.07);color:var(--snow)}
   .ol-item.cur .on2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 
+  /* paste tiles + settings + micro-motion */
+  @keyframes chipIn{from{opacity:0;transform:translateY(5px) scale(.96)}}
+  .chip{cursor:pointer;animation:chipIn .3s var(--ease);transition:transform .18s var(--ease),border-color .18s}
+  .chip:hover{transform:translateY(-1px);border-color:var(--line2)}
+  .chip.paste b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+  .paste-body{padding:14px 18px 20px;max-height:56vh;overflow-y:auto}
+  .paste-body pre{white-space:pre-wrap;word-break:break-word;font-family:var(--ui);font-size:13.5px;line-height:1.75;color:#e6e4de}
+  .set-lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+  .set-note{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
+  .set-link{font-size:13px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .set-link:hover{color:#fff}
+  .r-gear{margin-left:auto;color:#8b8a84;padding:4px;border-radius:6px;display:inline-flex;transition:.25s var(--ease)}
+  .r-gear:hover{color:var(--snow);background:rgba(255,255,255,.07);transform:rotate(40deg)}
+  .id-m{animation:chipIn .3s var(--ease)}
+  @keyframes homeUp{from{opacity:0;transform:translateY(10px)}}
+  .home-in>*{animation:homeUp .5s var(--ease) both}
+  .home-in>*:nth-child(2){animation-delay:.05s}.home-in>*:nth-child(3){animation-delay:.1s}
+  .home-in>*:nth-child(4){animation-delay:.16s}.home-in>*:nth-child(5){animation-delay:.22s}
+
   /* comment badge + quota */
   .cbadge{flex:none;min-width:17px;height:17px;padding:0 5px;border-radius:100px;background:var(--cinnabar);color:#fff;
     font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:2px}
@@ -638,7 +657,7 @@
           <button onclick="useTpl('deck')">Deck</button>
         </div>
         <div class="brief-box" id="briefBox">
-          <textarea id="brief" placeholder="Brief: what do you need, what's the context, who's it for…" oninput="briefChanged()" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
+          <textarea id="brief" placeholder="Brief: what do you need, what's the context, who's it for…" oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
           <div class="bb-foot">
             <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
@@ -646,11 +665,6 @@
             <button class="bb-chain" id="chainBtn" onclick="toggleChain()" title="Run Refined automatically after Summing">+ Refined</button>
             <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
-        </div>
-        <div class="tone" id="toneBar" title="Persona — governs tone &amp; word choice on every call">
-          <button data-tone="" onclick="setTone('')">Standard</button>
-          <button data-tone="formal" onclick="setTone('formal')">Formal</button>
-          <button data-tone="playful" onclick="setTone('playful')">Playful</button>
         </div>
 
         <!-- IDEA — brainstorming sandbox (Haiku / Sonnet) -->
@@ -697,7 +711,7 @@
         <div class="r-lbl">Projects <button onclick="newProject()" title="New project" aria-label="New project">＋</button></div>
         <div id="projList"></div>
       </div>
-      <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.0</span></div>
+      <div class="r-foot"><span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.0</span><button class="r-gear" onclick="openSettings()" title="Settings" aria-label="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
     </div>
   </aside>
   <div class="scrim" onclick="toggleRail()"></div>
@@ -789,6 +803,30 @@
     <div class="diff-hd"><b>What changed</b><button class="x" onclick="closeDiff()" aria-label="Close">✕</button></div>
     <div class="diff-sub" id="diffSub"></div>
     <div id="diffBody"></div>
+  </div>
+</div>
+<div class="snap" id="pasteView" onclick="if(event.target===this)closePaste()">
+  <div class="snap-box">
+    <div class="snap-hd"><b id="pasteTitle">Pasted</b><button class="save" onclick="closePaste()">Close</button></div>
+    <div class="paste-body" id="pasteBody"></div>
+  </div>
+</div>
+<div class="snap" id="setView" onclick="if(event.target===this)closeSettings()">
+  <div class="snap-box">
+    <div class="snap-hd"><b>Settings</b><button class="save" onclick="closeSettings()">Done</button></div>
+    <div style="padding:16px 18px 20px">
+      <div class="set-lbl">Persona — rides on top of every call in this session</div>
+      <div class="tone" id="toneBar">
+        <button data-tone="" onclick="setTone('')">Standard</button>
+        <button data-tone="formal" onclick="setTone('formal')">Formal</button>
+        <button data-tone="playful" onclick="setTone('playful')">Playful</button>
+      </div>
+      <div class="set-note">Standard — clear and direct · Formal — editorial, Monocle-grade · Playful — a creative director with mischief</div>
+      <div class="set-lbl" style="margin-top:22px">Language</div>
+      <div class="set-note">VÆST mirrors you: ask in Thai, get Thai · ask in English, get English</div>
+      <div class="set-lbl" style="margin-top:22px">Usage</div>
+      <button class="set-link" onclick="closeSettings();openStats()">Usage &amp; cost →</button>
+    </div>
   </div>
 </div>
 <div class="snap" id="voiceView" onclick="if(event.target===this)closeVoice()">
@@ -1083,7 +1121,23 @@
   function removeFile(i){const s=cur();if(!s)return;s.files.splice(i,1);s.updatedAt=Date.now();save();renderChips()}
   function renderChips(){const s=cur();
     $('chips').innerHTML=(s&&s.files.length)?s.files.map((f,i)=>
-      '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+')" title="Remove">✕</button></span>').join(''):''}
+      '<span class="chip'+(f.paste?' paste':'')+'" onclick="openPaste('+i+')" title="Click to view"><b>'+(f.paste?'IDEA':esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4)))+'</b><span>'+esc(f.n)+'</span><button onclick="event.stopPropagation();removeFile('+i+')" title="Remove">✕</button></span>').join(''):''}
+  // paste viewer — click a chip to read what's inside
+  function openPaste(i){const s=cur();const f=s&&s.files[i];if(!f)return;
+    $('pasteTitle').textContent=f.n;
+    $('pasteBody').innerHTML=f.img?('<img src="'+f.img+'" style="max-width:100%;border-radius:8px">'):('<pre>'+esc(capTxt(f.c,12000))+'</pre>');
+    $('pasteView').classList.add('show')}
+  function closePaste(){$('pasteView').classList.remove('show')}
+  // long paste into the brief → a tile, not a wall of text (Claude-style)
+  function briefPaste(e){
+    const t=(e.clipboardData||{}).getData?e.clipboardData.getData('text'):'';
+    if(!t||t.length<=800)return;
+    e.preventDefault();
+    const s=cur();if(!s)return;
+    const name='Pasted · '+t.trim().split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
+    s.files.push({n:name,c:t.trim(),paste:true});
+    s.updatedAt=Date.now();save();renderChips();
+    toast('Long paste saved as a tile — click it to read, ✕ to remove')}
   // add files while on canvas → merge into the document (Opus)
   async function handleAddFiles(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)await addAndMerge(fs)}
   async function addAndMerge(fs){
@@ -1293,7 +1347,7 @@
   function hideCtx(){$('ctx').classList.remove('show')}
   addEventListener('click',e=>{if(!e.target.closest('.ctx')&&!e.target.closest('.more'))hideCtx();
     if(!e.target.closest('.exp-wrap'))$('expMenu').classList.remove('show')});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff()}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste()}});
   // ⌥↑ / ⌥↓ — switch sessions in the order shown in the rail
   addEventListener('keydown',e=>{
     if(!e.altKey||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
@@ -1396,6 +1450,8 @@
   function clearTaste(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
     if(!confirm('Forget the '+(p.taste||[]).length+' learned taste decisions for this project?'))return;
     p.taste=[];save();$('vcTaste').style.display='none';toast('Taste memory cleared')}
+  function openSettings(){renderTone();$('setView').classList.add('show')}
+  function closeSettings(){$('setView').classList.remove('show')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
     p.voice=$('voiceText').value.trim();save();closeVoice();
@@ -1422,6 +1478,7 @@
       A('Saved versions…',()=>openSnapshots());
       A('Undo last change',()=>undoCanvas());
       c.push({t:'Share link · read-only',run:()=>shareDoc(),k:'export'});
+      c.push({t:'Settings · persona',run:()=>openSettings(),k:'app'});
       c.push({t:'Copy as rich text',run:()=>copyRich(),k:'export'});
       c.push({t:'Copy full page',run:()=>copyFullPage(),k:'export'});
       c.push({t:'Download Markdown (.md)',run:()=>downloadMD(),k:'export'});
@@ -1602,9 +1659,11 @@
     finally{_ideaBusy=false;$('ideaSend').disabled=false;inp.focus()}}
   function ideaToBrief(i){
     const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
-    const b=$('brief');
-    b.value=((b.value.trim()?b.value.trim()+'\n\n':'')+s.ideas[i].c).slice(0,9000);
-    briefChanged();toast('Added to the brief');b.scrollTop=b.scrollHeight}
+    const m=s.ideas[i];
+    const name='Idea · '+m.c.trim().replace(/[#*>`\n]/g,' ').split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
+    s.files.push({n:name,c:m.c,paste:true});
+    s.updatedAt=Date.now();save();renderChips();
+    toast('Saved to the brief as a tile — it feeds Summing')}
   // what Summing sees from the sandbox
   function ideasContext(){
     const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
