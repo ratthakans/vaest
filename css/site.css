@@ -29,7 +29,7 @@ img{max-width:100%}
 .nav-in{display:flex;align-items:center;gap:28px;height:72px}
 .nav .brand{display:flex;align-items:center;gap:11px}
 .nav .mark{width:22px;height:22px;flex:none}
-.wm{font-weight:700;font-size:16px;letter-spacing:.12em}
+.wm{font-weight:700;font-size:16px;letter-spacing:.12em;white-space:nowrap;line-height:1}
 .nav-links{display:flex;align-items:center;gap:26px;margin-left:14px}
 .nav-links a{font-size:14px;font-weight:500;color:var(--dim);transition:color .2s var(--ease)}
 .nav-links a:hover,.nav-links a.on{color:var(--ink)}

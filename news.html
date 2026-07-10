@@ -2,90 +2,117 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>News — VÆST</title>
+<title>Journal — VÆST</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="What's new in VÆST — releases, features and changes.">
+<meta name="description" content="The VÆST journal — notes on taste, craft, and building an instrument for creative studios.">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
+<style>
+  /* featured post */
+  .feat-post{position:relative;border:1px solid var(--line2);border-radius:16px;overflow:hidden;margin-top:52px;background:#0a0a0c;display:grid;grid-template-columns:1.05fr .95fr}
+  @media(max-width:760px){.feat-post{grid-template-columns:1fr}}
+  .feat-post .art{position:relative;min-height:260px;overflow:hidden;background:#08080a}
+  .feat-post .art .strips{position:absolute;top:-8%;bottom:-8%;left:38%;right:0;background:repeating-linear-gradient(90deg,rgba(255,90,31,.3) 0 1.6px,transparent 1.6px 26px),repeating-linear-gradient(90deg,rgba(240,250,255,.34) 4px 5.6px,transparent 5.6px 29px),repeating-linear-gradient(90deg,rgba(79,195,255,.32) 8px 9.6px,transparent 9.6px 32px);filter:blur(.6px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent);mask-image:linear-gradient(180deg,transparent,#000 26%,#000 74%,transparent);animation:drift 13s linear infinite}
+  .feat-post .art .glow{position:absolute;inset:-20%;background:radial-gradient(40% 50% at 72% 30%,rgba(79,195,255,.2),transparent 70%),radial-gradient(34% 42% at 86% 76%,rgba(255,90,31,.16),transparent 72%);filter:blur(50px)}
+  .feat-post .txt{padding:44px 40px;display:flex;flex-direction:column;justify-content:center}
+  @media(max-width:760px){.feat-post .txt{padding:30px 24px}}
+  .feat-post .cat{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .feat-post h2{font-size:clamp(24px,3vw,36px);margin:14px 0 14px;letter-spacing:-.025em;max-width:20ch}
+  .feat-post p{font-family:var(--th);font-size:15px;line-height:1.7;color:var(--dim);max-width:52ch}
+  .feat-post .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--mute);margin-top:22px}
+
+  .posts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:26px}
+  @media(max-width:860px){.posts{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.posts{grid-template-columns:1fr}}
+  .post{background:#0a0a0c;padding:0;display:flex;flex-direction:column;transition:background .25s var(--ease);cursor:pointer}
+  .post:hover{background:#0f0f13}
+  .post .band{height:96px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .post .band .g{position:absolute;inset:0}
+  .post .band .st{position:absolute;top:-10%;bottom:-10%;left:30%;right:0;filter:blur(.5px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+  .post .in{padding:22px;display:flex;flex-direction:column;flex:1}
+  .post .cat{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+  .post h3{font-family:var(--th);font-size:17px;line-height:1.3;margin:10px 0 10px;color:var(--ink)}
+  .post p{font-family:var(--th);font-size:13px;line-height:1.65;color:var(--dim);flex:1}
+  .post .meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--mute);margin-top:16px}
+  /* band palettes per model/topic */
+  .b-skald .g{background:radial-gradient(60% 80% at 30% 40%,rgba(138,107,255,.4),transparent 70%),radial-gradient(50% 70% at 80% 60%,rgba(79,195,255,.32),transparent 72%)}
+  .b-odin .g{background:radial-gradient(60% 80% at 30% 40%,rgba(255,161,75,.36),transparent 70%),radial-gradient(50% 70% at 80% 60%,rgba(255,90,31,.3),transparent 72%)}
+  .b-norr .g{background:radial-gradient(60% 80% at 30% 40%,rgba(79,220,180,.36),transparent 70%),radial-gradient(50% 70% at 80% 60%,rgba(79,195,255,.3),transparent 72%)}
+  .b-chroma .g{background:linear-gradient(100deg,rgba(79,195,255,.32),rgba(223,244,255,.2) 40%,rgba(255,161,75,.28) 70%,rgba(255,90,31,.3))}
+  .b-mono .g{background:radial-gradient(60% 80% at 40% 40%,rgba(255,255,255,.1),transparent 70%)}
+  .st-a{background:repeating-linear-gradient(90deg,rgba(255,255,255,.3) 0 1.4px,transparent 1.4px 12px)}
+  .st-b{background:repeating-linear-gradient(90deg,rgba(255,90,31,.34) 0 1.4px,transparent 1.4px 10px),repeating-linear-gradient(90deg,rgba(79,195,255,.34) 4px 5.4px,transparent 5.4px 14px)}
+</style>
 </head>
 <body data-page="news">
+<nav class="nav" id="siteNav"><div class="wrap nav-in"><a class="brand" href="/"><svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ng" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ng)" stroke-width="3.6" stroke-linecap="round"/></svg><span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a><div class="nav-links" id="navLinks"><a href="/features">Features</a><a href="/product">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news" class="on">News</a></div><div class="nav-right"><a class="btn-try" href="/app">Try V&AElig;ST &rarr;</a><button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></nav>
 
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
   <div class="wrap">
-    <span class="eye">News · Changelog</span>
-    <h1>What's new<span class="dot">.</span></h1>
-    <p class="sub th">VÆST ships often. Every release below is live — the newest first.</p>
+    <span class="eye">Journal</span>
+    <h1>Notes on taste<br>&amp; the craft<span class="dot">.</span></h1>
+    <p class="sub th">Field notes from building an instrument for creative studios — on judgment, machines that see, and why we still put a human at the last read.</p>
   </div>
 </header>
 
 <section><div class="wrap sec-pad">
-  <div class="tl th">
 
-    <div class="ev">
-      <div class="dt">VÆST 1.2 · July 2026</div>
-      <h3>A full marketing site</h3>
-      <p>Features, Product, Developers, Company and News — a complete site so the story on the web finally matches what the product does. Gradient “Try VÆST” with a fluid effect on every page.</p>
-      <span class="tag">Website</span>
+  <!-- FEATURED -->
+  <article class="feat-post reveal">
+    <div class="art"><div class="glow"></div><div class="strips"></div></div>
+    <div class="txt">
+      <span class="cat">Manifesto · The Trinity</span>
+      <h2>Why we named our engines after the old north</h2>
+      <p>SKALD the poet, ODIN the mastermind, NORRSKEN the light. Three minds, one flow of taste — and a deliberate refusal of the one-generic-brain approach. Here's the thinking behind the trinity, and why each phase deserves a mind of its own.</p>
+      <div class="meta">JUL 2026 · 6 MIN READ</div>
     </div>
+  </article>
 
-    <div class="ev">
-      <div class="dt">July 2026</div>
-      <h3>Engineering foundation: split &amp; tested</h3>
-      <p>The single-file app was split into clean markup, CSS and JS, with an 18-test unit suite and an eval harness that runs real briefs through the live pipeline before any prompt or model change ships.</p>
-      <span class="tag">Reliability</span>
-    </div>
+  <!-- GRID OF 7 -->
+  <div class="posts">
+    <article class="post reveal">
+      <div class="band b-chroma"><div class="g"></div><div class="st st-b"></div></div>
+      <div class="in"><span class="cat">Essay · Strategy</span><h3>Taste is the last moat</h3><p>Speed is a commodity within a year. The thing worth owning is the record of a studio's decisions — and why prompts can't be copied but taste can compound.</p><div class="meta">JUL 2026 · 5 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">July 2026</div>
-      <h3>Idea becomes SKALD · a deck builder joins the flow</h3>
-      <p>The Idea sandbox became SKALD — a single, more generous poet's mode. Export gained a Presentation builder that reshapes your document into a deck in the VÆST look, landscape or portrait.</p>
-      <span class="tag">Pipeline</span>
-    </div>
+    <article class="post reveal">
+      <div class="band b-mono"><div class="g"></div><div class="st st-a"></div></div>
+      <div class="in"><span class="cat">Field note</span><h3>The 10pm pile</h3><p>Four contradicting emails, a 40-page audit, a spreadsheet nobody opens, a moodboard that loves a vibe but can't say why. What VÆST was actually built to solve.</p><div class="meta">JUL 2026 · 4 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">July 2026</div>
-      <h3>Settings hub · privacy · profiles</h3>
-      <p>A four-tab Settings home: profile with avatar, persona and reply-language, per-engine usage, and privacy — private device-only sessions, export-everything, delete cloud copy. Native pop-ups replaced with on-brand dialogs. Mobile pass across the client share view and workspace.</p>
-      <span class="tag">Experience</span>
-    </div>
+    <article class="post reveal">
+      <div class="band b-odin"><div class="g"></div><div class="st st-b"></div></div>
+      <div class="in"><span class="cat">Product · ODIN</span><h3>Teaching a model to provoke, not please</h3><p>Most assistants agree with you. Ø Think was tuned to do the opposite — to find the braver version and anchor every push to the exact line it's about.</p><div class="meta">JUN 2026 · 7 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">June 2026</div>
-      <h3>Taste memory · the client loop</h3>
-      <p>Every approve and skip is now remembered per project and biases the next suggestion. Clients comment on shared links; “Apply with VÆST” turns a note into a revision in one click. Plus canvas tabs, duplicate, find &amp; replace, a 30-day trash and stop-mid-generation.</p>
-      <span class="tag">Differentiator</span>
-    </div>
+    <article class="post reveal">
+      <div class="band b-skald"><div class="g"></div><div class="st st-a"></div></div>
+      <div class="in"><span class="cat">Product · SKALD</span><h3>The sandbox that spars back</h3><p>Why the first phase isn't a form to fill in but a poet to argue with — and how raw pastes from anywhere become the seed of a direction.</p><div class="meta">JUN 2026 · 4 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">June 2026</div>
-      <h3>Three-phase pipeline: Idea → Ø Think → Refine</h3>
-      <p>The signature Ø Think pass arrived — ODIN wakes as a Senior Creative and pushes work bolder, anchored to exact quotes. Refined became a holistic audit for inconsistency, redundancy and logic. A dynamic persona engine now rides on every call.</p>
-      <span class="tag">Pipeline</span>
-    </div>
+    <article class="post reveal">
+      <div class="band b-chroma"><div class="g"></div><div class="st st-b"></div></div>
+      <div class="in"><span class="cat">Craft · Vision</span><h3>Moodboards the machine can finally see</h3><p>A brief in words is half the story. When the model reads the images too — palette, type, composition — the direction it writes stops guessing.</p><div class="meta">JUN 2026 · 5 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">June 2026</div>
-      <h3>Vision · reference library · versions</h3>
-      <p>Moodboards now reach the model as real vision. Projects gained a reference library and voice; documents gained snapshots, word-level diff and image blocks. Read-only share links with per-section comments.</p>
-      <span class="tag">Foundations</span>
-    </div>
+    <article class="post reveal">
+      <div class="band b-norr"><div class="g"></div><div class="st st-b"></div></div>
+      <div class="in"><span class="cat">Product · The loop</span><h3>The client comment that fixes itself</h3><p>Feedback used to die in email. Now a note on a shared link becomes the revision in one click — and the whole loop stays inside the work.</p><div class="meta">JUN 2026 · 4 MIN</div></div>
+    </article>
 
-    <div class="ev">
-      <div class="dt">May 2026</div>
-      <h3>The night-prismatic identity</h3>
-      <p>VÆST found its look — a prismatic glass field, chromatic dispersion as the single accent, and a unified mark from favicon to app. The whole system, one voice.</p>
-      <span class="tag">Design</span>
-    </div>
-
+    <article class="post reveal">
+      <div class="band b-mono"><div class="g"></div><div class="st st-a"></div></div>
+      <div class="in"><span class="cat">Point of view</span><h3>Invite-only, on purpose</h3><p>Why we're growing slowly with a handful of studios instead of opening the doors — and what a cohort teaches you that a launch never will.</p><div class="meta">MAY 2026 · 5 MIN</div></div>
+    </article>
   </div>
 
   <div class="callout" style="margin-top:52px">
     <div class="lbl">Follow along</div>
-    <p>VÆST is invite-only while it grows. Want release notes in your inbox and a seat when one opens? <a href="/#access" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Request access →</a></p>
+    <p>VÆST is invite-only while it grows. Want the journal and release notes in your inbox — and a seat when one opens? <a href="/#access" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Request access →</a></p>
   </div>
 </div></section>
 

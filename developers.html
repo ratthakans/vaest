@@ -2,73 +2,231 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Developers — VÆST</title>
+<title>Docs — VÆST</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="How to use VÆST end to end — a detailed guide from brief to hand-off, plus keyboard shortcuts and the coming API.">
+<meta name="description" content="The complete VÆST documentation — every feature, step by step, plus shortcuts and the coming API.">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-  .kbd-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:40px}
+  .docwrap{max-width:1200px;margin:0 auto;padding:60px 44px 120px;display:grid;grid-template-columns:230px 1fr;gap:56px;align-items:start}
+  @media(max-width:900px){.docwrap{grid-template-columns:1fr;gap:0;padding:40px 24px 90px}}
+  .toc{position:sticky;top:96px}
+  @media(max-width:900px){.toc{position:static;margin-bottom:36px;border:1px solid var(--line);border-radius:12px;padding:16px}}
+  .toc h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
+  .toc a{display:block;font-size:13.5px;color:var(--dim);padding:6px 0;transition:color .2s}
+  .toc a:hover,.toc a.on{color:var(--ink)}
+  .toc .grp{margin-top:18px}
+  .doc h2{scroll-margin-top:90px;font-size:clamp(22px,2.6vw,30px);margin:0 0 12px;letter-spacing:-.02em}
+  .doc section{border:none;padding:0 0 52px;margin:0}
+  .doc section+section{border-top:1px solid var(--line);padding-top:46px}
+  .doc .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite;margin-bottom:14px;display:block}
+  .doc p{font-family:var(--th);font-size:15px;line-height:1.85;color:var(--dim);max-width:66ch;margin-top:14px}
+  .doc p b{color:var(--ink);font-weight:600}
+  .doc ul{margin:14px 0 0 20px;max-width:66ch}
+  .doc li{font-family:var(--th);font-size:14.5px;line-height:1.8;color:var(--dim);margin:6px 0}
+  .doc li b{color:var(--ink);font-weight:600}
+  .doc kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line2);border-radius:5px;padding:2px 7px;color:var(--ink);white-space:nowrap}
+  .doc .note{border:1px solid var(--line2);border-radius:10px;padding:15px 17px;margin-top:18px;background:#0a0a0c;max-width:66ch}
+  .doc .note b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+  .doc .code{font-family:var(--mono);font-size:12.5px;line-height:1.9;background:#0a0a0c;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:18px;color:#cfd4da;overflow-x:auto;white-space:pre;max-width:66ch}
+  .kbd-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:18px;max-width:66ch}
   @media(max-width:600px){.kbd-grid{grid-template-columns:1fr}}
-  .kbd-grid .kr{background:#0a0a0c;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 20px}
-  .kbd-grid .kr span{font-family:var(--th);font-size:14px;color:var(--dim)}
-  .kbd-grid .kr kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line2);border-radius:6px;padding:3px 9px;color:var(--ink);white-space:nowrap}
+  .kbd-grid .kr{background:#0a0a0c;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 18px}
+  .kbd-grid .kr span{font-family:var(--th);font-size:13.5px;color:var(--dim)}
 </style>
 </head>
 <body data-page="developers">
+<nav class="nav" id="siteNav"><div class="wrap nav-in"><a class="brand" href="/"><svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ng" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ng)" stroke-width="3.6" stroke-linecap="round"/></svg><span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a><div class="nav-links" id="navLinks"><a href="/features">Features</a><a href="/product">Product</a><a href="/developers" class="on">Developers</a><a href="/company">Company</a><a href="/news">News</a></div><div class="nav-right"><a class="btn-try" href="/app">Try V&AElig;ST &rarr;</a><button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></nav>
 
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
   <div class="wrap">
-    <span class="eye">Developers · Guide</span>
-    <h1>How to drive VÆST<span class="dot">.</span></h1>
-    <p class="sub th">A working guide from a blank brief to a document you hand off — and the shortcuts that make it fast. No install, no config: it runs in the browser.</p>
+    <span class="eye">Documentation</span>
+    <h1>The manual<span class="dot">.</span></h1>
+    <p class="sub th">Everything VÆST does, in order of how you'd use it — from a blank brief to a document you hand off. No install, no config: it runs in the browser.</p>
   </div>
 </header>
 
-<section><div class="wrap sec-pad">
-  <div class="lbl">The workflow</div>
-  <h2>Brief to hand-off, step by step</h2>
-  <div class="step-list th">
-    <div class="st"><h3>Start a session &amp; write the brief</h3><p>Hit <kbd>New</kbd> and describe the work in plain language — what you need, the context, who it's for. Attach files (docx, pdf, xlsx, csv, md, html, images) by clicking <b>Attach</b> or dropping them in. Images become real visual references. Long pastes turn into tiles automatically.</p></div>
-    <div class="st"><h3>Spark in the Idea sandbox (optional)</h3><p>Below the brief, use <b>Idea</b> to riff. Throw options, paste a ChatGPT/Midjourney fragment, argue a concept. Promote any good reply with <b>→ brief</b>. Everything here feeds the next step as curated raw material.</p></div>
-    <div class="st"><h3>Summing → the document</h3><p>Press <b>Summing</b> (or <kbd>⌘↵</kbd>). VÆST crystallizes the brief, files and ideas into one sectioned document, streaming live. If the work spans distinct deliverables it splits into <b>canvas tabs</b>. Toggle <b>+ Refined</b> first to auto-run the taste check right after.</p></div>
-    <div class="st"><h3>Edit on the canvas</h3><p>Edit any section directly. Highlight a sentence for the toolbar — <b>Shorten · Formal · Expand</b> or an open <b>Ask VÆST…</b>. <kbd>⌘A</kbd> selects just the section you're in. Add more files anytime with <b>Add files</b>; they merge into the document.</p></div>
-    <div class="st"><h3>Ø Think — push it bolder</h3><p>Hit <b>Ø Think</b> for a Senior Creative pass — <b>ODIN</b> proposes braver moves, each anchored to a highlighted quote. <b>Approve</b> the ones you want (VÆST learns your taste), <b>Skip</b> the rest.</p></div>
-    <div class="st"><h3>Refined — the quality gate</h3><p>Hit <b>Refined</b> for a holistic audit — inconsistency, redundancy, logic. Approve findings one at a time or <b>Approve all</b>. Use <b>View changes</b> to see what moved. Save a <b>version</b> anytime; compare with <b>Diff</b>.</p></div>
-    <div class="st"><h3>Share &amp; collect feedback</h3><p><b>Export → Share link</b> gives the client a read-only view (they can pick paper or night mode, no login). Their comments appear as a badge in your rail. Hit <b>Apply with VÆST</b> to turn a note into a revision, then <b>Resolve</b>. <b>Revoke</b> the link when done.</p></div>
-    <div class="st"><h3>Hand off</h3><p>Export as <b>Word</b>, a print-ready <b>PDF</b>, <b>rich text</b> for Docs/Slack, or build a <b>Presentation</b> deck (landscape or portrait). Save as PDF from the print dialog.</p></div>
-  </div>
+<div class="docwrap">
+  <aside class="toc">
+    <h4>Contents</h4>
+    <a href="#start">Getting started</a>
+    <a href="#ingest">Ingesting files</a>
+    <a href="#idea">Idea · SKALD</a>
+    <a href="#summing">Summing · ODIN</a>
+    <a href="#canvas">Editing the canvas</a>
+    <a href="#think">Ø Think · ODIN</a>
+    <a href="#refine">Refined · NORRSKEN</a>
+    <a href="#history">Versions &amp; history</a>
+    <div class="grp"></div>
+    <a href="#persona">Persona &amp; language</a>
+    <a href="#project">Project memory</a>
+    <a href="#share">Sharing &amp; comments</a>
+    <a href="#export">Export &amp; decks</a>
+    <a href="#settings">Settings &amp; privacy</a>
+    <a href="#keys">Shortcuts</a>
+    <a href="#api">API (coming)</a>
+  </aside>
 
-  <div class="callout">
-    <div class="lbl">Persona &amp; language</div>
-    <p>Open <b>Settings</b> (gear, bottom-left, or <kbd>⌘K</kbd> → “Settings”). Choose a persona — <b>Standard / Formal / Playful</b> — that governs tone on every call, and lock the reply language to Auto, ไทย or English. Set a project's <b>voice &amp; guidelines</b> from the project menu; it applies to every session inside it.</p>
-  </div>
-</div></section>
+  <div class="doc">
+    <section id="start">
+      <span class="eyebrow">01 · Basics</span>
+      <h2>Getting started</h2>
+      <p>VÆST is invite-only. Once you're in, open the app and you'll land on a <b>session</b> — a single piece of work. The left <b>rail</b> holds your sessions and projects; the center is either the <b>home</b> (where a brief becomes a document) or the <b>canvas</b> (the document itself).</p>
+      <ul>
+        <li>Hit <b>New</b> to start a session. Sessions autosave and sync privately across your devices.</li>
+        <li>Group related sessions into a <b>project</b> so they share voice and context.</li>
+        <li>Press <kbd>⌘K</kbd> anywhere to search sessions or run a command.</li>
+      </ul>
+    </section>
 
-<section><div class="wrap sec-pad">
-  <div class="lbl">Shortcuts</div>
-  <h2>Keys that keep you moving</h2>
-  <div class="kbd-grid">
-    <div class="kr"><span>Command palette / search</span><kbd>⌘K</kbd></div>
-    <div class="kr"><span>Run Summing</span><kbd>⌘↵</kbd></div>
-    <div class="kr"><span>Select the current section</span><kbd>⌘A</kbd></div>
-    <div class="kr"><span>Switch sessions</span><kbd>⌥↑ / ⌥↓</kbd></div>
-    <div class="kr"><span>Stop a running generation</span><kbd>Stop button</kbd></div>
-    <div class="kr"><span>Close any dialog</span><kbd>Esc</kbd></div>
-    <div class="kr"><span>Find &amp; replace in the document</span><kbd>⌘K → “Find”</kbd></div>
-    <div class="kr"><span>Rename a session or canvas</span><kbd>Double-click</kbd></div>
-  </div>
-</div></section>
+    <section id="ingest">
+      <span class="eyebrow">02 · Input</span>
+      <h2>Ingesting files</h2>
+      <p>On the home screen, click <b>Attach</b> or drop files onto the brief. VÆST reads <b>docx, pdf, xlsx, csv, md, html</b> and images. Images are not placeholders — they reach the model as <b>real vision</b>, so a moodboard actually informs palette, type and composition.</p>
+      <ul>
+        <li>Long text pasted into the brief becomes a <b>tile</b> automatically — click to read, ✕ to remove.</li>
+        <li>Very long files are read up to ~20K characters with a clear truncation marker.</li>
+        <li>Add more files later from the canvas with <b>Add files</b> — they merge into the document.</li>
+      </ul>
+    </section>
 
-<section><div class="wrap sec-pad">
-  <div class="lbl">API · coming</div>
-  <h2>Bring VÆST into your own workflow</h2>
-  <p class="lead th">The same pipeline that powers the app is being opened as an API — so your studio's tools, agents and integrations can call it directly. On the roadmap:</p>
-  <div class="code">POST /v1/summing     brief + files      → document
+    <section id="idea">
+      <span class="eyebrow">03 · Phase 1</span>
+      <h2>Idea · SKALD, the poet</h2>
+      <p>Below the brief sits the <b>Idea sandbox</b>, powered by SKALD. It's a fast, generous space to riff before you commit — throw options, argue a concept, or paste raw output from any other tool.</p>
+      <ul>
+        <li>SKALD keeps the good part, kills the weak part, and says why.</li>
+        <li>Promote any reply into the brief with <b>“→ brief”</b> — it becomes a tile that feeds Summing.</li>
+        <li>The whole thread is passed to Summing as curated raw material.</li>
+      </ul>
+    </section>
+
+    <section id="summing">
+      <span class="eyebrow">04 · Phase 2</span>
+      <h2>Summing · ODIN, the mastermind</h2>
+      <p>Press <b>Summing</b> (or <kbd>⌘↵</kbd>). ODIN crystallizes the brief, files and ideas into one sectioned document, streaming live. If the work spans distinct deliverables — identity vs copy vs event — it <b>splits into canvas tabs</b>, each standing on its own.</p>
+      <div class="note"><b>Tip.</b> Toggle <b>+ Refined</b> before Summing to run the taste check automatically right after.</div>
+    </section>
+
+    <section id="canvas">
+      <span class="eyebrow">05 · Editing</span>
+      <h2>Editing the canvas</h2>
+      <p>The document is fully editable. Type directly into any section, or work at the sentence level:</p>
+      <ul>
+        <li><b>Highlight a sentence</b> → a toolbar appears: Shorten · Formal · Expand, or an open <b>“Ask VÆST…”</b> where you type your own instruction.</li>
+        <li><kbd>⌘A</kbd> selects only the section you're editing, never the whole page.</li>
+        <li>Paste an image straight into a section to embed it.</li>
+        <li>The rail shows a live <b>outline</b>; click to jump. A word count sits under the title.</li>
+      </ul>
+    </section>
+
+    <section id="think">
+      <span class="eyebrow">06 · Phase 2 · signature</span>
+      <h2>Ø Think · ODIN as a creative director</h2>
+      <p>Hit <b>Ø Think</b> for a Senior Creative pass. ODIN reviews the whole canvas like a CD reviewing a junior's deck and proposes braver moves — missing cultural hooks, safe choices to bend, angles that stop too early.</p>
+      <ul>
+        <li>Each push is <b>anchored to an exact quote</b> and highlighted in the document — click a card to jump to it.</li>
+        <li><b>Approve</b> the pushes you like (VÆST learns your taste), <b>Skip</b> the rest.</li>
+      </ul>
+    </section>
+
+    <section id="refine">
+      <span class="eyebrow">07 · Phase 3</span>
+      <h2>Refined · NORRSKEN, the light</h2>
+      <p>Hit <b>Refined</b> for a holistic audit. NORRSKEN scans the whole document from above for <b>inconsistency, redundancy and logic</b>. Each finding quotes the exact line and highlights it.</p>
+      <ul>
+        <li><b>Approve</b> findings one at a time, or <b>Approve all</b> to make the whole document consistent.</li>
+        <li>Use <b>View changes</b> to see exactly what moved.</li>
+      </ul>
+    </section>
+
+    <section id="history">
+      <span class="eyebrow">08 · Safety</span>
+      <h2>Versions &amp; history</h2>
+      <ul>
+        <li><b>Save version</b> — name any moment; restore later. Each version remembers its canvas.</li>
+        <li><b>Diff</b> — compare any version with the current document, word by word.</li>
+        <li><b>Undo</b> — up to 30 steps. Deleted sessions go to a <b>30-day trash</b>, restorable in Settings.</li>
+      </ul>
+    </section>
+
+    <section id="persona">
+      <span class="eyebrow">09 · Voice</span>
+      <h2>Persona &amp; language</h2>
+      <p>Open <b>Settings</b> (gear, bottom-left, or <kbd>⌘K</kbd> → “Settings”). Pick a persona that governs tone on every call:</p>
+      <ul>
+        <li><b>Standard</b> — clear and direct.</li>
+        <li><b>Formal</b> — editorial, Monocle-grade.</li>
+        <li><b>Playful</b> — a creative director with mischief.</li>
+      </ul>
+      <p>Set <b>reply language</b> to Auto (mirrors you), ไทย, or English — it locks the output language on every call.</p>
+    </section>
+
+    <section id="project">
+      <span class="eyebrow">10 · Memory</span>
+      <h2>Project memory</h2>
+      <ul>
+        <li><b>Project voice</b> — tone, vocabulary and banned words, applied to every session in the project.</li>
+        <li><b>Reference library</b> — add files as permanent project context.</li>
+        <li><b>Taste memory</b> — every approve/skip is remembered per project and biases the next suggestion. See and clear it in the project's voice panel.</li>
+      </ul>
+    </section>
+
+    <section id="share">
+      <span class="eyebrow">11 · Hand-off</span>
+      <h2>Sharing &amp; comments</h2>
+      <p><b>Export → Share link</b> gives the client a read-only view — they choose paper or night mode, no login. Their comments appear as a <b>badge in your rail</b>.</p>
+      <ul>
+        <li><b>Apply with VÆST</b> — turn a client note into a revision in one click, then <b>Resolve</b>.</li>
+        <li><b>Revoke</b> the link anytime; anyone with the URL loses access immediately.</li>
+      </ul>
+    </section>
+
+    <section id="export">
+      <span class="eyebrow">12 · Output</span>
+      <h2>Export &amp; decks</h2>
+      <ul>
+        <li><b>Copy as rich text</b> — paste into Docs, Slack or email with formatting intact.</li>
+        <li><b>Word</b> / <b>PDF</b> — a clean, print-ready document.</li>
+        <li><b>Presentation</b> — VÆST reshapes the document into a deck in its own look, <b>landscape or portrait</b>, ready to save as PDF.</li>
+      </ul>
+    </section>
+
+    <section id="settings">
+      <span class="eyebrow">13 · Account</span>
+      <h2>Settings &amp; privacy</h2>
+      <ul>
+        <li><b>Profile</b> — display name + avatar, synced to your account.</li>
+        <li><b>Usage</b> — per-engine token totals and a fair-use quota bar.</li>
+        <li><b>Private session</b> — 🔒 keep a session on this device only; no cloud, excluded from taste memory.</li>
+        <li><b>Your data</b> — export everything as JSON, or delete your cloud copy. No training on your data.</li>
+      </ul>
+    </section>
+
+    <section id="keys">
+      <span class="eyebrow">14 · Speed</span>
+      <h2>Keyboard shortcuts</h2>
+      <div class="kbd-grid">
+        <div class="kr"><span>Command palette / search</span><kbd>⌘K</kbd></div>
+        <div class="kr"><span>Run Summing</span><kbd>⌘↵</kbd></div>
+        <div class="kr"><span>Select the current section</span><kbd>⌘A</kbd></div>
+        <div class="kr"><span>Switch sessions</span><kbd>⌥↑ / ⌥↓</kbd></div>
+        <div class="kr"><span>Find &amp; replace</span><kbd>⌘K → “Find”</kbd></div>
+        <div class="kr"><span>Rename session or canvas</span><kbd>Double-click</kbd></div>
+        <div class="kr"><span>Close any dialog</span><kbd>Esc</kbd></div>
+        <div class="kr"><span>Stop a generation</span><kbd>Stop</kbd></div>
+      </div>
+    </section>
+
+    <section id="api">
+      <span class="eyebrow">15 · Build with it</span>
+      <h2>The API — coming</h2>
+      <p>The same pipeline that powers the app is being opened as an API, so your tools, agents and integrations can call VÆST directly. On the roadmap:</p>
+      <div class="code">POST /v1/summing     brief + files      → document
 POST /v1/think       document           → creative pushes
 POST /v1/refine      document           → suggestions
 POST /v1/present     document           → slides
@@ -76,11 +234,10 @@ POST /v1/present     document           → slides
 Auth:      Authorization: Bearer vst_live_…   (per-org key)
 Webhooks:  client.commented · document.approved
 MCP:       VÆST as a tool your agents can call</div>
-  <div class="callout">
-    <div class="lbl">Want early access?</div>
-    <p>The API opens to Platform-tier studios first. Tell us what you'd integrate — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a> — and you'll be first in line.</p>
+      <div class="note">Early access opens to Platform-tier studios first. Tell us what you'd integrate — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a>.</div>
+    </section>
   </div>
-</div></section>
+</div>
 
 <section class="cta">
   <div class="prism"><div class="glow"></div><div class="strips" style="left:0;opacity:.5"></div></div>
@@ -91,5 +248,13 @@ MCP:       VÆST as a tool your agents can call</div>
 </section>
 
 <script src="/js/site.js"></script>
+<script>
+  // TOC scroll-spy
+  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))}).filter(Boolean);
+  function spy(){var y=window.scrollY+120,cur=secs[0];secs.forEach(function(s){if(s.offsetTop<=y)cur=s});
+    links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+(cur&&cur.id))})}
+  addEventListener('scroll',spy,{passive:true});spy();
+</script>
 </body>
 </html>

@@ -4,56 +4,207 @@
 <meta charset="utf-8">
 <title>Features — VÆST</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Every capability in VÆST — from the Idea sandbox to Ø Think, Refined, taste memory, the client loop and export.">
+<meta name="description" content="The features that matter — Ø Think, taste memory, the client loop, one-document Summing and the presentation builder.">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
+<style>
+  .feat{position:relative;padding:96px 0;border-bottom:1px solid var(--line);overflow:hidden}
+  .feat .wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center}
+  .feat.flip .wrap{grid-template-columns:1.1fr 1fr}
+  .feat.flip .copy{order:2}
+  @media(max-width:860px){.feat .wrap,.feat.flip .wrap{grid-template-columns:1fr;gap:36px}.feat.flip .copy{order:0}}
+  .feat .tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .feat h2{font-size:clamp(26px,3.4vw,40px);margin:14px 0 16px;max-width:16ch}
+  .feat p{font-family:var(--th);font-size:15.5px;line-height:1.8;color:var(--dim);max-width:46ch}
+  .feat p b{color:var(--ink);font-weight:600}
+  .feat .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .feat .chips span{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:100px;padding:5px 12px}
+
+  .shot{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:rgba(10,10,12,.9);box-shadow:0 34px 90px rgba(0,0,0,.55)}
+  .shot .bar{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .shot .bar i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.14)}
+  .shot .bar .u{margin-left:10px;font-family:var(--mono);font-size:9.5px;color:var(--mute)}
+  .shot .body{padding:22px;position:relative;z-index:1}
+  .shot .glow{position:absolute;inset:0;pointer-events:none;opacity:.5;background:radial-gradient(50% 60% at 80% 10%,rgba(79,195,255,.14),transparent 70%),radial-gradient(40% 50% at 90% 90%,rgba(255,90,31,.12),transparent 72%)}
+  mark.hl{background:rgba(79,195,255,.18);border-bottom:2px solid rgba(79,195,255,.7);border-radius:2px;padding:0 2px;color:inherit}
+  .doc-eye{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+  .doc-h{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--ink);margin:6px 0 12px}
+  .doc-p{font-family:var(--serif);font-size:13.5px;line-height:1.7;color:#cfcdc6}
+  .push{margin-top:16px;border:1px solid var(--line2);border-radius:10px;padding:13px 14px;background:rgba(20,20,24,.7)}
+  .push .pt{font-size:13px;color:var(--ink);font-weight:600}
+  .push .pt b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .push .pd{font-family:var(--th);font-size:12px;color:var(--dim);margin-top:5px;line-height:1.5}
+  .push .act{display:flex;gap:8px;margin-top:11px}
+  .push .ap{font-size:11.5px;font-weight:650;color:#0a0a0a;background:var(--ink);border-radius:6px;padding:6px 13px}
+  .push .sk{font-size:11.5px;font-weight:600;color:var(--mute);padding:6px 8px}
+  .tpills{display:flex;flex-wrap:wrap;gap:9px}
+  .tpills .p{font-family:var(--mono);font-size:12px;border-radius:100px;padding:8px 15px;border:1px solid var(--line2)}
+  .tpills .p.y{color:var(--ink)}
+  .tpills .p.n{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(255,90,31,.6)}
+  .tarrow{text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin:16px 0}
+  .tout{font-family:var(--serif);font-style:italic;color:var(--ink);font-size:15px;text-align:center}
+  .cmt{border-left:2px solid;border-image:var(--chroma) 1;background:rgba(79,195,255,.05);border-radius:0 8px 8px 0;padding:12px 14px}
+  .cmt .who{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mute);margin-bottom:6px}
+  .cmt .ct{font-family:var(--th);font-size:13.5px;color:var(--ink);line-height:1.5}
+  .cmt .cact{display:flex;gap:14px;margin-top:11px;align-items:center}
+  .cmt .cap{font-size:12px;font-weight:700;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cmt .cre{font-size:12px;font-weight:600;color:var(--mute)}
+  .flow{display:flex;align-items:center;gap:14px;justify-content:center}
+  .flow .files{display:flex;flex-direction:column;gap:7px}
+  .flow .fl{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:7px 11px;display:flex;gap:8px;align-items:center}
+  .flow .fl b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:8px}
+  .flow .arr{font-size:20px;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .flow .out{border:1px solid var(--line2);border-radius:8px;padding:12px 14px;min-width:130px}
+  .flow .out .dh{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink)}
+  .flow .out .dl{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:8px}
+  .flow .out .dl.s{width:70%}
+  .slides{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slide{aspect-ratio:16/10;border:1px solid var(--line2);border-radius:8px;background:#08080a;padding:12px;position:relative;overflow:hidden}
+  .slide::after{content:"";position:absolute;top:0;bottom:0;right:0;width:34%;background:repeating-linear-gradient(90deg,rgba(255,90,31,.3) 0 1.4px,transparent 1.4px 8px),repeating-linear-gradient(90deg,rgba(79,195,255,.34) 4px 5.4px,transparent 5.4px 10px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent);mask-image:linear-gradient(180deg,transparent,#000 40%,#000 60%,transparent)}
+  .slide .se{font-family:var(--mono);font-size:6.5px;letter-spacing:.16em;color:var(--mute)}
+  .slide .sh{font-weight:750;font-size:11px;margin-top:8px;line-height:1.1}
+  .slide .sr{height:3px;width:26px;border-radius:2px;background:var(--chroma);margin-top:8px}
+  .slide .sb{height:3px;border-radius:2px;background:rgba(255,255,255,.12);margin-top:6px;width:60%}
+</style>
 </head>
 <body data-page="features">
+<nav class="nav" id="siteNav"><div class="wrap nav-in"><a class="brand" href="/"><svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ng" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ng)" stroke-width="3.6" stroke-linecap="round"/></svg><span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a><div class="nav-links" id="navLinks"><a href="/features" class="on">Features</a><a href="/product">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news">News</a></div><div class="nav-right"><a class="btn-try" href="/app">Try V&AElig;ST &rarr;</a><button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div></nav>
 
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
   <div class="wrap">
     <span class="eye">Features</span>
-    <h1>Everything the instrument does<span class="dot">.</span></h1>
-    <p class="sub th">One workspace that carries a brief from a raw spark all the way to a document a client can sign off on — and remembers your taste along the way.</p>
+    <h1>The moves that make<br>the difference<span class="dot">.</span></h1>
+    <p class="sub th">Plenty of tools summarize. These are the features that turn a summary into a <b>direction with taste</b> — and remember how your studio makes it.</p>
   </div>
 </header>
 
-<section><div class="wrap sec-pad">
-  <div class="lbl">Capture</div>
-  <div class="frow"><div class="fh">Ingest</div><div class="fb"><h3>Drop everything at once</h3><p>Briefs, docx, pdf, xlsx, csv, markdown, html and images — read into one place. Moodboards aren't placeholders: they reach the model as real vision, so palette, type and composition inform the work.</p><div class="tags"><span>7+ formats</span><span>Vision / moodboards</span><span>Drag &amp; drop</span></div></div></div>
-  <div class="frow"><div class="fh">Idea</div><div class="fb"><h3>A sandbox that spars back</h3><p>Throw half-thoughts, options and raw pastes from anywhere. Idea riffs generously, keeps what sparks and kills what doesn't — then feeds the best of it straight into Summing. Promote any reply into the brief as a tile.</p><div class="tags"><span>SKALD</span><span>Paste anything</span><span>→ brief</span></div></div></div>
-</div></section>
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <div class="tag">Ø Think · ODIN</div>
+      <h2>A senior creative rips it and pushes it bolder</h2>
+      <p>Not proofreading — <b>provocation</b>. ODIN reads the whole canvas like a CD reviewing a junior's deck: the missing cultural hook, the safe choice to bend, the idea that stops one step early. Every push is anchored to the exact sentence. Approve what you like — VÆST learns your taste from every call.</p>
+      <div class="chips"><span>Quote-anchored</span><span>Approve per point</span><span>Feeds taste memory</span></div>
+    </div>
+    <div class="shot"><div class="glow"></div>
+      <div class="bar"><i></i><i></i><i></i><span class="u">vaest — Ø Think</span></div>
+      <div class="body">
+        <div class="doc-eye">ORIONS · VÆST</div>
+        <div class="doc-h">ARIYA Coffee — Rebrand Direction</div>
+        <div class="doc-p">Warm with intent — this audience doesn't buy <mark class="hl">cute cafe</mark> cues, they buy deliberateness. Every element must feel considered down to the inch.</div>
+        <div class="push">
+          <div class="pt"><b>Push the tension</b> — bend it brutalist</div>
+          <div class="pd">The warmth is safe. Raw concrete against the cream is the contrast people photograph.</div>
+          <div class="act"><span class="ap">Approve</span><span class="sk">Skip</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feat flip">
+  <div class="wrap">
+    <div class="shot"><div class="glow"></div>
+      <div class="bar"><i></i><i></i><i></i><span class="u">taste memory · this project</span></div>
+      <div class="body">
+        <div class="tpills">
+          <span class="p y">✓ bold naming</span><span class="p y">✓ cultural hooks</span><span class="p n">✕ wordplay</span><span class="p y">✓ quiet luxury</span><span class="p n">✕ pastel-safe</span>
+        </div>
+        <div class="tarrow">— learned from 14 decisions —</div>
+        <div class="tout">…the next document already knows.</div>
+      </div>
+    </div>
+    <div class="copy">
+      <div class="tag">Taste memory</div>
+      <h2>The more you judge, the more it becomes yours</h2>
+      <p>Every approve and every skip is remembered <b>per project</b> and quietly biases the next suggestion. Generic AI is smart the same way for everyone. VÆST gets smart <b>your way</b> — your studio's taste stops living in one senior's head and becomes something the whole team runs on.</p>
+      <div class="chips"><span>Per project</span><span>Learned bias</span><span>Yours, controllable</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <div class="tag">Summing · ODIN</div>
+      <h2>One document, not a wall of chat</h2>
+      <p>Drop briefs, spreadsheets, PDFs and moodboards — <b>moodboards reach the model as real vision</b>. ODIN crystallizes all of it into one sharp, sectioned document. When the work spans distinct deliverables, it splits into <b>canvas tabs</b> you edit independently.</p>
+      <div class="chips"><span>7+ formats</span><span>Vision / moodboards</span><span>Multi-canvas</span></div>
+    </div>
+    <div class="shot"><div class="glow"></div>
+      <div class="bar"><i></i><i></i><i></i><span class="u">vaest — Summing</span></div>
+      <div class="body">
+        <div class="flow">
+          <div class="files">
+            <div class="fl"><b>PDF</b> brand-audit</div><div class="fl"><b>XLSX</b> sales-2025</div><div class="fl"><b>JPG</b> moodboard</div>
+          </div>
+          <div class="arr">→</div>
+          <div class="out"><div class="dh">Rebrand Direction</div><div class="dl s"></div><div class="dl"></div><div class="dl s"></div><div class="dl"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feat flip">
+  <div class="wrap">
+    <div class="shot"><div class="glow"></div>
+      <div class="bar"><i></i><i></i><i></i><span class="u">shared with the client</span></div>
+      <div class="body">
+        <div class="doc-eye">SECTION · CORE IDEA</div>
+        <div class="cmt" style="margin-top:10px">
+          <div class="who">CLIENT · 2 MIN AGO</div>
+          <div class="ct">Love this — can we make the headline shorter and warmer?</div>
+          <div class="cact"><span class="cap">Apply with VÆST</span><span class="cre">Resolve</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="copy">
+      <div class="tag">The client loop</div>
+      <h2>Feedback stops living in email threads</h2>
+      <p>Share a read-only link — the client picks night or paper mode, no login. They comment on any section; it lands as a <b>badge in your rail</b> the moment you open VÆST. Hit <b>Apply with VÆST</b> and their note becomes the revision in one click. Review, resolve, revoke.</p>
+      <div class="chips"><span>Read-only share</span><span>Per-section comments</span><span>Apply with VÆST</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="feat">
+  <div class="wrap">
+    <div class="copy">
+      <div class="tag">Present · hand-off</div>
+      <h2>The document, retold as a deck</h2>
+      <p>When it's done, VÆST reshapes the document into a <b>presentation in its own look</b> — cover, content and closing slides, landscape or portrait, Thai or English. Rendered by our own template, never model-authored HTML. Save as PDF and send.</p>
+      <div class="chips"><span>Landscape / Portrait</span><span>On-brand</span><span>Save as PDF</span></div>
+    </div>
+    <div class="shot"><div class="glow"></div>
+      <div class="bar"><i></i><i></i><i></i><span class="u">vaest — Presentation</span></div>
+      <div class="body">
+        <div class="slides">
+          <div class="slide"><div class="se">ORIONS · VÆST</div><div class="sh">Rebrand<br>Direction</div><div class="sr"></div></div>
+          <div class="slide"><div class="se">01 · CORE IDEA</div><div class="sh" style="font-size:9px">Warm with intent</div><div class="sb"></div><div class="sb" style="width:45%"></div></div>
+          <div class="slide"><div class="se">02 · VISUAL TONE</div><div class="sh" style="font-size:9px">Cream × burnt orange</div><div class="sb"></div><div class="sb" style="width:50%"></div></div>
+          <div class="slide"><div class="se">CLOSE</div><div class="sh" style="font-size:9px">Considered,<br>to the inch.</div><div class="sr"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section><div class="wrap sec-pad">
-  <div class="lbl">Crystallize &amp; edit</div>
-  <div class="frow"><div class="fh">Summing</div><div class="fb"><h3>One document, not a wall of chat</h3><p>Every source becomes a single working document — sharp, sectioned, readable. When the work spans distinct deliverables (identity vs copy vs event), it splits into multiple canvases with tabs.</p><div class="tags"><span>ODIN</span><span>Multi-canvas</span><span>Summing + Refined chain</span></div></div></div>
-  <div class="frow"><div class="fh">Canvas</div><div class="fb"><h3>Edit whole sections or a single sentence</h3><p>Rewrite a section, or highlight any sentence and steer it — Shorten, Formal, Expand, or an open “Ask VÆST…”. Paste images inline. ⌘A stays inside the box you're in.</p><div class="tags"><span>Section edits</span><span>Selection toolbar</span><span>Ask VÆST</span></div></div></div>
-  <div class="frow"><div class="fh">Ø Think</div><div class="fb"><h3>A Senior Creative rips it and pushes it bolder</h3><p>Not proofreading — provocation. ODIN reviews the canvas like a CD reviewing a junior's deck: missing cultural hooks, safe choices to bend, angles that stop one step early. Each push is anchored to the exact sentence it's about.</p><div class="tags"><span>ODIN</span><span>Flaw overlay</span><span>Approve per point</span></div></div></div>
-  <div class="frow"><div class="fh">Refined</div><div class="fb"><h3>The taste check before anything ships</h3><p>A bird's-eye audit for inconsistency, redundancy and logic. Every finding quotes the line it lives in and highlights it in the document — approve one at a time, or all at once.</p><div class="tags"><span>NORRSKEN</span><span>Suggest &amp; approve</span><span>View changes</span></div></div></div>
-</div></section>
-
-<section><div class="wrap sec-pad">
-  <div class="lbl">Gets to know you</div>
-  <div class="frow"><div class="fh">Persona</div><div class="fb"><h3>Standard · Formal · Playful</h3><p>A full persona rides on top of every call — clear and direct, editorial (Monocle-grade), or a creative director with mischief. Set the reply language too: Auto mirrors you, or lock to Thai / English.</p><div class="tags"><span>Every call</span><span>Language lock</span></div></div></div>
-  <div class="frow"><div class="fh">Taste memory</div><div class="fb"><h3>The more you judge, the more it becomes yours</h3><p>Every approve and skip is remembered per project and quietly biases the next suggestion. Generic AI is smart the same way for everyone — VÆST gets smart your way. Visible and clearable in Settings.</p><div class="tags"><span>Per project</span><span>Learned bias</span></div></div></div>
-  <div class="frow"><div class="fh">Project memory</div><div class="fb"><h3>Voice, references, context</h3><p>Set a project's voice and banned words once; add reference files as permanent context; sibling sessions inform each other. Everything a project needs to sound like one studio.</p><div class="tags"><span>Project voice</span><span>Reference library</span></div></div></div>
-</div></section>
-
-<section><div class="wrap sec-pad">
-  <div class="lbl">History &amp; safety</div>
-  <div class="frow"><div class="fh">Versions</div><div class="fb"><h3>Snapshot, diff, undo</h3><p>Save any moment as a named version, compare two versions word-by-word, and undo up to 30 steps. Deleted sessions go to a 30-day trash you can restore from.</p><div class="tags"><span>Snapshots</span><span>Word-level diff</span><span>Trash · 30 days</span></div></div></div>
-  <div class="frow"><div class="fh">Privacy</div><div class="fb"><h3>Yours, and private</h3><p>Per-account isolation, optional device-only private sessions (no cloud, excluded from taste memory), export-everything as JSON, delete your cloud copy. Processed via Anthropic with no training on your data.</p><div class="tags"><span>Private sessions</span><span>Export JSON</span><span>No training</span></div></div></div>
-</div></section>
-
-<section><div class="wrap sec-pad">
-  <div class="lbl">Hand off</div>
-  <div class="frow"><div class="fh">Client loop</div><div class="fb"><h3>Feedback stops living in email</h3><p>Share a read-only link (night or paper mode — the client picks, no login). They comment on any section; it lands as a badge in your rail. “Apply with VÆST” turns their note into the revision in one click. Revoke anytime.</p><div class="tags"><span>Read-only share</span><span>Comments</span><span>Apply with VÆST</span></div></div></div>
-  <div class="frow"><div class="fh">Export</div><div class="fb"><h3>However they want it</h3><p>Copy as rich text, download Word or a print-ready PDF, or build a presentation — VÆST reshapes the document into a deck in its own look, landscape or portrait, ready to save as PDF.</p><div class="tags"><span>Word · PDF</span><span>Rich text</span><span>Presentation · deck</span></div></div></div>
-  <div class="frow"><div class="fh">Usage</div><div class="fb"><h3>Cost you can see</h3><p>Per-document token totals, monthly breakdown by engine, editable rates, and a fair-use quota bar — before you hit a wall, not after.</p><div class="tags"><span>Per-document cost</span><span>Quota bar</span></div></div></div>
+  <div class="lbl">And everything around it</div>
+  <h2>The rest of the workspace</h2>
+  <div class="grid c3">
+    <div class="card"><div class="k">Idea · SKALD</div><h3>A sandbox that spars back</h3><p>Riff, argue, paste raw source from anywhere. Keep what sparks; feed it into Summing.</p></div>
+    <div class="card"><div class="k">Canvas</div><h3>Edit to the sentence</h3><p>Rewrite a section, or highlight a line — Shorten, Formal, Expand, or open “Ask VÆST…”.</p></div>
+    <div class="card"><div class="k">Persona &amp; language</div><h3>Standard · Formal · Playful</h3><p>A persona on every call; lock replies to Auto, Thai or English.</p></div>
+    <div class="card"><div class="k">Project memory</div><h3>Voice &amp; references</h3><p>Set a project's voice and banned words; add reference files as permanent context.</p></div>
+    <div class="card"><div class="k">History</div><h3>Versions, diff, undo, trash</h3><p>Snapshot any moment, compare word-by-word, undo 30 steps, restore from a 30-day trash.</p></div>
+    <div class="card"><div class="k">Privacy</div><h3>Yours, and private</h3><p>Per-account isolation, device-only sessions, export JSON, delete your cloud copy — no training on your data.</p></div>
+  </div>
 </div></section>
 
 <section class="cta">
