@@ -4,5 +4,12 @@
   "type": "module",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  },
+  "scripts": {
+    "test": "node tests/unit.mjs",
+    "eval": "node tests/eval-run.mjs"
   }
 }
