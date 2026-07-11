@@ -44,8 +44,13 @@ const BRIEFS = [
 ];
 
 async function login() {
+  // Short-lived JWT path — safer than handling a password. Get one with:
+  //   curl -s -X POST 'https://yyhqcqlylnoukmovrpwo.supabase.co/auth/v1/token?grant_type=password' \
+  //     -H 'apikey: sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM' -H 'Content-Type: application/json' \
+  //     -d '{"email":"you@x.com","password":"..."}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])'
+  if (process.env.VAEST_TOKEN) return process.env.VAEST_TOKEN;
   const email = process.env.VAEST_EMAIL, password = process.env.VAEST_PASSWORD;
-  if (!email || !password) { console.error('Set VAEST_EMAIL and VAEST_PASSWORD'); process.exit(1); }
+  if (!email || !password) { console.error('Set VAEST_TOKEN, or VAEST_EMAIL and VAEST_PASSWORD'); process.exit(1); }
   const r = await fetch(`${SB.url}/auth/v1/token?grant_type=password`, {
     method: 'POST', headers: { apikey: SB.key, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
