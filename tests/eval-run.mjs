@@ -7,7 +7,7 @@
 //
 // Costs real tokens (Opus). Run before shipping prompt/model changes.
 
-const API = process.env.VAEST_API || 'https://vaest-orions.vercel.app';
+const API = process.env.VAEST_API || 'https://vaest.orions.agency';
 const SB = { url: 'https://yyhqcqlylnoukmovrpwo.supabase.co', key: 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM' };
 
 const BRIEFS = [
