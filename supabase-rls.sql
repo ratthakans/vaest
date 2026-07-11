@@ -64,28 +64,24 @@ create policy "wl_update" on public.vaest_state
   using (email like 'wl:%')
   with check (email like 'wl:%');
 
--- ── 4) USAGE ROWS — the API currently writes these with the publishable key,
---       so they stay open for now (same exposure as today, low stakes).
---       Once SUPABASE_SERVICE_KEY is set in Vercel and lib/plans.js uses it,
---       drop these three policies to lock usage rows server-only.
-create policy "usage_select" on public.vaest_state
-  for select to anon, authenticated
-  using (email like 'usage:%');
+-- ── 4) USAGE + ERRLOG ROWS — server-only, NO policy on purpose.
+--       The API writes usage:% (fair-use metering) and errlog:% (error sink) with the
+--       service-role key (SUPABASE_SERVICE_ROLE_KEY), which bypasses RLS entirely — so
+--       they need no policy. With no anon/authenticated policy, the public key can't read
+--       or write them: a client can't forge its own usage counter to defeat the cap, and
+--       error logs can't be read or spammed. Nothing else here grants them, so they are
+--       reachable only through the service key. (Client reads its quota via /api/access.)
+--
+--       ⚠️ Set SUPABASE_SERVICE_ROLE_KEY in Vercel BEFORE running this — otherwise the
+--       server falls back to the publishable key, which these policies now block, and
+--       usage metering + error logging stop (silently, best-effort). With the env set,
+--       both work through the service key and are unforgeable.
 
-create policy "usage_insert" on public.vaest_state
-  for insert to anon, authenticated
-  with check (email like 'usage:%');
-
-create policy "usage_update" on public.vaest_state
-  for update to anon, authenticated
-  using (email like 'usage:%')
-  with check (email like 'usage:%');
-
--- ═══ VERIFY (run after) — both must return zero rows / denied ═══
+-- ═══ VERIFY (run after) — the public key must see only share:/wl: rows ═══
 -- 1) In the SQL editor this runs as postgres and bypasses RLS, so verify from
 --    the app or with:  select * from pg_policies where tablename='vaest_state';
 -- 2) Real test: log out of VÆST, then in the browser console run:
 --    fetch('https://yyhqcqlylnoukmovrpwo.supabase.co/rest/v1/vaest_state?select=email',
 --      {headers:{apikey:'<publishable>',Authorization:'Bearer <publishable>'}})
 --      .then(r=>r.json()).then(console.log)
---    → should return ONLY share:/usage: rows, never user emails' state.
+--    → should return ONLY share:/wl: rows — never user-email state, usage:, or errlog:.
