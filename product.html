@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Product — VÆST · The Creative Trinity</title>
+<title>Product — VÆST · Four Minds, One Taste</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="The Creative Trinity of VÆST — SKALD the poet, ODIN the mastermind, NORRSKEN the light. Three engines, one flow of taste.">
-<meta property="og:title" content="Product — VÆST · The Creative Trinity">
-<meta property="og:description" content="The Creative Trinity of VÆST — SKALD the poet, ODIN the mastermind, NORRSKEN the light. Three engines, one flow of taste.">
+<meta name="description" content="The four engines of VÆST — Galdr the poet, Odin the mastermind, Norrsken the light, Skadi the huntress. Four minds, one flow of taste — named for the old north.">
+<meta property="og:title" content="Product — VÆST · Four Minds, One Taste">
+<meta property="og:description" content="The four engines of VÆST — Galdr the poet, Odin the mastermind, Norrsken the light, Skadi the huntress. Four minds, one flow of taste — named for the old north.">
 <meta property="og:image" content="https://vaest.orions.agency/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -20,15 +20,16 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-  /* trinity overview strip */
-  .trinity{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:56px}
-  @media(max-width:760px){.trinity{grid-template-columns:1fr}}
-  .trinity a{background:#0a0a0c;padding:34px 26px;text-align:center;transition:background .25s var(--ease)}
-  .trinity a:hover{background:#0f0f13}
-  .trinity .gl{width:64px;height:64px;margin:0 auto 18px}
-  .trinity .nm{font-family:var(--mono);font-size:15px;letter-spacing:.24em;font-weight:600}
-  .trinity .rl{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--dim);margin-top:8px}
-  .trinity .ph{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:14px}
+  /* engine overview strip */
+  .engines{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:56px}
+  @media(max-width:760px){.engines{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:440px){.engines{grid-template-columns:1fr}}
+  .engines a{background:#0a0a0c;padding:34px 22px;text-align:center;transition:background .25s var(--ease)}
+  .engines a:hover{background:#0f0f13}
+  .engines .gl{width:60px;height:60px;margin:0 auto 18px}
+  .engines .nm{font-family:var(--mono);font-size:14px;letter-spacing:.22em;font-weight:600}
+  .engines .rl{font-family:var(--serif);font-style:italic;font-size:14.5px;color:var(--dim);margin-top:8px}
+  .engines .ph{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:14px}
 
   /* model chapter */
   .model{position:relative;padding:84px 0;border-bottom:1px solid var(--line);overflow:hidden}
@@ -52,9 +53,10 @@
   .model .how li b{color:var(--ink);font-weight:600}
   /* per-model aura tint */
   .aura{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.7}
-  .aura.skald{background:radial-gradient(36% 48% at 15% 30%,rgba(138,107,255,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(79,195,255,.07),transparent 72%)}
+  .aura.galdr{background:radial-gradient(36% 48% at 15% 30%,rgba(138,107,255,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(79,195,255,.07),transparent 72%)}
   .aura.odin{background:radial-gradient(36% 48% at 15% 30%,rgba(255,161,75,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(255,90,31,.07),transparent 72%)}
   .aura.norr{background:radial-gradient(36% 48% at 15% 30%,rgba(79,220,180,.12),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(79,195,255,.07),transparent 72%)}
+  .aura.skadi{background:radial-gradient(36% 48% at 15% 30%,rgba(150,200,255,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(220,240,255,.06),transparent 72%)}
   .sig-anim{transform-origin:center;animation:sigrot 44s linear infinite}
   @keyframes sigrot{to{transform:rotate(360deg)}}
 </style>
@@ -65,13 +67,13 @@
 <header class="phead">
   <div class="prism"><div class="glow"></div><div class="strips"></div></div>
   <div class="wrap">
-    <span class="eye">Product · The Creative Trinity</span>
-    <h1>Three minds<br>one flow of taste<span class="dot">.</span></h1>
-    <p class="sub th">VÆST doesn't run one generic brain. It runs a <b>trinity</b> — a poet who sparks, a mastermind who shapes, a light that perfects. Each is our own engine, tuned and versioned, named for the old north.</p>
-    <div class="trinity reveal">
-      <a href="#skald">
+    <span class="eye">Product · The Creative Engines</span>
+    <h1>Four minds<br>one flow of taste<span class="dot">.</span></h1>
+    <p class="sub th">VÆST doesn't run one generic brain. It runs <b>four</b> — a poet who sparks, a mastermind who shapes, a light that perfects, a huntress who lands it. Each is our own engine, tuned and versioned, named for the old north.</p>
+    <div class="engines reveal">
+      <a href="#galdr">
         <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><path d="M50 22 L78 74 L22 74 Z" stroke-linejoin="round"/><path d="M50 22 L50 74" stroke-opacity=".38"/><circle cx="50" cy="22" r="3.4" fill="#f2f1ee" stroke="none"/></svg>
-        <div class="nm gtx">SKALD</div><div class="rl">the poet</div><div class="ph">Phase 1 · Idea</div>
+        <div class="nm gtx">GALDR</div><div class="rl">the poet</div><div class="ph">Phase 1 · Idea</div>
       </a>
       <a href="#odin">
         <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><circle cx="50" cy="50" r="28"/><path d="M50 8 L50 92 M8 50 L92 50" stroke-opacity=".32" stroke-width="2"/><circle cx="50" cy="50" r="7"/></svg>
@@ -81,24 +83,28 @@
         <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3" stroke-linecap="round"><path d="M16 42 Q50 18 84 42"/><path d="M16 58 Q50 34 84 58" stroke-opacity=".62"/><path d="M16 74 Q50 50 84 74" stroke-opacity=".38"/></svg>
         <div class="nm gtx">NORRSKEN</div><div class="rl">the light</div><div class="ph">Phase 3 · Refine</div>
       </a>
+      <a href="#skadi">
+        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><path d="M50 20 L74 50 L50 80 L26 50 Z" stroke-linejoin="round"/><path d="M50 20 L50 80" stroke-opacity=".38"/><circle cx="50" cy="20" r="3.4" fill="#f2f1ee" stroke="none"/></svg>
+        <div class="nm gtx">SKADI</div><div class="rl">the huntress</div><div class="ph">Phase 4 · Present</div>
+      </a>
     </div>
   </div>
 </header>
 
-<!-- SKALD -->
-<section class="model" id="skald">
-  <div class="aura skald"></div>
+<!-- GALDR -->
+<section class="model" id="galdr">
+  <div class="aura galdr"></div>
   <div class="wrap">
     <div>
       <svg class="sigil" viewBox="0 0 100 100" fill="none"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M50 22 L78 72 L22 72 Z" stroke="#f2f1ee" stroke-width="2" stroke-linejoin="round"/><path d="M50 22 L50 72" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><path d="M34 62 L66 62" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><circle cx="50" cy="22" r="3.2" fill="#f2f1ee"/></svg>
       <div class="ph">Phase 1 · Idea · Sandbox</div>
-      <h2 class="gtx">SKALD</h2>
-      <div class="kenning">The poet who sets the spark.</div>
-      <div class="meta"><span class="m">Engine <b>SKALD v2.5</b></span><span class="m">Sparking Idea</span><span class="m">Persona-aware</span></div>
+      <h2 class="gtx">GALDR</h2>
+      <div class="kenning">The sung spell that sets the spark.</div>
+      <div class="meta"><span class="m">Engine <b>GALDR v2.5</b></span><span class="m">Sparking Idea</span><span class="m">Persona-aware</span></div>
     </div>
     <div>
       <div class="lore th">
-        <span class="drop">In the old courts, the skald was the poet who turned history, culture and raw feeling into verse. VÆST's SKALD does the same for your ideas.</span>
+        <span class="drop">Galdr was the old north's sung magic — words chanted until they took shape in the world. VÆST's GALDR does the same for your ideas.</span>
         This is where the work begins — a living sandbox that recites options back, argues art theory with you, catches half-thoughts and raw fragments pasted from anywhere. It doesn't judge yet; it <b>flows</b> — throwing sparks freely until the first true idea lands.
       </div>
       <div class="how">
@@ -107,7 +113,7 @@
           <li>A fast, generous <b>brainstorm mode</b> on the home screen — riff, debate, paste raw source from outside.</li>
           <li>Keeps the good part, kills the weak part, and says why — then curates the thread into <b>Summing</b>.</li>
           <li>Promote any line with <b>“→ brief.”</b> Speaks your chosen persona and language on every reply.</li>
-          <li>Tuned for speed and flow; if it ever stumbles, a backup voice carries on — SKALD never falls silent.</li>
+          <li>Tuned for speed and flow; if it ever stumbles, a backup voice carries on — GALDR never falls silent.</li>
         </ul>
       </div>
     </div>
@@ -172,20 +178,49 @@
   </div>
 </section>
 
-<!-- The instrument + Present -->
+<!-- SKADI -->
+<section class="model" id="skadi">
+  <div class="aura skadi"></div>
+  <div class="wrap">
+    <div>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M50 18 L76 50 L50 82 L24 50 Z" stroke="#f2f1ee" stroke-width="2" stroke-linejoin="round"/><path d="M50 18 L50 82" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><path d="M32 50 L68 50" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="1.5"/><circle cx="50" cy="18" r="3.2" fill="#f2f1ee"/></svg>
+      <div class="ph">Phase 4 · Present · Hand-off</div>
+      <h2 class="gtx">SKADI</h2>
+      <div class="kenning">The huntress who lands the shot.</div>
+      <div class="meta"><span class="m">Engine <b>SKADI v1.0</b></span><span class="m">Deck builder</span><span class="m">Thai · English</span></div>
+    </div>
+    <div>
+      <div class="lore th">
+        <span class="drop">Skadi strode the winter peaks with bow drawn, and never missed her mark. VÆST's SKADI takes the finished work and lands it — clean, sharp, ready to show.</span>
+        The last engine in the flow: when the document is signed off, SKADI reshapes the whole saga into a presentation — reading the work from the summit, compressing each section to its sharpest points, and staging it in VÆST's own night-prismatic look.
+      </div>
+      <div class="how">
+        <h4>What it does · how it works</h4>
+        <ul class="th">
+          <li>One press turns the document into a tight <b>deck</b> — cover, sections, a pulled quote, a close.</li>
+          <li>Compresses sentences into <b>3–6 word</b> points; never dumps paragraphs onto a slide.</li>
+          <li>Rendered by our own template — <b>landscape or portrait, Thai or English</b> — ready to save as PDF.</li>
+          <li>Keeps the document's language and the studio's taste through to the final frame.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- The instrument -->
 <section><div class="wrap sec-pad">
-  <div class="lbl">The instrument &amp; the hand-off</div>
-  <h2>VÆST binds the trinity into one flow</h2>
+  <div class="lbl">The instrument &amp; the through-line</div>
+  <h2>VÆST binds all four into one flow</h2>
   <div class="grid c2">
-    <div class="card"><div class="k">VÆST · v1.2</div><h3>The instrument</h3><p>The document canvas that carries a brief from spark to sign-off — orchestrating SKALD → ODIN → NORRSKEN across one clean flow, with persona, project voice and taste memory riding on every call.</p><span class="ver">Aesthetic Intelligence</span></div>
-    <div class="card"><div class="k">Hand-off · Present</div><h3>The saga, retold as slides</h3><p>When the work is done, VÆST reshapes the document into a presentation in its own night-prismatic look — landscape or portrait, Thai or English — rendered by our own template, ready to save as PDF.</p><span class="ver">Deck builder</span></div>
+    <div class="card"><div class="k">VÆST · v1.3</div><h3>The instrument</h3><p>The document canvas that carries a brief from spark to sign-off — orchestrating Galdr → Odin → Norrsken → Skadi across one clean flow, with persona, project voice and taste memory riding on every call.</p><span class="ver">Aesthetic Intelligence</span></div>
+    <div class="card"><div class="k">The through-line</div><h3>Your taste, carried on every call</h3><p>Persona, project voice and taste memory ride with the work from Galdr's first spark to Skadi's final slide — so four engines still sound like one studio, not four tools bolted together.</p><span class="ver">One voice</span></div>
   </div>
 </div></section>
 
 <section class="cta">
   <div class="prism"><div class="glow"></div><div class="strips" style="left:0;opacity:.5"></div></div>
   <div class="wrap">
-    <h2>Summon the trinity<span class="dot">.</span></h2>
+    <h2>Summon all four<span class="dot">.</span></h2>
     <p class="th">One brief, one afternoon, one document you'd actually send.</p>
     <a class="btn-try" href="/app">Try VÆST →</a>
   </div>

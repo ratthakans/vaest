@@ -4,7 +4,7 @@ import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
 
-// VÆST 1.2 — IDEA (sandbox) = Gemini Flash · THINK/write = Opus 4.8 · REFINE = Fable 5 · PRESENT = Sonnet 5
+// VÆST 1.3 — Galdr (Idea/sandbox) = Gemini Flash · Odin (Think/write) = Opus 4.8 · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
 const GEMINI_MODEL = 'gemini-flash-latest';
 const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
