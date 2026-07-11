@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+  /* Auth email links (password reset / invite) sometimes land on the site root
+     instead of /app — forward them to the app with the token intact so the
+     "set new password" screen can open. Runs before anything renders. */
+  (function(){var h=location.hash||'',q=location.search||'';
+    if(/[#&]type=(recovery|invite)/.test(h)||/[?&](token_hash|code)=/.test(q)){location.replace('/app'+q+h);}})();
+</script>
 <title>VÆST — Aesthetic Intelligence · by ORIONS.Agency</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="VÆST — Aesthetic Intelligence. Crystallize briefs and piles of files into one sharp, tasteful document. An internal instrument of ORIONS.Agency">
