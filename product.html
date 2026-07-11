@@ -55,10 +55,16 @@
   .aura{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.7}
   .aura.galdr{background:radial-gradient(36% 48% at 15% 30%,rgba(138,107,255,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(79,195,255,.07),transparent 72%)}
   .aura.odin{background:radial-gradient(36% 48% at 15% 30%,rgba(255,161,75,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(255,90,31,.07),transparent 72%)}
-  .aura.norr{background:radial-gradient(36% 48% at 15% 30%,rgba(79,220,180,.12),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(79,195,255,.07),transparent 72%)}
+  .aura.norr{opacity:1;background:radial-gradient(42% 55% at 16% 32%,rgba(120,235,210,.22),transparent 68%),radial-gradient(34% 46% at 9% 66%,rgba(120,205,255,.13),transparent 72%),radial-gradient(60% 70% at 20% 42%,rgba(150,240,220,.06),transparent 78%)}
   .aura.skadi{background:radial-gradient(36% 48% at 15% 30%,rgba(150,200,255,.11),transparent 70%),radial-gradient(30% 40% at 8% 68%,rgba(220,240,255,.06),transparent 72%)}
   .sig-anim{transform-origin:center;animation:sigrot 44s linear infinite}
   @keyframes sigrot{to{transform:rotate(360deg)}}
+  /* apex tier — Norrsken sits at the top of the chain */
+  .engines a.apex{background:#0e0e12;position:relative}
+  .engines a.apex:hover{background:#121218}
+  .engines a.apex::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--chroma);background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .engines .apx{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;margin-top:11px;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .model .ph .apex-tag{color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite;font-weight:600}
 </style>
 </head>
 <body data-page="product">
@@ -79,9 +85,9 @@
         <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><circle cx="50" cy="50" r="28"/><path d="M50 8 L50 92 M8 50 L92 50" stroke-opacity=".32" stroke-width="2"/><circle cx="50" cy="50" r="7"/></svg>
         <div class="nm gtx">ODIN</div><div class="rl">the mastermind</div><div class="ph">Phase 2 · Think</div>
       </a>
-      <a href="#norrsken">
-        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3" stroke-linecap="round"><path d="M16 42 Q50 18 84 42"/><path d="M16 58 Q50 34 84 58" stroke-opacity=".62"/><path d="M16 74 Q50 50 84 74" stroke-opacity=".38"/></svg>
-        <div class="nm gtx">NORRSKEN</div><div class="rl">the light</div><div class="ph">Phase 3 · Refine</div>
+      <a href="#norrsken" class="apex">
+        <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3" stroke-linecap="round"><path d="M50 8 L44 18 M50 8 L56 18" stroke-width="2" stroke-opacity=".5"/><circle cx="50" cy="8" r="3" fill="#f2f1ee" stroke="none"/><path d="M16 46 Q50 20 84 46"/><path d="M16 62 Q50 36 84 62" stroke-opacity=".62"/><path d="M16 78 Q50 52 84 78" stroke-opacity=".38"/></svg>
+        <div class="nm gtx">NORRSKEN</div><div class="rl">the light</div><div class="ph">Phase 3 · Refine</div><div class="apx">Apex engine</div>
       </a>
       <a href="#skadi">
         <svg class="gl" viewBox="0 0 100 100" fill="none" stroke="#f2f1ee" stroke-width="3"><path d="M50 20 L74 50 L50 80 L26 50 Z" stroke-linejoin="round"/><path d="M50 20 L50 80" stroke-opacity=".38"/><circle cx="50" cy="20" r="3.4" fill="#f2f1ee" stroke="none"/></svg>
@@ -154,16 +160,16 @@
   <div class="aura norr"></div>
   <div class="wrap">
     <div>
-      <svg class="sigil" viewBox="0 0 100 100" fill="none" stroke-linecap="round"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M20 40 Q50 20 80 40" stroke="#f2f1ee" stroke-width="2"/><path d="M20 54 Q50 34 80 54" stroke="#f2f1ee" stroke-opacity=".6" stroke-width="2"/><path d="M20 68 Q50 48 80 68" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="2"/></svg>
-      <div class="ph">Phase 3 · Refine · Quality gate</div>
+      <svg class="sigil" viewBox="0 0 100 100" fill="none" stroke-linecap="round"><g class="sig-anim"><circle cx="50" cy="50" r="43" stroke="#f2f1ee" stroke-opacity=".16" stroke-width="1" stroke-dasharray="2 9"/></g><path d="M50 8 L42 20 M50 8 L58 20" stroke="#f2f1ee" stroke-opacity=".5" stroke-width="1.5"/><circle cx="50" cy="8" r="3" fill="#f2f1ee"/><path d="M20 44 Q50 22 80 44" stroke="#f2f1ee" stroke-width="2"/><path d="M20 58 Q50 36 80 58" stroke="#f2f1ee" stroke-opacity=".6" stroke-width="2"/><path d="M20 72 Q50 50 80 72" stroke="#f2f1ee" stroke-opacity=".34" stroke-width="2"/></svg>
+      <div class="ph">Phase 3 · Refine · <span class="apex-tag">The apex</span></div>
       <h2 class="gtx">NORRSKEN</h2>
-      <div class="kenning">The light that sweeps the work clean.</div>
-      <div class="meta"><span class="m">Engine <b>NORRSKEN v3</b></span><span class="m">Editorial critic</span><span class="m">Suggest &amp; approve</span></div>
+      <div class="kenning">The apex light — nothing ships until it has passed.</div>
+      <div class="meta"><span class="m">Engine <b>NORRSKEN v3</b></span><span class="m">Apex · flagship-class</span><span class="m">Final authority</span></div>
     </div>
     <div>
       <div class="lore th">
-        <span class="drop">Norrsken is the northern lights — the sky sweeping the dark clean. VÆST's NORRSKEN is the final light that passes over the whole canvas before it ships.</span>
-        The most sensitive read of all: NORRSKEN scans the entire document from above, hunting inconsistency, redundancy and broken logic. It doesn't rewrite blindly — it shows each flaw exactly where it lives and offers a change to approve, polishing the work to an editorial, pixel-clean finish before it reaches the client.
+        <span class="drop">Norrsken is the northern lights — the highest light in the sky. VÆST's NORRSKEN stands at the top of the chain: the apex judgment nothing escapes, the last word before the work leaves the studio.</span>
+        Built on our most powerful engine, it is the most sensitive read of all: NORRSKEN scans the entire document from above, hunting inconsistency, redundancy and broken logic. It doesn't rewrite blindly — it shows each flaw exactly where it lives and offers a change to approve, polishing the work to an editorial, pixel-clean finish before it reaches the client.
       </div>
       <div class="how">
         <h4>What it does · how it works</h4>
