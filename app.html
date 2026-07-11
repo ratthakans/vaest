@@ -50,7 +50,7 @@
         <div class="h-eye">ORIONS · VÆST</div>
         <h1 class="h-title">What are we making?</h1>
         <div class="brief-box" id="briefBox">
-          <textarea id="brief" placeholder="Brief: what do you need, what's the context, who's it for…" oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
+          <textarea id="brief" placeholder="Paste your brief — messy is fine. What do you need, for whom, and what's the context? Attach files, then hit Summing." oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
           <div class="bb-foot">
             <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
