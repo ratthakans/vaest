@@ -138,10 +138,23 @@
       body:JSON.stringify({email,options:{redirect_to:location.origin+'/app'}})});
       $('authErr').textContent='Reset link sent to '+email+' — check your email'}
     catch(e){$('authErr').textContent='Couldn’t send, try again'}}
-  // set password (email link — password reset, or Supabase invite)
-  function recoveryTokenFromHash(){
-    const h=(location.hash||'').replace(/^#/,'');if(!/type=(recovery|invite|signup)/.test(h))return null;
-    const p=new URLSearchParams(h);return p.get('access_token')||null}
+  // set password (email link) — robust across Supabase flows:
+  //   implicit  #access_token=…&type=recovery
+  //   verify    ?token_hash=…&type=recovery   (recommended email-template form)
+  //   pkce      ?code=…
+  async function detectRecovery(){
+    try{
+      const hp=new URLSearchParams((location.hash||'').replace(/^#/,''));
+      const qp=new URLSearchParams(location.search||'');
+      if(/recovery|invite|signup/.test(hp.get('type')||'')&&hp.get('access_token'))return hp.get('access_token');
+      const th=qp.get('token_hash'),ty=qp.get('type')||'recovery';
+      if(th){const r=await fetch(SB.url+'/auth/v1/verify',{method:'POST',headers:authHeaders(),body:JSON.stringify({type:ty,token_hash:th})});
+        const d=await r.json().catch(()=>({}));if(r.ok&&d.access_token)return d.access_token}
+      const code=qp.get('code');
+      if(code){const r=await fetch(SB.url+'/auth/v1/token?grant_type=pkce',{method:'POST',headers:authHeaders(),body:JSON.stringify({auth_code:code})});
+        const d=await r.json().catch(()=>({}));if(r.ok&&d.access_token)return d.access_token}
+    }catch(e){}
+    return null}
   async function submitNewPass(){
     const t=window._recToken,p1=$('npPass').value;
     if(p1.length<6){$('npErr').textContent='Password must be at least 6 characters';return}
@@ -1583,9 +1596,9 @@
   (async function init(){
     $('doc').addEventListener('input',schedulePersist);initScrollSpy();
     $('doc').addEventListener('paste',handleDocPaste);
-    // 1) set a new password from the email link
-    const rec=recoveryTokenFromHash();
-    if(rec){window._recToken=rec;$('npView').classList.add('show');setTimeout(()=>$('npPass').focus(),60);return}
+    // 1) set a new password from the email link (recovery / invite)
+    const rec=await detectRecovery();
+    if(rec){window._recToken=rec;history.replaceState(null,'',location.pathname);$('npView').classList.add('show');setTimeout(()=>$('npPass').focus(),60);return}
     // 2) share link (read-only) — no login needed
     const sid=new URLSearchParams(location.search).get('s');
     if(sid){await openShareView(sid);return}
