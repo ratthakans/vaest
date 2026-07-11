@@ -20,7 +20,8 @@
     .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>')
     .replace(/`([^`]+?)`/g,'<code>$1</code>')
     .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,(m,a,u)=>{const h=safeImg(u);return h?'<img src="'+esc(h)+'" alt="'+a+'">':''})
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,t,u)=>{const h=safeHref(u);return h?'<a href="'+esc(h)+'" target="_blank" rel="noopener noreferrer">'+t+'</a>':t})}
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,t,u)=>{const h=safeHref(u);return h?'<a href="'+esc(h)+'" target="_blank" rel="noopener noreferrer">'+t+'</a>':t})
+    .replace(/\*\*/g,'')}
   function splitRow(s){return s.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(c=>c.trim())}
   function renderMd(text){
     const lines=String(text).split('\n');let html='',ul=false,ol=false;
@@ -981,7 +982,7 @@
     const s=cur();const docTitle=title||(s?s.title:'Document');
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
-      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words · fully editable</div></div>';
+      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -1507,7 +1508,7 @@
     $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <span class="sh-lbl">Read-only · shared from VÆST</span></div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme" aria-label="Reading theme">☀︎</button><a class="tb dark sh-open" href="/app" style="text-decoration:none">Open VÆST →</a>';
     try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
     // privacy note — earn the client's trust in one line
-    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · <a href=\'/privacy.html\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;
