@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const html = readFileSync(new URL('../app.html', import.meta.url), 'utf8');
 const js = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 
-const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost/app', pretendToBeVisual: true });
+const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://vaest.orions.agency/app', pretendToBeVisual: true });
 const w = dom.window;
 w.fetch = () => Promise.reject(new Error('network disabled in tests'));
 w.matchMedia = w.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {} }));
