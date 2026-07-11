@@ -489,11 +489,11 @@
   .cmt .cr.ca{margin-left:auto;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-decoration:none;font-weight:700}
   .cmt .cr.ca+.cr{margin-left:12px}
 
-  /* share view — client-side paper mode */
-  body.share-light{--ink:#111110;--charcoal:#f4f3f0;--snow:#111110;--app:#ffffff;--paper:#ffffff;--sheet:#ffffff;--card:#ffffff;
-    --line:rgba(17,17,16,.1);--line2:rgba(17,17,16,.2);--dim:#55544f;--mute:#9b9a94;--soft:rgba(17,17,16,.045);--cin-d:#c94e26}
+  /* share view — client-side paper mode (warm cream, matches the exported PDF deliverable) */
+  body.share-light{--ink:#161511;--charcoal:#f2f0e9;--snow:#161511;--app:#fdfdf9;--paper:#fdfdf9;--sheet:#fdfdf9;--card:#fffefb;
+    --line:rgba(27,24,21,.11);--line2:rgba(27,24,21,.2);--dim:#5a5a55;--mute:#9b9a94;--soft:rgba(27,24,21,.05);--cin-d:#c24a24}
   body.share-light .sec-c,body.share-light .gen-body{color:#26251f}
-  body.share-light .top{background:rgba(255,255,255,.86)}
+  body.share-light .top{background:rgba(253,253,249,.88)}
   body.share-light .tb.dark{color:#fff}
   body.share-light ::selection{background:#111110;color:#fff}
 

@@ -97,9 +97,8 @@
 
   /* fluid chroma — the gradient breathes inside every accent */
   @keyframes chromaflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-  .hero h1 .dot,.spec .n .u,.step .si,.e-card .em,.ba-col.after .ba-tag,.d-sec .no,.d-chip b,.d-ref .ok,.wl-msg,.final h2 .dot{
-    background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
-  .lbl::before{background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .hero h1 .dot,.final h2 .dot{background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .spec .n .u,.step .si,.e-card .em,.ba-col.after .ba-tag,.d-sec .no,.d-chip b,.d-ref .ok,.wl-msg,.lbl::before{background-size:100% 100%}
 
   /* ── nav ── */
   .nav{position:sticky;top:0;z-index:80;background:rgba(5,5,6,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
@@ -210,14 +209,12 @@
   .td-pill{font-family:var(--mono);font-size:12px;letter-spacing:.04em;border-radius:100px;padding:9px 16px;border:1px solid var(--line2)}
   .td-pill.ok{color:var(--ink)}
   .td-pill.no{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(255,90,31,.6)}
-  .td-arrow{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:20px;font-weight:700;
-    background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite;margin:0 4px}
+  .td-arrow{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:20px;font-weight:700;background-size:100% 100%;margin:0 4px}
   .td-out{font-family:var(--th);font-style:italic;color:var(--dim);font-size:15px}
   .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;margin-top:70px}
   @media(max-width:760px){.loop{grid-template-columns:1fr;gap:44px}}
   .lp{padding-top:24px;border-top:1px solid var(--line2)}
-  .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;
-    background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:100% 100%}
   .lp-t{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
   .lp-d{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
