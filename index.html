@@ -39,7 +39,7 @@
     --ease:cubic-bezier(.22,1,.36,1);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth;scroll-padding-top:92px;-webkit-text-size-adjust:100%}
   body{font-family:var(--ui);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
   ::selection{background:#f2f1ee;color:#050506}
@@ -78,8 +78,9 @@
     background-size:260% 100%;filter:blur(14px);mix-blend-mode:screen;
     -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 32%,#000 68%,transparent 100%);
     mask-image:linear-gradient(180deg,transparent 0%,#000 32%,#000 68%,transparent 100%);
-    animation:sweep 9s linear infinite}
-  @keyframes sweep{from{background-position:220% 0}to{background-position:-120% 0}}
+    animation:sweep 13s ease-in-out infinite alternate}
+  /* alternate = no hard reset: the band eases across and back, so the loop is seamless */
+  @keyframes sweep{from{background-position:210% 0}to{background-position:-80% 0}}
   .prism .ripple{position:absolute;left:52%;right:-8%;top:30%;height:52%;
     background:
       repeating-linear-gradient(178deg,rgba(79,195,255,.09) 0 1.5px,transparent 1.5px 11px),
