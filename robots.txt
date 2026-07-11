@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /app
 
-Sitemap: https://vaest-orions.vercel.app/sitemap.xml
+Sitemap: https://vaest.orions.agency/sitemap.xml
