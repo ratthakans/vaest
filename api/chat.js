@@ -13,8 +13,8 @@ const ROUTE = {
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
   think:     { model: 'claude-opus-4-8' },
-  mastering: { model: 'claude-fable-5' },
-  present:   { model: 'claude-sonnet-5', max: 8192 },
+  mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
+  present:   { model: 'claude-sonnet-5', max: 8192, fallback: 'claude-opus-4-8' },
 };
 
 // ── Persona ~30% ORIONS ──
@@ -152,7 +152,7 @@ async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
   for await (const ev of stream) {
     if (ev.type === 'message_start' && ev.message?.usage) inTok = ev.message.usage.input_tokens || 0;
     if (ev.type === 'message_delta' && ev.usage) outTok = ev.usage.output_tokens || outTok;
-    if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') res.write(ev.delta.text);
+    if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') { res.__wrote = true; res.write(ev.delta.text); }
   }
   return { inTok, outTok };
 }
@@ -197,8 +197,16 @@ export default async function handler(req, res) {
       try { usage = await streamGemini(res, base, system || '', messages, maxTok); }
       catch (ge) { usage = await streamAnthropic(res, route.fallback, base, system || '', messages, 2048); usage.model = route.fallback; }
     } else {
-      usage = await streamAnthropic(res, route.model, base, system || '', messages, maxTok);
-      usage.model = route.model;
+      // Specialty models (NORRSKEN·Fable, Present·Sonnet) fall back to Opus if the model
+      // is ever unavailable — but only if nothing has streamed yet, so we never double up text.
+      try {
+        usage = await streamAnthropic(res, route.model, base, system || '', messages, maxTok);
+        usage.model = route.model;
+      } catch (me) {
+        if (res.__wrote || !route.fallback) throw me;
+        usage = await streamAnthropic(res, route.fallback, base, system || '', messages, maxTok);
+        usage.model = route.fallback;
+      }
     }
     const { inTok, outTok } = usage;
     const d0 = await readUsageData(user.email);
