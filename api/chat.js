@@ -8,6 +8,7 @@ const anthropic = new Anthropic();
 const GEMINI_MODEL = 'gemini-flash-latest';
 const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
+  tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
@@ -37,6 +38,7 @@ const TASK = {
 - Raw pasted material (other models' output, prompts, scraps) is welcome: react to it, keep the good part, kill the weak part, say why.
 - End with one sharp question or a concrete next move when it helps.
 - Markdown lists and short paragraphs; stay lively, never a wall of corporate prose.`,
+  tag: `# TASK: TOPIC LABEL. Read the note and reply with ONLY a 1–3 word topic label naming what it's about (e.g. "Naming", "Visual direction", "Pricing", "Launch plan"). Match the note's language. No quotes, no punctuation, no explanation — just the label.`,
   present: `${BASE}
 
 # CURRENT TASK: PRESENT — turn the document into presentation slides.

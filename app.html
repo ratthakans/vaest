@@ -68,9 +68,10 @@
           </div>
           <div class="id-thread" id="ideaThread"></div>
           <div class="id-in">
-            <textarea id="ideaInput" rows="1" placeholder="Spark an idea, paste anything…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
+            <textarea id="ideaInput" rows="1" placeholder="Chat freely with Galdr — paste anything. Hit + Add on a reply to save it." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
             <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
           </div>
+          <div class="spark-tray" id="sparkTray"></div>
         </div>
 
         <div class="h-foot">“Computation is nothing without taste.” · VÆST 1.3</div>
@@ -196,6 +197,16 @@
     <div class="diff-hd"><b>What changed</b><button class="x" onclick="closeDiff()" aria-label="Close">✕</button></div>
     <div class="diff-sub" id="diffSub"></div>
     <div id="diffBody"></div>
+  </div>
+</div>
+<div class="snap" id="sumView" onclick="if(event.target===this)closeSummingPicker()">
+  <div class="snap-box">
+    <div class="snap-hd"><b>Summing <span style="font-weight:400;color:var(--mute)">· Odin</span></b><button class="save" onclick="closeSummingPicker()">Close</button></div>
+    <div style="padding:16px 20px 22px">
+      <div class="set-note" style="margin-top:0">Pick what feeds this canvas. Odin crystallizes only the chosen sources into one document.</div>
+      <div class="sum-src" id="sumSrc"></div>
+      <button class="dlg-ok" id="sumGo" style="margin-top:18px" onclick="doSummingFromPicker()">Crystallize <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:-2px"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+    </div>
   </div>
 </div>
 <div class="snap" id="presView" onclick="if(event.target===this)closePresent()">

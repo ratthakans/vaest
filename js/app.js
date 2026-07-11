@@ -866,7 +866,7 @@
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     document.querySelector('.main').classList.remove('has-top');
-    $('brief').value=s?s.brief:'';renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs()}
+    $('brief').value=s?s.brief:'';renderChips();renderTone();renderChain();renderIdeas();renderSparks();renderOutline();renderTabs()}
 
   /* scroll-spy — the outline follows where you are; back-to-top past 600px */
   function initScrollSpy(){
@@ -924,7 +924,7 @@
     const ideas=(s&&s.ideas)||[];
     th.classList.toggle('has',!!ideas.length);
     th.innerHTML=ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
-      +(m.r!=='user'?'<button class="id-use" onclick="ideaToBrief('+i+')" title="Add this to the brief">→ brief</button>':'')
+      +(m.r!=='user'?'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">+ Add</button>':'')
       +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
     th.scrollTop=th.scrollHeight;
 }
@@ -954,11 +954,50 @@
     s.files.push({n:name,c:m.c,paste:true});
     s.updatedAt=Date.now();save();renderChips();
     toast('Saved to the brief as a tile — it feeds Summing')}
-  // what Summing sees from the sandbox
+  /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
+  function addSpark(i){
+    const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
+    const m=s.ideas[i];const text=(m.c||'').trim();if(!text)return;
+    s.sparks=s.sparks||[];
+    if(s.sparks.some(sp=>sp.text===text)){toast('Already saved');return}
+    const sp={id:uid('sp'),text:text,topic:'…',ts:Date.now()};
+    s.sparks.push(sp);s.updatedAt=Date.now();save();renderSparks();
+    toast('Saved — filing by topic…');
+    inferTopic(text).then(top=>{sp.topic=top||'General';save();renderSparks()})
+      .catch(()=>{sp.topic='General';save();renderSparks()})}
+  async function inferTopic(text){
+    try{const t=await streamAPI('tag',[{role:'user',content:text.slice(0,1200)}],'',null);
+      return (t||'').replace(/["'.\n]/g,'').replace(/\s{2,}/g,' ').trim().split(/\s+/).slice(0,3).join(' ')||'General'}
+    catch(e){return 'General'}}
+  function sparkTopics(){
+    const s=cur();const sp=(s&&s.sparks)||[];const map={};
+    sp.forEach(x=>{const t=x.topic&&x.topic!=='…'?x.topic:'Filing…';(map[t]=map[t]||[]).push(x)});
+    return map}
+  function renderSparks(){
+    const el=$('sparkTray');if(!el)return;
+    const map=sparkTopics();const topics=Object.keys(map);
+    if(!topics.length){el.classList.remove('has');el.innerHTML='';return}
+    el.classList.add('has');
+    el.innerHTML='<div class="sk-hd">Research · <b>'+topics.length+'</b> '+(topics.length===1?'thread':'threads')+'</div>'
+      +topics.map(t=>'<div class="sk-grp"><div class="sk-t">'+esc(t)+' <span class="sk-n">'+map[t].length+'</span></div>'
+        +map[t].map(sp=>'<div class="sk-chip" title="'+esc(sp.text.slice(0,240))+'"><span class="sk-x">'+esc(sp.text.replace(/[#*>`\n]/g,' ').replace(/\s{2,}/g,' ').trim().slice(0,64))+(sp.text.length>64?'…':'')+'</span><button onclick="removeSpark(\''+sp.id+'\')" title="Remove">✕</button></div>').join('')
+        +'</div>').join('')}
+  function removeSpark(id){
+    const s=cur();if(!s||!s.sparks)return;
+    s.sparks=s.sparks.filter(sp=>sp.id!==id);s.updatedAt=Date.now();save();renderSparks()}
+  // what Summing sees from the sandbox (raw thread — used only when no sparks are picked)
   function ideasContext(){
     const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
     return '\n\n# Ideas from the sandbox (raw sparks — curate: keep what serves the work, drop the rest)\n'
       +capTxt(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
+  // sparks for the chosen topics → Summing input
+  function sparksContext(topics){
+    const s=cur();const sp=(s&&s.sparks)||[];if(!sp.length||!topics||!topics.length)return '';
+    const picked=sp.filter(x=>topics.includes(x.topic&&x.topic!=='…'?x.topic:'Filing…'));
+    if(!picked.length)return '';
+    const byTopic={};picked.forEach(x=>{const t=x.topic||'General';(byTopic[t]=byTopic[t]||[]).push(x.text)});
+    return '\n\n# Saved sparks (chosen research to build from)\n'
+      +capTxt(Object.keys(byTopic).map(t=>'## '+t+'\n'+byTopic[t].join('\n\n')).join('\n\n'),8000)}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
   function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show');
@@ -983,6 +1022,7 @@
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div></div>';
+    if(!_shareId)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -994,6 +1034,8 @@
           +'<div class="sec-tools">'
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
+          +'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
+          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take (Opus)"><b style="font-family:var(--mono)">Ø</b> Think</button>'
           +'<button class="st" onclick="improveSection(this)" title="Let VÆST refine it"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Refine</button>'
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
@@ -1151,18 +1193,40 @@
     if(!imgs.length)return prompt;
     return [{type:'text',text:prompt},
       ...imgs.map(f=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.img.split(',')[1]}}))]}
-  async function runSumming(){
+  // Summing entry — open the source picker when there's a choice to make, else sum the brief directly
+  function runSumming(){
     if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
-    if(!s.brief&&!s.files.length){toast('Write a brief or attach at least one file first');return}
+    const hasFiles=s.files.length,hasSparks=((s.sparks||[]).length>0);
+    if(!s.brief&&!hasFiles&&!hasSparks){toast('Chat an idea, save a spark, or attach a file first');return}
+    if(hasFiles||hasSparks){openSummingPicker();return}
+    doSumming({brief:true,files:[],topics:[]})}
+  function openSummingPicker(){
+    const s=cur();if(!s)return;const rows=[];
+    if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
+    s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'spark tile':'file'))+'</span></label>'));
+    const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
+    $('sumSrc').innerHTML=rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>';
+    $('sumView').classList.add('show')}
+  function closeSummingPicker(){$('sumView').classList.remove('show')}
+  function doSummingFromPicker(){
+    const sel={brief:false,files:[],topics:[]};
+    document.querySelectorAll('#sumSrc input:checked').forEach(cb=>{const k=cb.dataset.k;
+      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t)});
+    if(!sel.brief&&!sel.files.length&&!sel.topics.length){toast('Pick at least one source');return}
+    closeSummingPicker();doSumming(sel)}
+  async function doSumming(sel){
+    if(_busy){toast('Working — one moment');return}
+    const s=cur();if(!s)return;
     setBusy(true);const go=$('sumBtn');go.disabled=true;go.textContent='Crystallizing…';
     const hadCanvas=!!(s.canvas&&s.canvas.trim());if(hadCanvas)pushUndo();
-    const imgs=s.files.filter(f=>f.img);
-    const src=s.files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
-    const prompt=(s.brief?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
+    const chosen=(sel.files||[]).map(i=>s.files[i]).filter(Boolean);
+    const imgs=chosen.filter(f=>f.img);
+    const src=chosen.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
+    const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
-      +ideasContext()
+      +sparksContext(sel.topics)
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
@@ -1198,6 +1262,56 @@
       .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy');
         btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Refine'})}
+
+  /* ═══ SECTION IDEA + Ø THINK (per section · Opus) ═══ */
+  function sectionIdea(btn){
+    const sec=btn.closest('.sec');const ex=sec.querySelector('.sec-idea');
+    if(ex){ex.remove();return}
+    const box=document.createElement('div');box.className='sec-idea';
+    box.innerHTML='<textarea rows="1" placeholder="Your idea for this section — a steer, an angle, a fix…"></textarea><button class="si-go">Add idea</button>';
+    sec.querySelector('.sec-c').after(box);
+    const ta=box.querySelector('textarea');ta.focus();
+    const go=()=>runSectionIdea(sec,ta.value.trim(),box);
+    ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go()}});
+    ta.addEventListener('input',()=>{ta.style.height='';ta.style.height=Math.min(ta.scrollHeight,140)+'px'});
+    box.querySelector('.si-go').addEventListener('click',go)}
+  function runSectionIdea(sec,idea,box){
+    if(!idea){box.remove();return}
+    if(_busy){toast('Working…');return}
+    const hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
+    const h=hEl?hEl.innerText.trim():'',old=c.innerHTML,curTxt=c.innerText.trim();
+    box.remove();pushUndo();setBusy(true);sec.classList.add('flash');
+    const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
+      +'\n\nWork this idea into the section, keeping what still serves it: '+idea+'\n\nReturn ONLY the revised section body (markdown, no heading).';
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
+      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
+      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
+      .finally(()=>{setBusy(false);sec.classList.remove('flash')})}
+  function sectionThink(btn){
+    if(_busy){toast('Working…');return}
+    const sec=btn.closest('.sec'),hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
+    const h=hEl?hEl.innerText.trim():'',old=c.innerHTML,curTxt=c.innerText.trim();
+    pushUndo();setBusy(true);btn.disabled=true;btn.classList.add('busy');
+    const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
+      +'\n\nØ Think: push this section braver — a sharper cultural angle, a bolder move, the idea it stops one step short of. Rewrite it stronger while keeping its intent and language. Return ONLY the revised section body (markdown, no heading).';
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
+      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Ø Think pushed “'+h+'”')})
+      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
+      .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy')})}
+  // whole-document idea — weave a direction across the canvas (Opus)
+  async function canvasIdea(){
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s)return;
+    const ta=$('docIdeaIn');const idea=ta?ta.value.trim():'';
+    if(!idea){toast('Type an idea first');if(ta)ta.focus();return}
+    if(ta){ta.value='';ta.style.height=''}
+    pushUndo();setBusy(true);
+    const bar=document.querySelector('.doc-idea');if(bar)bar.classList.add('working');
+    const prompt='Full document:\n\n'+genMd()+'\n\nWork this idea into the document where it fits, keeping the structure and everything that still serves the work:\n'+idea+'\n\nReturn the FULL markdown document.';
+    try{const md=await streamAPI('apply',[{role:'user',content:prompt}],toneSys());
+      applyMd(md);toast('Idea woven through the document')}
+    catch(e){toast('Failed: '+e.message)}
+    finally{setBusy(false);const b=document.querySelector('.doc-idea');if(b)b.classList.remove('working')}}
 
   /* ═══ MASTERING (Fable · final recheck · approve per item) ═══ */
   let _mast=null;
