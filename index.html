@@ -315,6 +315,7 @@
   .cmp-price.custom{font-size:24px}
   .cmp-price.sm{font-size:22px}
   .cmp-price .pre{font-size:12.5px;font-weight:500;color:var(--mute);letter-spacing:0}
+  .cmp-pop{position:absolute;top:14px;right:18px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:100px;color:#08080a;background:var(--chroma);background-size:200% 100%;animation:tryflow 5s ease-in-out infinite}
   .cmp-note2{font-family:var(--th);font-size:12px;color:var(--mute);margin-top:7px}
   .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
   .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
@@ -532,10 +533,18 @@
           <div class="cs">Galdr · Odin · Norrsken · Skadi</div>
         </div>
         <div class="cmp-col">
-          <div class="cmp-tier">Invited</div>
+          <div class="cmp-tier">Pro</div>
           <div class="cmp-tag">The solo creative, working close.</div>
-          <div class="cmp-price">฿1,900<span class="per">/ month</span></div>
-          <div class="cmp-note2">One seat · fair-use cap</div>
+          <div class="cmp-price">฿1,000<span class="per">/ month</span></div>
+          <div class="cmp-note2">1 seat · light volume</div>
+          <a class="cmp-cta" href="#access">Request access</a>
+        </div>
+        <div class="cmp-col apex">
+          <div class="cmp-pop">Most popular</div>
+          <div class="cmp-tier">Director</div>
+          <div class="cmp-tag">The lead who ships all day.</div>
+          <div class="cmp-price">฿3,000<span class="per">/ month</span></div>
+          <div class="cmp-note2">2 seats · priority · project voice</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col">
@@ -544,13 +553,6 @@
           <div class="cmp-price">฿7,900<span class="per">/ month</span></div>
           <div class="cmp-note2">Up to 5 seats · ฿1,580 per seat</div>
           <a class="cmp-cta" href="#access">Request access</a>
-        </div>
-        <div class="cmp-col apex">
-          <div class="cmp-tier">Platform</div>
-          <div class="cmp-tag">VÆST wired into your pipeline.</div>
-          <div class="cmp-price sm"><span class="pre">from</span> ฿24,900<span class="per">/ mo</span></div>
-          <div class="cmp-note2">API · integrations · org-wide</div>
-          <a class="cmp-cta" href="mailto:rakan@orions.agency">Talk to us</a>
         </div>
       </div>
       <!-- rows -->
@@ -587,26 +589,32 @@
       <div class="cmp-row">
         <div class="cmp-lbl">Persona &amp; taste memory</div>
         <div class="cmp-cell">Personal</div>
+        <div class="cmp-cell">Personal</div>
         <div class="cmp-cell">Shared studio</div>
-        <div class="cmp-cell">Org-wide</div>
       </div>
       <div class="cmp-row">
         <div class="cmp-lbl">Seats</div>
         <div class="cmp-cell">1</div>
+        <div class="cmp-cell">2</div>
         <div class="cmp-cell">Up to 5</div>
-        <div class="cmp-cell">Unlimited</div>
       </div>
       <div class="cmp-row">
         <div class="cmp-lbl">Finished documents<small>Summing → export, per month</small></div>
-        <div class="cmp-cell">40 / mo</div>
+        <div class="cmp-cell">25 / mo</div>
+        <div class="cmp-cell">75 / mo</div>
         <div class="cmp-cell">200 / mo</div>
-        <div class="cmp-cell">Unlimited*</div>
       </div>
       <div class="cmp-row">
         <div class="cmp-lbl">Idea brainstorming<small>chat with Galdr</small></div>
         <div class="cmp-cell">Unlimited</div>
         <div class="cmp-cell">Unlimited</div>
         <div class="cmp-cell">Unlimited</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Ø Think priority</div>
+        <div class="cmp-cell mut">Standard</div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>Priority</div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>Priority</div>
       </div>
       <div class="cmp-row">
         <div class="cmp-lbl">API &amp; integrations</div>
@@ -617,12 +625,12 @@
       <div class="cmp-row">
         <div class="cmp-lbl">Onboarding &amp; support</div>
         <div class="cmp-cell">Email</div>
+        <div class="cmp-cell">Priority email</div>
         <div class="cmp-cell">Studio channel</div>
-        <div class="cmp-cell">Dedicated</div>
       </div>
     </div>
   </div>
-  <div class="cmp-note">Billed monthly · cancel anytime · invite-only, seats open in small batches · *Platform fair-use scales with your contract · prices exclude VAT</div>
+  <div class="cmp-note">Billed monthly · cancel anytime · invite-only, seats open in small batches · prices exclude VAT</div>
 </div></section>
 
 <!-- REQUEST ACCESS -->
