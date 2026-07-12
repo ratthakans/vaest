@@ -310,6 +310,10 @@
   .cmp-tier{font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink)}
   .cmp-col.apex .cmp-tier{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
   .cmp-tag{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--dim);margin-top:11px;line-height:1.5}
+  .cmp-price{margin-top:18px;font-family:var(--ui);font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:5px}
+  .cmp-price .per{font-size:12.5px;font-weight:500;color:var(--mute);letter-spacing:0}
+  .cmp-price.custom{font-size:24px}
+  .cmp-note2{font-family:var(--th);font-size:12px;color:var(--mute);margin-top:7px}
   .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
   .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
   .cmp-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--ink);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;transition:border-color .2s var(--ease),background .2s var(--ease)}
@@ -446,7 +450,7 @@
 <section><div class="wrap sec-pad">
   <div class="lbl">The Creative Engines</div>
   <h2>Four minds, one taste</h2>
-  <p class="lead th">Not one generic brain — a poet who sparks, a mastermind who shapes, a light that perfects, a huntress who lands it. Each is our own engine, tuned and versioned, named for the old north. <a href="/product" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Meet the four →</a></p>
+  <p class="lead th">Not one generic brain — a poet who sparks, a mastermind who shapes, a huntress who lands it, a light that perfects it all. Each is our own engine, tuned and versioned, named for the old north. <a href="/product" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Meet the four →</a></p>
   <div class="eng reveal">
     <div class="e-card">
       <div class="em">◭ GALDR <span style="color:var(--mute);font-weight:400">· v2.5</span></div>
@@ -516,7 +520,7 @@
 <section id="access-tiers"><div class="wrap sec-pad">
   <div class="lbl">How access works</div>
   <h2>One instrument, three ways in</h2>
-  <p class="lead th">VÆST is <b>invite-only</b> — there’s no self-serve plan. What changes across tiers isn’t the engines (every seat gets all four), it’s <b>how many hands</b> hold them and <b>how deep</b> they wire into your studio.</p>
+  <p class="lead th">VÆST is <b>invite-only</b> — request a seat, then pick the tier that fits. What changes across tiers isn’t the engines (every seat gets all four), it’s <b>how many hands</b> hold them and <b>how deep</b> they wire into your studio.</p>
   <div class="cmp-scroll reveal">
     <div class="cmp">
       <!-- header -->
@@ -528,19 +532,22 @@
         <div class="cmp-col">
           <div class="cmp-tier">Invited</div>
           <div class="cmp-tag">The solo creative, working close.</div>
-          <div class="cmp-access">Invite-only<span>Fair-use monthly cap</span></div>
+          <div class="cmp-price">฿1,900<span class="per">/ month</span></div>
+          <div class="cmp-note2">One seat · fair-use cap</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col">
           <div class="cmp-tier">Studio</div>
           <div class="cmp-tag">A team sharing one taste.</div>
-          <div class="cmp-access">By arrangement<span>Seats for your team</span></div>
+          <div class="cmp-price">฿9,900<span class="per">/ month</span></div>
+          <div class="cmp-note2">Up to 5 seats · shared taste memory</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col apex">
           <div class="cmp-tier">Platform</div>
           <div class="cmp-tag">VÆST wired into your pipeline.</div>
-          <div class="cmp-access">Custom<span>API · integrations · org-wide</span></div>
+          <div class="cmp-price custom">Custom</div>
+          <div class="cmp-note2">API · integrations · org-wide</div>
           <a class="cmp-cta" href="mailto:rakan@orions.agency">Talk to us</a>
         </div>
       </div>
@@ -583,8 +590,8 @@
       </div>
       <div class="cmp-row">
         <div class="cmp-lbl">Seats</div>
-        <div class="cmp-cell">Single</div>
-        <div class="cmp-cell">Your team</div>
+        <div class="cmp-cell">1</div>
+        <div class="cmp-cell">Up to 5</div>
         <div class="cmp-cell">Unlimited</div>
       </div>
       <div class="cmp-row">
@@ -607,7 +614,7 @@
       </div>
     </div>
   </div>
-  <div class="cmp-note">No public pricing · seats open in small batches</div>
+  <div class="cmp-note">Billed monthly · cancel anytime · invite-only, seats open in small batches</div>
 </div></section>
 
 <!-- REQUEST ACCESS -->
