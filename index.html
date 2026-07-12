@@ -103,24 +103,27 @@
 
   /* ── nav ── */
   .nav{position:sticky;top:0;z-index:80;background:rgba(5,5,6,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
-  .nav-in{display:flex;align-items:center;gap:28px;height:72px}
+  .nav-in{position:relative;display:flex;align-items:center;gap:28px;height:72px}
   .mark{width:22px;height:22px;flex:none}
   .wm{font-weight:700;font-size:16px;letter-spacing:.12em;white-space:nowrap;line-height:1}
   .wm i{font-style:normal;color:inherit}
-  .nav-links{display:flex;align-items:center;gap:26px;margin-left:6px}
+  .nav-links{position:absolute;left:50%;top:0;height:72px;transform:translateX(-50%);display:flex;align-items:center;gap:28px;margin:0}
   .nav-links a{font-size:14px;font-weight:500;color:var(--dim);transition:color .2s var(--ease)}
   .nav-links a:hover{color:var(--ink)}
-  .nav-right{margin-left:auto;display:flex;align-items:center;gap:18px}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .nav-login{font-size:14px;font-weight:600;color:var(--ink);transition:opacity .2s var(--ease)}
+  .nav-login:hover{opacity:.62}
   .nav-burger{display:none;background:none;border:none;color:var(--ink);padding:6px;cursor:pointer}
   .btn-try{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#08080a;background:var(--chroma);background-size:200% 100%;padding:11px 22px;border-radius:100px;animation:tryflow 5s ease-in-out infinite;transition:transform .2s var(--ease),box-shadow .25s var(--ease)}
   .btn-try:hover{transform:translateY(-1px);box-shadow:0 10px 34px rgba(79,195,255,.28)}
   @keyframes tryflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
   @media(max-width:820px){
-    .nav-links{position:fixed;inset:72px 0 auto 0;flex-direction:column;align-items:flex-start;gap:0;margin:0;background:rgba(8,8,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:8px 0;transform:translateY(-12px);opacity:0;visibility:hidden;transition:.24s var(--ease)}
+    .nav-links{position:fixed;inset:72px 0 auto 0;left:0;transform:translateY(-12px);height:auto;flex-direction:column;align-items:flex-start;gap:0;margin:0;background:rgba(8,8,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:8px 0;opacity:0;visibility:hidden;transition:.24s var(--ease)}
     .nav.open .nav-links{transform:none;opacity:1;visibility:visible}
     .nav-links a{width:100%;padding:14px 44px;font-size:16px}
     .nav-burger{display:inline-flex}
     .nav-right .btn-try{padding:9px 16px}
+    .nav-login{display:none}
   }
 
   /* ── hero — statement over black, glass field right ── */
@@ -290,6 +293,39 @@
   .eng.reveal.in .e-card:nth-child(3){transition-delay:.2s}
   .eng.reveal.in .e-card:nth-child(4){transition-delay:.28s}
   .eng.reveal.in .e-card:nth-child(2){transition-delay:.12s}
+
+  /* ── access comparison (like a pricing matrix, tuned for invite-only) ── */
+  .cmp-scroll{margin-top:52px;overflow-x:auto;border:1px solid var(--line);border-radius:16px}
+  .cmp{min-width:760px;background:#0a0a0c}
+  .cmp-row{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr}
+  .cmp-row>div{padding:20px 24px;border-top:1px solid var(--line)}
+  .cmp-row>div+div{border-left:1px solid var(--line)}
+  .cmp-row.head>div{border-top:none;padding:30px 24px 26px}
+  .cmp-col.apex{position:relative;background:#0e0e12}
+  .cmp-col.apex::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--chroma);background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .cmp-tier{font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink)}
+  .cmp-col.apex .cmp-tier{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .cmp-tag{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--dim);margin-top:11px;line-height:1.5}
+  .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
+  .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
+  .cmp-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--ink);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;transition:border-color .2s var(--ease),background .2s var(--ease)}
+  .cmp-cta:hover{border-color:var(--ink);background:var(--soft)}
+  .cmp-col.apex .cmp-cta{color:#08080a;background:var(--chroma);background-size:200% 100%;border:none;font-weight:700;animation:tryflow 5s ease-in-out infinite}
+  .cmp-corner{display:flex;flex-direction:column;justify-content:flex-end}
+  .cmp-corner .ct{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--ink);line-height:1.35}
+  .cmp-corner .cs{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px}
+  .cmp-lbl{font-family:var(--th);font-size:14px;color:var(--ink);font-weight:500}
+  .cmp-lbl small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:3px}
+  .cmp-cell{font-family:var(--th);font-size:13.5px;color:var(--dim);display:flex;align-items:center;gap:8px}
+  .cmp-cell.mut{color:var(--mute)}
+  .cmp-check{width:15px;height:15px;flex:none}
+  .cmp-check path{stroke:#4fc3ff}
+  .cmp-note{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--mute);margin-top:20px;text-align:center}
+  @media(max-width:560px){
+    .cmp-corner .ct{font-size:16px}
+    .cmp-row>div{padding:16px 16px}
+    .cmp-row.head>div{padding:22px 16px}
+  }
 </style>
 </head>
 <body>
@@ -302,7 +338,8 @@
     <a href="/concept">Concept</a><a href="/features">Features</a><a href="/product">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news">News</a>
   </div>
   <div class="nav-right">
-    <a class="btn-try" href="/app">Try VÆST →</a>
+    <a class="nav-login" href="/app">Log in</a>
+    <a class="btn-try" href="/#access">Sign up</a>
     <button class="nav-burger" id="navBurger" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   </div>
 </div></nav>
@@ -469,6 +506,104 @@
   <h2>A studio instrument, open to invited people only</h2>
   <p class="lead th">VÆST is built from real work, real briefs, and the standard of beauty ORIONS ships to clients every day — it’s how the studio thinks, packed into one instrument · access is <b>invite-only</b></p>
   <a class="olink" href="https://orions.agency" target="_blank" rel="noopener">ORIONS.Agency ↗</a>
+</div></section>
+
+<!-- ACCESS COMPARISON -->
+<section id="access-tiers"><div class="wrap sec-pad">
+  <div class="lbl">How access works</div>
+  <h2>One instrument, three ways in</h2>
+  <p class="lead th">VÆST is <b>invite-only</b> — there’s no self-serve plan. What changes across tiers isn’t the engines (every seat gets all four), it’s <b>how many hands</b> hold them and <b>how deep</b> they wire into your studio.</p>
+  <div class="cmp-scroll reveal">
+    <div class="cmp">
+      <!-- header -->
+      <div class="cmp-row head">
+        <div class="cmp-corner">
+          <div class="ct">Four engines.<br>Every tier.</div>
+          <div class="cs">Galdr · Odin · Norrsken · Skadi</div>
+        </div>
+        <div class="cmp-col">
+          <div class="cmp-tier">Invited</div>
+          <div class="cmp-tag">The solo creative, working close.</div>
+          <div class="cmp-access">Invite-only<span>Fair-use monthly cap</span></div>
+          <a class="cmp-cta" href="#access">Request access</a>
+        </div>
+        <div class="cmp-col">
+          <div class="cmp-tier">Studio</div>
+          <div class="cmp-tag">A team sharing one taste.</div>
+          <div class="cmp-access">By arrangement<span>Seats for your team</span></div>
+          <a class="cmp-cta" href="#access">Request access</a>
+        </div>
+        <div class="cmp-col apex">
+          <div class="cmp-tier">Platform</div>
+          <div class="cmp-tag">VÆST wired into your pipeline.</div>
+          <div class="cmp-access">Custom<span>API · integrations · org-wide</span></div>
+          <a class="cmp-cta" href="mailto:rakan@orions.agency">Talk to us</a>
+        </div>
+      </div>
+      <!-- rows -->
+      <div class="cmp-row">
+        <div class="cmp-lbl">The four engines<small>Galdr → Odin → Norrsken → Skadi</small></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>All four</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>All four</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>All four</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Document canvas &amp; multi-canvas</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Ø Think &amp; Norrsken apex audit</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Client share links &amp; comments</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Export<small>Word · PDF · built-in deck</small></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Persona &amp; taste memory</div>
+        <div class="cmp-cell">Personal</div>
+        <div class="cmp-cell">Shared studio</div>
+        <div class="cmp-cell">Org-wide</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Seats</div>
+        <div class="cmp-cell">Single</div>
+        <div class="cmp-cell">Your team</div>
+        <div class="cmp-cell">Unlimited</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Monthly fair-use</div>
+        <div class="cmp-cell">Standard cap</div>
+        <div class="cmp-cell">Expanded</div>
+        <div class="cmp-cell">Unlimited</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">API &amp; integrations</div>
+        <div class="cmp-cell mut">—</div>
+        <div class="cmp-cell mut">—</div>
+        <div class="cmp-cell"><svg class="cmp-check" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Early access</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Onboarding &amp; support</div>
+        <div class="cmp-cell">Email</div>
+        <div class="cmp-cell">Studio channel</div>
+        <div class="cmp-cell">Dedicated</div>
+      </div>
+    </div>
+  </div>
+  <div class="cmp-note">No public pricing · seats open in small batches</div>
 </div></section>
 
 <!-- REQUEST ACCESS -->
