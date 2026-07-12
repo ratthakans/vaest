@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser } from '../lib/plans.js';
+import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser, planFor, checkAndBumpDoc } from '../lib/plans.js';
 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
@@ -200,6 +200,29 @@ export default async function handler(req, res) {
   if (u.used >= cap) {
     res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
     return;
+  }
+
+  // ── per-plan limits ── engine gating + document caps.
+  // 429 is used for all of these so the client shows a toast (403 triggers the "not invited" screen).
+  const plan = planFor(user.email);
+  // Norrsken Refine (mode "mastering") is the priciest engine — Pro and above only.
+  if (mode === 'mastering' && !plan.refine) {
+    res.status(429).json({ error: 'Refine is on Pro and above — upgrade to unlock the apex audit.' });
+    return;
+  }
+  // a "document" = one Summing. Count monthly + weekly against the plan.
+  // Fail-open: any counter error allows the request, so a bug never blocks Summing.
+  if (mode === 'summing') {
+    try {
+      const q = await checkAndBumpDoc(user.email, plan);
+      if (!q.ok) {
+        const msg = q.scope === 'week'
+          ? `Weekly document limit reached (${q.cap}/week on your plan) — resets Monday, or upgrade for more.`
+          : `Monthly document limit reached (${q.cap}/month on your plan) — upgrade for more, or wait for next month.`;
+        res.status(429).json({ error: msg });
+        return;
+      }
+    } catch (e) { console.error('doc-cap check failed (allowing):', e?.message || e); }
   }
 
   const route = ROUTE[mode] || ROUTE.summing;
