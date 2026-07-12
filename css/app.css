@@ -65,7 +65,7 @@
   /* ===== HOME (brief + attach files) ===== */
   .home,.cv{animation:viewIn .5s var(--ease) both}
   @keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .home{position:relative;flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+  .home{position:relative;flex:1;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px}
   .home::before{content:"";position:fixed;inset:-24%;pointer-events:none;z-index:0;
     background:
       radial-gradient(36% 44% at 80% 22%,rgba(64,150,255,.14),transparent 72%),
@@ -83,7 +83,7 @@
     mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
     mask-composite:intersect;animation:adrift 14s linear infinite}
   .home>*{position:relative;z-index:1}
-  .home-in{width:100%;max-width:660px;padding-bottom:7vh}
+  .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
   .brief-box{background:rgba(255,255,255,.045);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.36),0 10px 34px rgba(0,0,0,0.42);transition:box-shadow .3s var(--ease),transform .3s var(--ease)}
@@ -651,6 +651,8 @@
   .id-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
   .id-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;flex:none}
   .id-hint{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .id-sum{margin-left:auto;flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:600;color:var(--ink);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 13px;transition:border-color .2s,background .2s}
+  .id-sum:hover{border-color:var(--ink);background:rgba(255,255,255,.06)}
   .id-mode{margin-left:auto;display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px;flex:none}
   .id-mode button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);padding:4px 10px;border-radius:4px}
   .id-mode button.on{background:var(--ink);color:#0a0a0a;font-weight:600}
@@ -664,7 +666,7 @@
   .id-m.you .tx{color:#cfccc4}
   .id-m .tx p{margin:4px 0}.id-m .tx ul,.id-m .tx ol{margin:4px 0 4px 18px}.id-m .tx li{margin:2px 0}
   .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px}
-  .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:120px;padding:6px 4px}
+  .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:140px;padding:6px 4px}
   .id-in textarea::placeholder{color:var(--mute)}
   .id-send{flex:none;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#0a0a0a;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .id-send:hover{background:#fff}

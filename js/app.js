@@ -778,8 +778,9 @@
     const A=(t,run)=>c.push({t,run,k:'action'});
     A('New',()=>newSession());
     if(onCanvas){
-      A('Back to brief',()=>backToBrief());
+      A('Back to home — chat & brief',()=>backToBrief());
       A('Add files to document',()=>$('addFileInput').click());
+      A('Paste text into document',()=>openAddPaste());
       A('Refined — full recheck',()=>runMastering(''));
       A('Refined · tone only',()=>runMastering('tone'));
       A('Refined · coherence only',()=>runMastering('flow'));
@@ -789,14 +790,14 @@
       A('Undo last change',()=>undoCanvas());
       c.push({t:'Share link · read-only',run:()=>shareDoc(),k:'export'});
       c.push({t:'Settings · persona',run:()=>openSettings(),k:'app'});
-      c.push({t:'Copy as rich text',run:()=>copyRich(),k:'export'});
+      c.push({t:'Dialogue — copy as rich text',run:()=>copyRich(),k:'export'});
       c.push({t:'Presentation · deck',run:()=>openPresent(),k:'export'});
       c.push({t:'Find & replace in document',run:()=>findReplace(),k:'doc'});
       c.push({t:'Download Markdown (.md)',run:()=>downloadMD(),k:'export'});
       c.push({t:'Download Word (.doc)',run:()=>downloadDOC(),k:'export'});
       c.push({t:'Print / save PDF',run:()=>exportPDF(),k:'export'});
     }else{
-      A('Summing — crystallize the brief',()=>runSumming());
+      A('Summing — crystallize into a canvas',()=>runSumming());
       A('Attach files',()=>$('fileInput').click());
     }
     A('New project',()=>newProject());
@@ -916,7 +917,7 @@
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
-  function backToBrief(){showHome();toast('Edit the brief/files and Summing again — your document stays')}
+  function backToBrief(){showHome();toast('Chat more or tweak the sources, then Summing again — your document stays')}
   function toggleChain(){const s=cur();if(!s)return;s.chain=!s.chain;save();renderChain();
     toast(s.chain?'Refined will run automatically after Summing':'Chain off — Refined stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
@@ -942,7 +943,7 @@
     const ideas=(s&&s.ideas)||[];
     th.classList.toggle('has',!!ideas.length);
     th.innerHTML=ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
-      +(m.r!=='user'?'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — auto-filed by topic, feeds Summing">✚ Save</button>':'')
+      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">✚ Save</button>'
       +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
     th.scrollTop=th.scrollHeight;
 }
@@ -965,13 +966,6 @@
       s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now();save();renderIdeas()}
     catch(e){live.remove();toast('Sandbox failed: '+e.message)}
     finally{_ideaBusy=false;$('ideaSend').disabled=false;inp.focus()}}
-  function ideaToBrief(i){
-    const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
-    const m=s.ideas[i];
-    const name='Idea · '+m.c.trim().replace(/[#*>`\n]/g,' ').split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
-    s.files.push({n:name,c:m.c,paste:true});
-    s.updatedAt=Date.now();save();renderChips();
-    toast('Saved to the brief as a tile — it feeds Summing')}
   /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
   function addSpark(i){
     const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
@@ -1003,10 +997,10 @@
   function removeSpark(id){
     const s=cur();if(!s||!s.sparks)return;
     s.sparks=s.sparks.filter(sp=>sp.id!==id);s.updatedAt=Date.now();save();renderSparks()}
-  // what Summing sees from the sandbox (raw thread — used only when no sparks are picked)
+  // the raw idea chat → Summing input (when the "Idea chat" source is picked)
   function ideasContext(){
     const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
-    return '\n\n# Ideas from the sandbox (raw sparks — curate: keep what serves the work, drop the rest)\n'
+    return '\n\n# Idea chat (raw conversation — curate: keep what serves the work, drop the rest)\n'
       +capTxt(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
   // sparks for the chosen topics → Summing input
   function sparksContext(topics){
@@ -1216,23 +1210,25 @@
     if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
-    const hasFiles=s.files.length,hasSparks=((s.sparks||[]).length>0);
-    if(!s.brief&&!hasFiles&&!hasSparks){toast('Chat an idea, save a spark, or attach a file first');return}
-    if(hasFiles||hasSparks){openSummingPicker();return}
-    doSumming({brief:true,files:[],topics:[]})}
+    const hasFiles=s.files.length,hasSparks=((s.sparks||[]).length>0),hasIdeas=((s.ideas||[]).length>0);
+    if(!s.brief&&!hasFiles&&!hasSparks&&!hasIdeas){toast('Chat with Galdr, paste a brief, or attach a file first');return}
+    if(hasFiles||hasSparks||(hasIdeas&&s.brief)){openSummingPicker();return}
+    doSumming({brief:!!s.brief,files:[],topics:[],ideas:hasIdeas&&!s.brief?true:false})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
+    const hasSparks=((s.sparks||[]).length>0);
+    if((s.ideas||[]).length)rows.push('<label class="sum-r"><input type="checkbox" data-k="ideas"'+(hasSparks?'':' checked')+'><span class="sum-nm">Idea chat</span><span class="sum-sub">'+s.ideas.length+' message'+(s.ideas.length>1?'s':'')+' · raw conversation'+(hasSparks?' — your saved sparks already cover the good parts':'')+'</span></label>');
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
-    s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'spark tile':'file'))+'</span></label>'));
+    s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
     const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
     $('sumSrc').innerHTML=rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>';
     $('sumView').classList.add('show')}
   function closeSummingPicker(){$('sumView').classList.remove('show')}
   function doSummingFromPicker(){
-    const sel={brief:false,files:[],topics:[]};
+    const sel={brief:false,files:[],topics:[],ideas:false};
     document.querySelectorAll('#sumSrc input:checked').forEach(cb=>{const k=cb.dataset.k;
-      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t)});
-    if(!sel.brief&&!sel.files.length&&!sel.topics.length){toast('Pick at least one source');return}
+      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t);else if(k==='ideas')sel.ideas=true});
+    if(!sel.brief&&!sel.files.length&&!sel.topics.length&&!sel.ideas){toast('Pick at least one source');return}
     closeSummingPicker();doSumming(sel)}
   async function doSumming(sel){
     if(_busy){toast('Working — one moment');return}
@@ -1245,6 +1241,7 @@
     const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
       +sparksContext(sel.topics)
+      +(sel.ideas?ideasContext():'')
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
@@ -1489,8 +1486,6 @@
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
       +buildDocHTML(false).replace(/^<!doctype html><html lang="th">/i,'').replace(/<\/html>$/i,'')+'</html>';
     dl(new Blob(['﻿'+html],{type:'application/msword'}),docFilename()+'.doc');toast('Downloaded .doc (opens in Word)')}
-  function downloadMD(){$('expMenu').classList.remove('show');
-    dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md (Markdown)')}
   // read-only share — stores only the chosen title+canvas, no account data
   async function shareDoc(){
     $('expMenu').classList.remove('show');
