@@ -335,7 +335,7 @@
     $('pasteBody').innerHTML=f.img?('<img src="'+f.img+'" style="max-width:100%;border-radius:8px">'):('<pre>'+esc(capTxt(f.c,12000))+'</pre>');
     $('pasteView').classList.add('show')}
   function closePaste(){$('pasteView').classList.remove('show')}
-  // long paste into the brief → a tile, not a wall of text (Claude-style)
+  // long paste into the brief → a tile, not a wall of text
   function briefPaste(e){
     const t=(e.clipboardData||{}).getData?e.clipboardData.getData('text'):'';
     if(!t||t.length<=800)return;
