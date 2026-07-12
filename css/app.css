@@ -663,6 +663,12 @@
   .id-empty .ie-chips{display:flex;flex-wrap:wrap;gap:8px}
   .ie-chip{font-size:12.5px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:8px 14px;transition:background .2s,border-color .2s}
   .ie-chip:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.24)}
+  .ie-how{margin-top:16px;font-size:11.5px;color:var(--mute);line-height:1.6}
+  .ie-how b{color:var(--dim);font-weight:600}
+  /* per-message actions — copy / regenerate / save */
+  .id-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .id-use.ghost{opacity:.55;font-size:11px;padding:2px 7px}
+  .id-m:hover .id-use.ghost{opacity:1}
   /* memory-horizon notice when the chat runs past what Galdr sees */
   .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
   .id-m{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}

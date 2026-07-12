@@ -142,8 +142,27 @@ async function streamGemini(res, base, dynamic, messages, maxTokens) {
   return { inTok, outTok, model: GEMINI_MODEL };
 }
 
+// Anthropic requires a user-first, strictly-alternating thread; the chat client can
+// legitimately produce assistant-first windows (context slicing) or user,user pairs
+// (a send that failed mid-stream). Normalize here so every client stays valid.
+function normalizeRoles(messages) {
+  const out = [];
+  for (const m of messages) {
+    if (!out.length && m.role !== 'user') continue;            // drop leading assistant turns
+    const prev = out[out.length - 1];
+    if (prev && prev.role === m.role) {                        // merge same-role runs
+      if (typeof prev.content === 'string' && typeof m.content === 'string') prev.content += '\n\n' + m.content;
+      else {
+        const blocks = c => typeof c === 'string' ? [{ type: 'text', text: c }] : c;
+        prev.content = blocks(prev.content).concat(blocks(m.content));
+      }
+    } else out.push({ role: m.role, content: m.content });
+  }
+  return out.length ? out : [{ role: 'user', content: String(messages[messages.length - 1]?.content || '…') }];
+}
+
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
-  const params = { model, max_tokens: maxTokens, messages };
+  const params = { model, max_tokens: maxTokens, messages: normalizeRoles(messages) };
   // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
   // the dynamic part (tone / project voice) rides in a second block
   const system = [{ type: 'text', text: base, cache_control: { type: 'ephemeral' } }];
@@ -189,7 +208,9 @@ export default async function handler(req, res) {
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('X-Model', route.gemini ? GEMINI_MODEL : route.model);
+  // engine names only — provider/model ids never reach the client
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI' };
+  res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
   try {
@@ -213,10 +234,15 @@ export default async function handler(req, res) {
     const { inTok, outTok } = usage;
     const d0 = await readUsageData(user.email);
     await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
-    res.write(`\n[[USAGE]]${inTok},${outTok},${usage.model}`); // lets the client show per-document cost
+    // cost bucket only (galdr/norrsken/odin) — never the underlying model id
+    const mid = String(usage.model || route.model || '');
+    const bucket = /fable/.test(mid) ? 'norrsken' : /gemini|haiku|sonnet/.test(mid) ? 'galdr' : 'odin';
+    res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`); // lets the client show per-document cost
     res.end();
   } catch (e) {
-    res.write('\n[[ERROR]] ' + (e?.message || 'server error'));
+    // sanitize — upstream errors can carry provider/model names; the client gets a neutral line
+    console.error('chat error:', e?.message || e);
+    res.write('\n[[ERROR]] The engine hit a snag — try again in a moment');
     res.end();
   }
 }

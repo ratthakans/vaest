@@ -288,7 +288,7 @@
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=/fable/.test(um[3])?'fable':/gemini|haiku|sonnet/.test(um[3])?'idea':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=um[3]==='norrsken'?'fable':um[3]==='galdr'?'idea':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
@@ -341,12 +341,23 @@
     if(!t||t.length<=800)return;
     e.preventDefault();
     const s=cur();if(!s)return;
-    const name='Pasted · '+t.trim().split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
-    s.files.push({n:name,c:t.trim(),paste:true});
+    s.files.push({n:pasteTileName(t),c:t.trim(),paste:true});
     s.updatedAt=Date.now();save();renderChips();
     toast('Long paste saved as a tile — click it to read, ✕ to remove')}
-  // add files while on canvas → merge into the document (Opus)
+  // add files while on canvas → merge into the document (Odin)
   async function handleAddFiles(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)await addAndMerge(fs)}
+  // shared merge core — feed new source material into the current document (files & pastes)
+  async function mergeIntoDoc(s,{srcBlock,imgs=[],busyLine,okToast,onFail}){
+    pushUndo();setBusy(true);
+    const prompt='Original document:\n\n'+genMd()+'\n\nNewly added data:\n'+srcBlock
+      +(imgs.length?('\n\nNewly attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references'):'')
+      +'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> '+busyLine+'</div><div class="gen-body" id="genBody"></div></div>';
+    let failed=false;
+    try{const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast(okToast)}
+    catch(e){failed=true;undoStack.pop();updateUndo();renderDoc(s.canvas);toast('Failed: '+e.message)}
+    finally{setBusy(false);if(failed&&onFail)onFail()}}
   async function addAndMerge(fs){
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
@@ -356,36 +367,28 @@
       const c=await extractFile(f);if(c.trim()){s.files.push({n:f.name,c:c.trim()});names.push(f.name)}}catch(e){}}
     s.updatedAt=Date.now();save();
     if(!names.length){toast('Couldn’t read the files');return}
-    pushUndo();setBusy(true);
     const fresh=s.files.filter(f=>names.includes(f.n));
     const imgs=fresh.filter(f=>f.img);
-    const newC=fresh.filter(f=>!f.img).map(f=>'### '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
-    const prompt='Original document:\n\n'+genMd()+'\n\nNewly attached data:\n'+newC
-      +(imgs.length?('\n\nNewly attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references'):'')
-      +'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging new files into the document…</div><div class="gen-body" id="genBody"></div></div>';
-    try{const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
-    catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
-    finally{setBusy(false)}}
+    await mergeIntoDoc(s,{
+      srcBlock:fresh.filter(f=>!f.img).map(f=>'### '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n'),
+      imgs,busyLine:'Merging new files into the document…',
+      okToast:'Merged '+names.length+' files into the document'})}
   // paste text (no file) → merge into the document
-  function openAddPaste(){if(_busy){toast('Working…');return}const ta=$('addPasteTa');if(ta)ta.value='';$('addPasteView').classList.add('show');setTimeout(()=>{if(ta)ta.focus()},60)}
+  const pasteTileName=t=>'Pasted · '+t.replace(/[#*>`\n]/g,' ').trim().split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
+  function openAddPaste(prefill){if(_busy){toast('Working…');return}const ta=$('addPasteTa');if(ta)ta.value=typeof prefill==='string'?prefill:'';$('addPasteView').classList.add('show');setTimeout(()=>{if(ta)ta.focus()},60)}
   function closeAddPaste(){$('addPasteView').classList.remove('show')}
   async function mergePaste(){
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
     const t=($('addPasteTa').value||'').trim();if(!t){toast('Paste some text first');return}
     closeAddPaste();
-    const name='Pasted · '+t.replace(/[#*>`\n]/g,' ').split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
-    s.files.push({n:name,c:t,paste:true});save();
-    pushUndo();setBusy(true);
-    const prompt='Original document:\n\n'+genMd()+'\n\nNewly pasted text:\n### '+name+'\n'+capTxt(t,20000)
-      +'\n\nMerge the pasted text into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging the pasted text into the document…</div><div class="gen-body" id="genBody"></div></div>';
-    try{const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged the pasted text into the document')}
-    catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
-    finally{setBusy(false)}}
+    const tile={n:pasteTileName(t),c:capTxt(t,100000),paste:true}; // cap stored copy — the doc carries the merged result
+    s.files.push(tile);save();
+    await mergeIntoDoc(s,{
+      srcBlock:'### '+tile.n+'\n'+capTxt(t,20000),
+      busyLine:'Merging the pasted text into the document…',
+      okToast:'Merged the pasted text into the document',
+      onFail:()=>{s.files=s.files.filter(f=>f!==tile);save();renderChips();openAddPaste(t)}})} // tile removed, text restored — nothing lost
   // drop files onto a section → edit just that section
   // ── image blocks — embed real images (downscaled to avoid bloat) ──
   const IMG_EXT=['jpg','jpeg','png','webp','gif','heic'];
@@ -607,7 +610,7 @@
       sel.removeAllRanges();sel.addRange(r);
       if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
     }});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();closeSummingPicker();closeAddPaste();if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
     if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
   $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
   $('dlgCancel').onclick=()=>dlgClose(null);
@@ -937,7 +940,7 @@
     b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
 
   /* ═══ IDEA — Galdr chat ═══ */
-  let _ideaBusy=false;
+  let _ideaBusy=false,_trimWarned=false;
   const IDEA_MAX=40;   // messages kept per session
   const IDEA_CTX=14;   // messages Galdr sees each reply (the memory horizon)
   const IDEA_SUGGEST=[
@@ -945,41 +948,67 @@
     'ช่วยหา angle ที่คนอื่นยังไม่เคยเล่น',
     'ถกไอเดียนี้แบบ Creative Director',
   ];
-  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text;inp.dispatchEvent(new Event('input'));sendIdea()}
+  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text;sendIdea()}
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&s.ideas)||[];
-    th.classList.toggle('has',!!ideas.length);
     if(!ideas.length){
       th.innerHTML='<div class="id-empty"><div class="ie-t">ไม่รู้จะเริ่มตรงไหน — ลองอันนี้ดู</div>'
-        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div></div>';
+        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div>'
+        +'<div class="ie-how">Chat → <b>✚ Save</b> the parts you like → <b>Summing</b> turns them into a document</div></div>';
       return}
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Summing</div>':'')
-      +ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
+      +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
+      return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')
+      +'<span class="id-acts">'
+      +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
+      +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Regenerate this reply">↻</button>':'')
       +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">✚ Save</button>'
-      +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
+      +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
 }
+  function copyIdea(i){const s=cur();const m=s&&s.ideas&&s.ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
+  function regenIdea(){
+    if(_ideaBusy||_busy){toast('Working — one moment');return}
+    const s=cur();if(!s||!s.ideas||!s.ideas.length)return;
+    if(s.ideas[s.ideas.length-1].r!=='user')s.ideas.pop(); // drop the reply, keep the question
+    save();renderIdeas();streamIdeaReply(s,false)}
   async function sendIdea(){
-    if(_ideaBusy)return;
+    if(_ideaBusy){toast('Galdr is replying — one moment');return}
+    if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
     const inp=$('ideaInput');const text=inp.value.trim();if(!text)return;
     inp.value='';inp.style.height='';
     s.ideas=s.ideas||[];s.ideas.push({r:'user',c:text,ts:Date.now()});
-    if(s.ideas.length>IDEA_MAX){s.ideas=s.ideas.slice(-IDEA_MAX);if(!s._trimWarned){s._trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
+    if(s.ideas.length>IDEA_MAX){s.ideas=s.ideas.slice(-IDEA_MAX);if(!_trimWarned){_trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
+    // auto-title the session from the first message (like any modern assistant)
+    if((s.title==='New'||!s.title)&&s.ideas.length===1){s.title=text.replace(/\s+/g,' ').slice(0,42);renderRail()}
     renderIdeas();save();
-    _ideaBusy=true;$('ideaSend').disabled=true;
-    const th=$('ideaThread');th.classList.add('has');
+    await streamIdeaReply(s,true)}
+  async function streamIdeaReply(s,restoreOnFail){
+    _ideaBusy=true;setIdeaSendMode(true);
+    const th=$('ideaThread');
     const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
     th.appendChild(live);th.scrollTop=th.scrollHeight;
     try{
       const msgs=s.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const out=await streamAPI('idea',msgs,toneSys(),
         raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full)+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}}));
-      s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now();save();renderIdeas()}
-    catch(e){live.remove();toast('Sandbox failed: '+e.message)}
-    finally{_ideaBusy=false;$('ideaSend').disabled=false;inp.focus()}}
+      if(out&&out.trim()){s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
+      save();renderIdeas()}
+    catch(e){
+      live.remove();
+      // a failed send must not poison the thread: pull the question back into the input
+      const last=s.ideas[s.ideas.length-1];
+      if(restoreOnFail&&last&&last.r==='user'){s.ideas.pop();const inp=$('ideaInput');if(inp&&!inp.value)inp.value=last.c;
+        save();renderIdeas();toast('Failed — your message is back in the box, try again')}
+      else toast('Failed — try again in a moment')}
+    finally{_ideaBusy=false;setIdeaSendMode(false);const inp=$('ideaInput');if(inp)inp.focus()}}
+  // send button morphs into stop while Galdr streams
+  function setIdeaSendMode(busy){const b=$('ideaSend');if(!b)return;
+    b.textContent=busy?'■':'↑';b.title=busy?'Stop':'Send';
+    b.onclick=busy?function(){stopGen()}:function(){sendIdea()}}
   /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
   function addSpark(i){
     const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
@@ -1011,11 +1040,16 @@
   function removeSpark(id){
     const s=cur();if(!s||!s.sparks)return;
     s.sparks=s.sparks.filter(sp=>sp.id!==id);s.updatedAt=Date.now();save();renderSparks()}
-  // the raw idea chat → Summing input (when the "Idea chat" source is picked)
-  function ideasContext(){
-    const s=cur();const ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
+  // keep the END of a long text — for conversations, the newest turns matter most
+  const capTail=(t,n)=>{t=String(t||'');return t.length>n?'…[earlier messages trimmed]\n'+t.slice(-n):t};
+  // the raw idea chat → Summing input (when the "Idea chat" source is picked).
+  // Messages already saved as sparks are skipped so nothing is fed twice.
+  function ideasContext(excludeTexts){
+    const s=cur();let ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
+    if(excludeTexts&&excludeTexts.size)ideas=ideas.filter(m=>!excludeTexts.has((m.c||'').trim()));
+    if(!ideas.length)return '';
     return '\n\n# Idea chat (raw conversation — curate: keep what serves the work, drop the rest)\n'
-      +capTxt(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
+      +capTail(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
   // sparks for the chosen topics → Summing input
   function sparksContext(topics){
     const s=cur();const sp=(s&&s.sparks)||[];if(!sp.length||!topics||!topics.length)return '';
@@ -1061,7 +1095,7 @@
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
           +'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
-          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take (Opus)"><b style="font-family:var(--mono)">Ø</b> Think</button>'
+          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take (Odin)"><b style="font-family:var(--mono)">Ø</b> Think</button>'
           +'<button class="st" onclick="improveSection(this)" title="Let VÆST refine it"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Refine</button>'
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
@@ -1222,16 +1256,16 @@
   // Summing entry — open the source picker when there's a choice to make, else sum the brief directly
   function runSumming(){
     if(_busy){toast('Working — one moment');return}
+    if(_ideaBusy){toast('Galdr is replying — one moment');return}
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
-    const hasFiles=s.files.length,hasSparks=((s.sparks||[]).length>0),hasIdeas=((s.ideas||[]).length>0);
-    if(!s.brief&&!hasFiles&&!hasSparks&&!hasIdeas){toast('Chat with Galdr, paste a brief, or attach a file first');return}
-    if(hasFiles||hasSparks||(hasIdeas&&s.brief)){openSummingPicker();return}
-    doSumming({brief:!!s.brief,files:[],topics:[],ideas:hasIdeas&&!s.brief?true:false})}
+    const srcs=[!!s.brief,s.files.length>0,(s.sparks||[]).length>0,(s.ideas||[]).length>0].filter(Boolean).length;
+    if(!srcs){toast('Chat with Galdr, paste a brief, or attach a file first');return}
+    if(srcs>1||s.files.length||(s.sparks||[]).length){openSummingPicker();return} // 2+ sources or itemized ones → curate
+    doSumming({brief:!!s.brief,files:[],topics:[],ideas:(s.ideas||[]).length>0})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
-    const hasSparks=((s.sparks||[]).length>0);
-    if((s.ideas||[]).length)rows.push('<label class="sum-r"><input type="checkbox" data-k="ideas"'+(hasSparks?'':' checked')+'><span class="sum-nm">Idea chat</span><span class="sum-sub">'+s.ideas.length+' message'+(s.ideas.length>1?'s':'')+' · raw conversation'+(hasSparks?' — your saved sparks already cover the good parts':'')+'</span></label>');
+    if((s.ideas||[]).length)rows.push('<label class="sum-r"><input type="checkbox" data-k="ideas" checked><span class="sum-nm">Idea chat</span><span class="sum-sub">'+s.ideas.length+' message'+(s.ideas.length>1?'s':'')+' · raw conversation — saved sparks are never double-counted</span></label>');
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
     s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
     const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
@@ -1255,7 +1289,7 @@
     const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
       +sparksContext(sel.topics)
-      +(sel.ideas?ideasContext():'')
+      +(sel.ideas?ideasContext(new Set(((s.sparks||[]).map(sp=>(sp.text||'').trim())))):'')
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
@@ -1292,7 +1326,7 @@
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy');
         btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Refine'})}
 
-  /* ═══ SECTION IDEA + Ø THINK (per section · Opus) ═══ */
+  /* ═══ SECTION IDEA + Ø THINK (per section · Odin) ═══ */
   function sectionIdea(btn){
     const sec=btn.closest('.sec');const ex=sec.querySelector('.sec-idea');
     if(ex){ex.remove();return}
@@ -1327,7 +1361,7 @@
       .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Ø Think pushed “'+h+'”')})
       .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy')})}
-  // whole-document idea — weave a direction across the canvas (Opus)
+  // whole-document idea — weave a direction across the canvas (Odin)
   async function canvasIdea(){
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
@@ -1342,7 +1376,7 @@
     catch(e){toast('Failed: '+e.message)}
     finally{setBusy(false);const b=document.querySelector('.doc-idea');if(b)b.classList.remove('working')}}
 
-  /* ═══ MASTERING (Fable · final recheck · approve per item) ═══ */
+  /* ═══ MASTERING (Norrsken · final recheck · approve per item) ═══ */
   let _mast=null;
   const LENS={'':'',tone:'Focus only on "tone and feel" — is it consistent, does it fit the audience?',
     flow:'Focus only on "coherence and order" — do the parts flow, is anything self-contradicting?',
@@ -1651,7 +1685,7 @@
     $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <span class="sh-lbl">Read-only · shared from VÆST</span></div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme" aria-label="Reading theme">☀︎</button><a class="tb dark sh-open" href="/app" style="text-decoration:none">Open VÆST →</a>';
     try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
     // privacy note — earn the client's trust in one line
-    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PROCESSED VIA ANTHROPIC API — NO TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PRIVATE BY DESIGN — NO AI TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;
