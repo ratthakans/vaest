@@ -656,8 +656,15 @@
   .id-mode{margin-left:auto;display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px;flex:none}
   .id-mode button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);padding:4px 10px;border-radius:4px}
   .id-mode button.on{background:var(--ink);color:#0a0a0a;font-weight:600}
-  .id-thread{max-height:300px;overflow-y:auto;padding:6px 14px;display:none}
-  .id-thread.has{display:block}
+  .id-thread{max-height:300px;overflow-y:auto;padding:6px 14px;display:block}
+  /* first-run empty state — suggested starters */
+  .id-empty{padding:18px 4px 12px}
+  .id-empty .ie-t{font-size:13.5px;color:var(--dim);margin-bottom:14px}
+  .id-empty .ie-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .ie-chip{font-size:12.5px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:8px 14px;transition:background .2s,border-color .2s}
+  .ie-chip:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.24)}
+  /* memory-horizon notice when the chat runs past what Galdr sees */
+  .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
   .id-m{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
   .id-m:last-child{border-bottom:none}
   .id-m .who{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--mute);margin-bottom:4px}
@@ -741,7 +748,8 @@
     .bb-foot{flex-wrap:wrap;gap:8px}
     .bb-foot .go{margin-left:auto}
     .idea{margin-top:20px}
-    .id-thread{max-height:220px}
+    .idea.hero .id-thread{max-height:42vh}
+    .id-hint{display:none} /* keep IDEA label + Summing button uncrowded on narrow screens */
     /* floating actions clear of the iOS bottom bar */
     .to-top,.stop-btn{right:16px;bottom:calc(16px + env(safe-area-inset-bottom))}
     /* modals go near full-screen sheets */

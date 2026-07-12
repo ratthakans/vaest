@@ -936,13 +936,27 @@
     if(b.value.trim()&&!await uiConfirm('Replace the current brief with the '+k+' template?',{ok:'Replace'}))return;
     b.value=t;briefChanged();b.focus();b.setSelectionRange(0,0);b.scrollTop=0}
 
-  /* ═══ IDEA — Galdr sandbox ═══ */
+  /* ═══ IDEA — Galdr chat ═══ */
   let _ideaBusy=false;
+  const IDEA_MAX=40;   // messages kept per session
+  const IDEA_CTX=14;   // messages Galdr sees each reply (the memory horizon)
+  const IDEA_SUGGEST=[
+    'เริ่มระดมไอเดียแคมเปญกับฉันหน่อย',
+    'ช่วยหา angle ที่คนอื่นยังไม่เคยเล่น',
+    'ถกไอเดียนี้แบบ Creative Director',
+  ];
+  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text;inp.dispatchEvent(new Event('input'));sendIdea()}
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&s.ideas)||[];
     th.classList.toggle('has',!!ideas.length);
-    th.innerHTML=ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
+    if(!ideas.length){
+      th.innerHTML='<div class="id-empty"><div class="ie-t">ไม่รู้จะเริ่มตรงไหน — ลองอันนี้ดู</div>'
+        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div></div>';
+      return}
+    const overHorizon=ideas.length>IDEA_CTX;
+    th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Summing</div>':'')
+      +ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
       +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">✚ Save</button>'
       +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
     th.scrollTop=th.scrollHeight;
@@ -953,14 +967,14 @@
     const inp=$('ideaInput');const text=inp.value.trim();if(!text)return;
     inp.value='';inp.style.height='';
     s.ideas=s.ideas||[];s.ideas.push({r:'user',c:text,ts:Date.now()});
-    if(s.ideas.length>40)s.ideas=s.ideas.slice(-40);
+    if(s.ideas.length>IDEA_MAX){s.ideas=s.ideas.slice(-IDEA_MAX);if(!s._trimWarned){s._trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
     renderIdeas();save();
     _ideaBusy=true;$('ideaSend').disabled=true;
     const th=$('ideaThread');th.classList.add('has');
     const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
     th.appendChild(live);th.scrollTop=th.scrollHeight;
     try{
-      const msgs=s.ideas.slice(-14).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
+      const msgs=s.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const out=await streamAPI('idea',msgs,toneSys(),
         raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full)+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}}));
       s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now();save();renderIdeas()}
