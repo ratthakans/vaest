@@ -635,6 +635,19 @@
   /* idea sandbox — phase 1 */
   .idea{margin-top:26px;background:rgba(255,255,255,.035);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
     border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden}
+  /* the idea chat is the main surface — give it presence */
+  .idea.hero{margin-top:8px;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);
+    box-shadow:0 1px 2px rgba(0,0,0,0.36),0 12px 40px rgba(0,0,0,0.46)}
+  .idea.hero:focus-within{box-shadow:0 2px 4px rgba(0,0,0,0.40),0 18px 52px rgba(0,0,0,0.58)}
+  .idea.hero .id-thread{max-height:46vh}
+  .idea.hero .id-m .tx{font-size:14.5px}
+  .idea.hero .id-in{padding:13px 14px}
+  .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
+  .idea.hero .id-send{width:36px;height:36px;font-size:16px}
+  /* optional brief, demoted below the chat */
+  .opt-lbl{margin:28px 0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  .brief-box.secondary{background:rgba(255,255,255,.028);box-shadow:0 1px 2px rgba(0,0,0,0.28)}
+  .brief-box.secondary textarea{min-height:64px}
   .id-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
   .id-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;flex:none}
   .id-hint{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

@@ -20,6 +20,7 @@
       <button class="tb" onclick="toggleRail()" title="Menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
       <button class="tb" onclick="backToBrief()" title="Edit brief / add files / re-sum"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg> Brief</button>
       <button class="tb" onclick="$('addFileInput').click()" title="Add files and merge into the document"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add files</button>
+      <button class="tb" onclick="openAddPaste()" title="Paste text to merge into the document — no file needed"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> Paste</button>
       <button class="tb" id="undoBtn" onclick="undoCanvas()" disabled title="Undo last change"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg> Undo</button>
       <button class="tb" onclick="openSnapshots()" title="Saved versions"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg></button>
       <div class="top-title" id="topTitle"></div>
@@ -32,7 +33,8 @@
           <button class="exp-item" onclick="shareDoc()">Share link · read-only <span class="mo">link</span></button>
           <button class="exp-item" id="expRevoke" style="display:none" onclick="revokeShare()">Revoke share link <span class="mo">off</span></button>
           <div class="exp-sep"></div>
-          <button class="exp-item" onclick="copyRich()">Copy as rich text <span class="mo">docs</span></button>
+          <button class="exp-item" onclick="copyRich()">Dialogue <span class="mo">copy</span></button>
+          <button class="exp-item" onclick="downloadMD()">Markdown <span class="mo">.md</span></button>
           <button class="exp-item" onclick="downloadDOC()">Word <span class="mo">.doc</span></button>
           <button class="exp-item" onclick="exportPDF()">PDF · document <span class="mo">PDF</span></button>
           <div class="exp-sep"></div>
@@ -49,8 +51,24 @@
       <div class="home-in">
         <div class="h-eye">ORIONS · VÆST</div>
         <h1 class="h-title">What are we making?</h1>
-        <div class="brief-box" id="briefBox">
-          <textarea id="brief" placeholder="Paste your brief — messy is fine. What do you need, for whom, and what's the context? Attach files, then hit Summing." oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
+        <!-- IDEA — Galdr chat (the main surface) -->
+        <div class="idea hero" id="ideaBox">
+          <div class="id-hd">
+            <span class="id-lbl">Idea</span>
+            <span class="id-hint">chat freely — paste anything · save the replies you like · then Summing</span>
+          </div>
+          <div class="id-thread" id="ideaThread"></div>
+          <div class="id-in">
+            <textarea id="ideaInput" rows="1" placeholder="Talk it through with Galdr — brainstorm, paste raw notes, argue an angle. Hit Save on a reply to keep it for Summing." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
+            <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
+          </div>
+          <div class="spark-tray" id="sparkTray"></div>
+        </div>
+
+        <!-- optional brief & files that feed Summing -->
+        <div class="opt-lbl">Optional — add a brief or files, then hit Summing to crystallize into a canvas</div>
+        <div class="brief-box secondary" id="briefBox">
+          <textarea id="brief" placeholder="Paste a brief if you have one — messy is fine. What do you need, for whom, and what's the context? Attach files too, then hit Summing." oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
           <div class="bb-foot">
             <button class="bb-attach" onclick="$('fileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
@@ -58,20 +76,6 @@
             <button class="bb-chain" id="chainBtn" onclick="toggleChain()" title="Run Refined automatically after Summing">+ Refined</button>
             <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
-        </div>
-
-        <!-- IDEA — Galdr sandbox -->
-        <div class="idea" id="ideaBox">
-          <div class="id-hd">
-            <span class="id-lbl">Idea</span>
-            <span class="id-hint">throw sparks here — raw pastes welcome · feeds Summing</span>
-          </div>
-          <div class="id-thread" id="ideaThread"></div>
-          <div class="id-in">
-            <textarea id="ideaInput" rows="1" placeholder="Chat freely with Galdr — paste anything. Hit + Add on a reply to save it." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
-            <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
-          </div>
-          <div class="spark-tray" id="sparkTray"></div>
         </div>
 
         <div class="h-foot">“Computation is nothing without taste.” · VÆST 1.3</div>
@@ -237,6 +241,16 @@
   <div class="snap-box">
     <div class="snap-hd"><b id="pasteTitle">Pasted</b><button class="save" onclick="closePaste()">Close</button></div>
     <div class="paste-body" id="pasteBody"></div>
+  </div>
+</div>
+<div class="snap" id="addPasteView" onclick="if(event.target===this)closeAddPaste()">
+  <div class="snap-box">
+    <div class="snap-hd"><b>Paste to add <span style="font-weight:400;color:var(--mute)">· merges into the document</span></b><button class="save" onclick="closeAddPaste()">Close</button></div>
+    <div style="padding:14px 16px 18px">
+      <div class="set-note" style="margin-top:0">Paste any text — notes, a snippet, an email, research. Odin weaves it into the current document. No file upload needed.</div>
+      <textarea class="vc-ta" id="addPasteTa" spellcheck="false" placeholder="Paste text here…" style="margin-top:12px"></textarea>
+      <button class="dlg-ok" id="addPasteGo" style="margin-top:14px" onclick="mergePaste()">Merge into document <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:-2px"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+    </div>
   </div>
 </div>
 <div class="snap" id="setView" onclick="if(event.target===this)closeSettings()">

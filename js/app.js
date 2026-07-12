@@ -368,6 +368,24 @@
       setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged '+names.length+' files into the document')}
     catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
     finally{setBusy(false)}}
+  // paste text (no file) → merge into the document
+  function openAddPaste(){if(_busy){toast('Working…');return}const ta=$('addPasteTa');if(ta)ta.value='';$('addPasteView').classList.add('show');setTimeout(()=>{if(ta)ta.focus()},60)}
+  function closeAddPaste(){$('addPasteView').classList.remove('show')}
+  async function mergePaste(){
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s)return;
+    const t=($('addPasteTa').value||'').trim();if(!t){toast('Paste some text first');return}
+    closeAddPaste();
+    const name='Pasted · '+t.replace(/[#*>`\n]/g,' ').split(/\s+/).slice(0,4).join(' ').slice(0,26)+'…';
+    s.files.push({n:name,c:t,paste:true});save();
+    pushUndo();setBusy(true);
+    const prompt='Original document:\n\n'+genMd()+'\n\nNewly pasted text:\n### '+name+'\n'+capTxt(t,20000)
+      +'\n\nMerge the pasted text into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Merging the pasted text into the document…</div><div class="gen-body" id="genBody"></div></div>';
+    try{const md=await streamAPI('summing',[{role:'user',content:prompt}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast('Merged the pasted text into the document')}
+    catch(e){renderDoc(s.canvas);toast('Failed: '+e.message)}
+    finally{setBusy(false)}}
   // drop files onto a section → edit just that section
   // ── image blocks — embed real images (downscaled to avoid bloat) ──
   const IMG_EXT=['jpg','jpeg','png','webp','gif','heic'];
@@ -924,7 +942,7 @@
     const ideas=(s&&s.ideas)||[];
     th.classList.toggle('has',!!ideas.length);
     th.innerHTML=ideas.map((m,i)=>'<div class="id-m '+(m.r==='user'?'you':'ai')+'"><div class="who">'+(m.r==='user'?'YOU':'VÆST')
-      +(m.r!=='user'?'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">+ Add</button>':'')
+      +(m.r!=='user'?'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — auto-filed by topic, feeds Summing">✚ Save</button>':'')
       +'</div><div class="tx">'+(m.r==='user'?esc(m.c).replace(/\n/g,'<br>'):renderMd(m.c))+'</div></div>').join('');
     th.scrollTop=th.scrollHeight;
 }
@@ -1471,6 +1489,8 @@
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
       +buildDocHTML(false).replace(/^<!doctype html><html lang="th">/i,'').replace(/<\/html>$/i,'')+'</html>';
     dl(new Blob(['﻿'+html],{type:'application/msword'}),docFilename()+'.doc');toast('Downloaded .doc (opens in Word)')}
+  function downloadMD(){$('expMenu').classList.remove('show');
+    dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md (Markdown)')}
   // read-only share — stores only the chosen title+canvas, no account data
   async function shareDoc(){
     $('expMenu').classList.remove('show');
