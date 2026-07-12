@@ -310,12 +310,26 @@
   .cmp-tier{font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink)}
   .cmp-col.apex .cmp-tier{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
   .cmp-tag{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--dim);margin-top:11px;line-height:1.5}
-  .cmp-price{margin-top:18px;font-family:var(--ui);font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:5px}
+  .cmp-price{margin-top:18px;font-family:var(--ui);font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--ink);line-height:1}
+  .cmp-price .amt{align-items:baseline;gap:5px}
+  .cmp-price .pr-ind{display:inline-flex}
+  .cmp-price .pr-team{display:none}
   .cmp-price .per{font-size:12.5px;font-weight:500;color:var(--mute);letter-spacing:0}
-  .cmp-price.custom{font-size:24px}
-  .cmp-price.sm{font-size:22px}
-  .cmp-price .pre{font-size:12.5px;font-weight:500;color:var(--mute);letter-spacing:0}
   .cmp-pop{position:absolute;top:14px;right:18px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:100px;color:#08080a;background:var(--chroma);background-size:200% 100%;animation:tryflow 5s ease-in-out infinite}
+  /* individual ↔ team price toggle */
+  .pr-toggle{display:inline-flex;gap:4px;margin:32px 0 0;padding:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:100px}
+  .pr-tab{font-family:var(--th);font-size:13.5px;font-weight:600;color:var(--dim);padding:8px 20px;border-radius:100px;cursor:pointer;transition:color .2s var(--ease),background .2s var(--ease)}
+  .pr-tab.on{background:var(--ink);color:#08080a}
+  #access-tiers.mode-team .cmp-price .pr-ind{display:none}
+  #access-tiers.mode-team .cmp-price .pr-team{display:inline-flex}
+  .pr-teamnote{display:none;margin-top:16px;padding:18px 22px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);font-family:var(--th);font-size:13.5px;line-height:1.8;color:var(--dim)}
+  .pr-teamnote b{color:var(--ink);font-weight:600}
+  #access-tiers.mode-team .pr-teamnote{display:block}
+  #access-tiers.mode-team .pr-indnote{display:none}
+  .pr-biz{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:20px;justify-content:space-between;padding:26px 30px;border:1px solid var(--line2);border-radius:16px;background:rgba(255,255,255,.03)}
+  .pr-biz .bz-t{font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink)}
+  .pr-biz .bz-d{font-family:var(--th);font-size:14px;color:var(--dim);margin-top:9px;max-width:64ch;line-height:1.7}
+  .pr-biz .btn{flex:none}
   .cmp-note2{font-family:var(--th);font-size:12px;color:var(--mute);margin-top:7px}
   .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
   .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
@@ -521,116 +535,122 @@
 <!-- ACCESS COMPARISON -->
 <svg style="display:none" aria-hidden="true"><symbol id="ck" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol></svg>
 <section id="access-tiers"><div class="wrap sec-pad">
-  <div class="lbl">How access works</div>
-  <h2>One instrument, three ways in</h2>
-  <p class="lead th">VÆST is <b>invite-only</b> — request a seat, then pick the tier that fits. What changes across tiers isn’t the engines (every seat gets all four), it’s <b>how many hands</b> hold them and <b>how deep</b> they wire into your studio.</p>
+  <div class="lbl">Pricing · ราคาและแพ็กเกจ</div>
+  <h2>Pick how you work<span class="dot">.</span></h2>
+  <p class="lead th">VÆST เป็นระบบ <b>invite-only</b> — ขอสิทธิ์เข้าใช้ก่อน แล้วเลือกแพ็กเกจที่พอดีกับงาน · ทุกแพ็กเกจใช้เครื่องยนต์ครบ ต่างกันที่ <b>ปริมาณงาน</b> และ <b>ความลึกของฟีเจอร์</b>. Every plan runs the full studio — plans differ by <b>how much you make</b> and <b>how deep it goes</b>.</p>
+
+  <div class="pr-toggle" role="tablist" aria-label="Billing type">
+    <button class="pr-tab on" data-m="individual" onclick="setPriceMode('individual')">Individual · ส่วนบุคคล</button>
+    <button class="pr-tab" data-m="team" onclick="setPriceMode('team')">Team · ทีม</button>
+  </div>
+
   <div class="cmp-scroll reveal">
     <div class="cmp">
       <!-- header -->
       <div class="cmp-row head">
         <div class="cmp-corner">
-          <div class="ct">Four engines.<br>Every tier.</div>
-          <div class="cs">Galdr · Odin · Norrsken · Skadi</div>
+          <div class="ct">Four engines.<br>Every plan.</div>
+          <div class="cs">สี่เครื่องยนต์ · Galdr · Odin · Skadi · Norrsken</div>
         </div>
         <div class="cmp-col">
-          <div class="cmp-tier">Pro</div>
-          <div class="cmp-tag">The solo creative, working close.</div>
-          <div class="cmp-price">฿1,000<span class="per">/ month</span></div>
-          <div class="cmp-note2">1 seat · light volume</div>
+          <div class="cmp-tier">Basic</div>
+          <div class="cmp-tag">ร่างเร็ว จบไว · draft &amp; deliver.</div>
+          <div class="cmp-price"><span class="pr-ind amt">฿390<span class="per">/ mo</span></span><span class="pr-team amt">฿390<span class="per">/ seat</span></span></div>
+          <div class="cmp-note2">20 เอกสาร/เดือน · ยังไม่รวม Refine</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col apex">
           <div class="cmp-pop">Most popular</div>
-          <div class="cmp-tier">Director</div>
-          <div class="cmp-tag">The lead who ships all day.</div>
-          <div class="cmp-price">฿3,000<span class="per">/ month</span></div>
-          <div class="cmp-note2">2 seats · priority · project voice</div>
+          <div class="cmp-tier">Pro</div>
+          <div class="cmp-tag">ครบทุกเครื่องยนต์ · the full flow.</div>
+          <div class="cmp-price"><span class="pr-ind amt">฿1,490<span class="per">/ mo</span></span><span class="pr-team amt">฿1,490<span class="per">/ seat</span></span></div>
+          <div class="cmp-note2">60 เอกสาร/เดือน · ครบ 4 เครื่องยนต์</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col">
-          <div class="cmp-tier">Studio</div>
-          <div class="cmp-tag">A team sharing one taste.</div>
-          <div class="cmp-price">฿7,900<span class="per">/ month</span></div>
-          <div class="cmp-note2">Up to 5 seats · ฿1,580 per seat</div>
+          <div class="cmp-tier">Director</div>
+          <div class="cmp-tag">ปริมาณสูง + priority · high volume.</div>
+          <div class="cmp-price"><span class="pr-ind amt">฿3,490<span class="per">/ mo</span></span><span class="pr-team amt">฿3,490<span class="per">/ seat</span></span></div>
+          <div class="cmp-note2">120 เอกสาร/เดือน · priority + project voice</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
       </div>
       <!-- rows -->
       <div class="cmp-row">
-        <div class="cmp-lbl">The four engines<small>Galdr → Odin → Norrsken → Skadi</small></div>
+        <div class="cmp-lbl">The four engines<small>สี่เครื่องยนต์ · Galdr → Odin → Skadi → Norrsken</small></div>
+        <div class="cmp-cell">Galdr · Odin · Skadi</div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>All four</div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>All four</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>All four</div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Document canvas &amp; multi-canvas</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Ø Think &amp; Norrsken apex audit</div>
+        <div class="cmp-lbl">Document canvas &amp; multi-canvas<small>เอกสารแคนวาส · แยกหลายชิ้นงาน</small></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Client share links &amp; comments</div>
+        <div class="cmp-lbl">Ø Think — the braver pass<small>Ø Think · ท้าให้กล้าขึ้น (Odin)</small></div>
+        <div class="cmp-cell mut">—</div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Norrsken Refine — apex audit<small>รีไฟน์ขั้นสุด · ตรวจงานก่อนส่ง</small></div>
+        <div class="cmp-cell mut">—</div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-lbl">Client share links &amp; comments<small>แชร์ให้ลูกค้าคอมเมนต์</small></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Export<small>Word · PDF · built-in deck</small></div>
+        <div class="cmp-lbl">Export<small>ส่งออก · Word · PDF · built-in deck</small></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Persona &amp; taste memory</div>
-        <div class="cmp-cell">Personal</div>
-        <div class="cmp-cell">Personal</div>
-        <div class="cmp-cell">Shared studio</div>
+        <div class="cmp-lbl">Finished documents<small>เอกสารที่ทำเสร็จ · ต่อเดือน (ต่อ seat สำหรับทีม)</small></div>
+        <div class="cmp-cell">20 / mo</div>
+        <div class="cmp-cell">60 / mo</div>
+        <div class="cmp-cell">120 / mo</div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Seats</div>
-        <div class="cmp-cell">1</div>
-        <div class="cmp-cell">2</div>
-        <div class="cmp-cell">Up to 5</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Finished documents<small>Summing → export, per month</small></div>
-        <div class="cmp-cell">25 / mo</div>
-        <div class="cmp-cell">75 / mo</div>
-        <div class="cmp-cell">200 / mo</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Idea brainstorming<small>chat with Galdr</small></div>
+        <div class="cmp-lbl">Idea brainstorming<small>ระดมไอเดียกับ Galdr · ไม่จำกัด</small></div>
         <div class="cmp-cell">Unlimited</div>
         <div class="cmp-cell">Unlimited</div>
         <div class="cmp-cell">Unlimited</div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Ø Think priority</div>
-        <div class="cmp-cell mut">Standard</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>Priority</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>Priority</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">API &amp; integrations</div>
+        <div class="cmp-lbl">Priority processing<small>คิวประมวลผลเร็วกว่า</small></div>
         <div class="cmp-cell mut">—</div>
         <div class="cmp-cell mut">—</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>Early access</div>
+        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Onboarding &amp; support</div>
+        <div class="cmp-lbl">Support<small>ซัพพอร์ต</small></div>
         <div class="cmp-cell">Email</div>
-        <div class="cmp-cell">Priority email</div>
-        <div class="cmp-cell">Studio channel</div>
+        <div class="cmp-cell">Priority</div>
+        <div class="cmp-cell">Priority + onboarding</div>
       </div>
     </div>
   </div>
-  <div class="cmp-note">Billed monthly · cancel anytime · invite-only, seats open in small batches · prices exclude VAT</div>
+
+  <div class="pr-teamnote">
+    <b>Team · คิดตาม seat</b> — เริ่มต้น 2 seats · <b>5 seats ขึ้นไป ลด 10%</b> · <b>10 seats ขึ้นไป ลด 15%</b>. ทุก seat ได้โควตาตามแพ็กเกจที่เลือก บวก <b>ความจำรสนิยมร่วมกันทั้งทีม · แอดมินจัดการ seat · รวมเป็นบิลเดียว</b>. Same plans, billed per seat — shared taste memory, team admin, one invoice.
+  </div>
+  <div class="cmp-note pr-indnote">Billed monthly · cancel anytime · ราคายังไม่รวม VAT · invite-only, seats open in small batches</div>
+
+  <div class="pr-biz">
+    <div class="bz-l">
+      <div class="bz-t">Business · องค์กร</div>
+      <div class="bz-d">สำหรับเอเจนซีและองค์กร — SSO, API &amp; integrations, โควตาไม่จำกัดตามสัญญา, onboarding เฉพาะทีม, ออกใบกำกับภาษี/PO และ security review. For agencies &amp; orgs — SSO, API, fair-use that scales with your contract, dedicated onboarding, invoicing.</div>
+    </div>
+    <a class="btn" href="mailto:rakan@orions.agency">Talk to us · ติดต่อเรา</a>
+  </div>
 </div></section>
 
 <!-- REQUEST ACCESS -->
@@ -668,6 +688,13 @@
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   // no session on this device → the primary CTA routes to Request access instead of a login wall
   try{if(!localStorage.getItem('vaest_auth')){const h=$('heroCta');h.href='#access';h.textContent='Request access'}}catch(e){}
+
+  // pricing: individual ↔ team price toggle
+  function setPriceMode(m){
+    const s=$('access-tiers');if(!s)return;
+    s.classList.toggle('mode-team',m==='team');
+    document.querySelectorAll('.pr-tab').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  }
 
   // mobile nav
   const _nav=$('siteNav'),_bg=$('navBurger');
