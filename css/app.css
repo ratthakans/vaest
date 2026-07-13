@@ -45,6 +45,10 @@
   .tb:hover{background:rgba(255,255,255,.05);color:var(--ink)}
   .tb.dark{background:var(--ink);color:#0a0a0a;font-weight:600}
   .tb.dark:hover{background:#fff}
+  /* plan-locked control (e.g. Refine on Basic) — dimmed + a small PRO tag */
+  .tb.locked{background:transparent;color:var(--mute);font-weight:550;border:1px solid var(--line)}
+  .tb.locked:hover{background:rgba(255,255,255,.04);color:var(--dim)}
+  .tb.locked::after{content:"PRO";font-family:var(--mono,ui-monospace,monospace);font-size:8px;letter-spacing:.12em;padding:1px 5px;border:1px solid currentColor;border-radius:100px;opacity:.85;margin-left:2px}
   .tb.accent{color:var(--ink);font-weight:600;border:1px solid var(--line2)}
   .tb.think{background:var(--grad);background-size:230% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
     font-weight:700;border:1px solid var(--line2);animation:chromaflow 8s ease-in-out infinite}

@@ -173,8 +173,26 @@
     if(!AUTH)return false;if(!await ensureAuth())return false;
     // only an explicit allowed:false gates · error/offline → let through (server /api/chat still enforces)
     try{const r=await fetch('/api/access',{headers:{Authorization:'Bearer '+AUTH.access_token}});
-      if(r.status===200){const d=await r.json();window.QUOTA=d;return d.allowed!==false}
+      if(r.status===200){const d=await r.json();window.QUOTA=d;applyPlanUI();return d.allowed!==false}
       return true}catch(e){return true}}
+  // fail-open: no plan info (offline / error / older server) → allow everything
+  function canRefine(){const q=window.QUOTA;return !q||!q.plan||q.plan.refine!==false}
+  // reflect the plan in the UI — lock Refine (Norrsken) on Basic; server still enforces regardless
+  function applyPlanUI(){
+    const locked=!canRefine();
+    const mb=$('mastBtn');
+    if(mb){mb.classList.toggle('locked',locked);
+      mb.title=locked?'Refine is on Pro and above — upgrade to unlock the apex audit'
+        :'Refined — make it cleaner: catch contradictions, repetition and broken logic';}
+    const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';}
+  // usage bar — prefer the plan's document quota (the meaningful limit); fall back to the token cap
+  function quotaBarHTML(q){
+    if(!q||q.internal)return '';
+    if(q.plan&&q.plan.docs){const used=q.docsUsed||0,cap=q.plan.docs,pct=Math.min(100,Math.round(used/cap*100));
+      return '<span class="qn">Documents this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+used+' / '+cap+'</span>';}
+    if(q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));
+      return '<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>';}
+    return '';}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';$('gateView').classList.add('show')}
   async function requestInvite(){
@@ -206,9 +224,7 @@
     ].map(k=>'<div class="kpi"><div class="kn">'+k[0]+'</div><div class="kv">'+k[1]+'</div></div>').join('');
     // fair-use quota (invitees) — visible before the wall, not after
     const q=window.QUOTA;const qEl=$('quotaRow');
-    if(qEl){if(q&&!q.internal&&q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));
-      qEl.style.display='';qEl.innerHTML='<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>'}
-      else qEl.style.display='none'}
+    if(qEl){const h=quotaBarHTML(q);if(h){qEl.style.display='';qEl.innerHTML=h}else qEl.style.display='none'}
     // per-doc
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
@@ -760,8 +776,7 @@
   function renderUsageBreak(){
     const rt=getRates();let o=0,f=0,idea=0;sessions.forEach(x=>{const t=x.tok||{};o+=t.opus||0;f+=t.fable||0;idea+=t.idea||0});
     const q=window.QUOTA;const qe=$('quotaRow2');
-    if(qe){if(q&&!q.internal&&q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));qe.style.display='';
-      qe.innerHTML='<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>'}else qe.style.display='none'}
+    if(qe){const h=quotaBarHTML(q);if(h){qe.style.display='';qe.innerHTML=h}else qe.style.display='none'}
     $('usageBreak').innerHTML=[['ODIN · think',o],['NORRSKEN · refine',f],['Galdr · idea',idea]]
       .map(r=>'<div class="ub-row"><span>'+r[0]+'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
   function closeSettings(){$('setView').classList.remove('show')}
@@ -921,7 +936,9 @@
     document.querySelector('.main').classList.add('has-top');
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
   function backToBrief(){showHome();toast('Chat more or tweak the sources, then Summing again — your document stays')}
-  function toggleChain(){const s=cur();if(!s)return;s.chain=!s.chain;save();renderChain();
+  function toggleChain(){const s=cur();if(!s)return;
+    if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
+    s.chain=!s.chain;save();renderChain();
     toast(s.chain?'Refined will run automatically after Summing':'Chain off — Refined stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
@@ -1407,7 +1424,9 @@
       .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:kind};renderMast();if(document.hidden)notifyDone(kind==='think'?'Ø Think':'Refined')})
       .catch(e=>{box.remove();toast((kind==='think'?'Ø Think':'Check')+' failed: '+e.message)})
       .finally(()=>{clearInterval(wt);setBusy(false);if(btn)btn.disabled=false})}
-  function runMastering(lens){startAudit('mastering',lens||'',$('mastBtn'))}
+  function runMastering(lens){
+    if(!canRefine()){toast('Refine is on Pro and above — upgrade to unlock the apex audit');return}
+    startAudit('mastering',lens||'',$('mastBtn'))}
   function runThink(){startAudit('think','',$('thinkBtn'))}
   function parsePoints(t){
     const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));
