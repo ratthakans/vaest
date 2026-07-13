@@ -331,6 +331,13 @@
   .pr-biz .bz-d{font-family:var(--th);font-size:14px;color:var(--dim);margin-top:9px;max-width:64ch;line-height:1.7}
   .pr-biz .btn{flex:none}
   .cmp-note2{font-family:var(--th);font-size:12px;color:var(--mute);margin-top:7px}
+  .cmp-note2 b{font-weight:700;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text}
+  /* "everything included" strip — full-width, calm */
+  .cmp-incl{grid-template-columns:1fr;background:rgba(255,255,255,.02)}
+  .cmp-incl>div{font-family:var(--th);font-size:13px;line-height:1.75;color:var(--dim)}
+  .cmp-incl .ic{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;margin-right:9px}
+  .cmp-incl b{color:var(--ink);font-weight:600}
+  .cmp-incl .en{color:var(--mute)}
   .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
   .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
   .cmp-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--ink);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;transition:border-color .2s var(--ease),background .2s var(--ease)}
@@ -549,14 +556,14 @@
       <!-- header -->
       <div class="cmp-row head">
         <div class="cmp-corner">
-          <div class="ct">Four engines.<br>Every plan.</div>
-          <div class="cs">สี่เครื่องยนต์ · Galdr · Odin · Skadi · Norrsken</div>
+          <div class="ct">The whole flow.<br>Every plan.</div>
+          <div class="cs">ทุกแพ็กเกจได้ครบ ต่างแค่ Refine · ปริมาณ · priority</div>
         </div>
         <div class="cmp-col">
           <div class="cmp-tier">Basic</div>
           <div class="cmp-tag">ร่างเร็ว จบไว · draft &amp; deliver.</div>
           <div class="cmp-price"><span class="pr-ind amt">฿390<span class="per">/ mo</span></span><span class="pr-team amt">฿390<span class="per">/ seat</span></span></div>
-          <div class="cmp-note2">20 เอกสาร/เดือน · ยังไม่รวม Refine</div>
+          <div class="cmp-note2">20 เอกสาร/เดือน · ทุกอย่างยกเว้น Refine</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col apex">
@@ -564,68 +571,36 @@
           <div class="cmp-tier">Pro</div>
           <div class="cmp-tag">ครบทุกเครื่องยนต์ · the full flow.</div>
           <div class="cmp-price"><span class="pr-ind amt">฿1,490<span class="per">/ mo</span></span><span class="pr-team amt">฿1,490<span class="per">/ seat</span></span></div>
-          <div class="cmp-note2">60 เอกสาร/เดือน · ครบ 4 เครื่องยนต์</div>
+          <div class="cmp-note2">60 เอกสาร/เดือน · <b>＋ Refine</b> ครบทุกอย่าง</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
         <div class="cmp-col">
           <div class="cmp-tier">Director</div>
           <div class="cmp-tag">ปริมาณสูง + priority · high volume.</div>
           <div class="cmp-price"><span class="pr-ind amt">฿3,490<span class="per">/ mo</span></span><span class="pr-team amt">฿3,490<span class="per">/ seat</span></span></div>
-          <div class="cmp-note2">120 เอกสาร/เดือน · priority + project voice</div>
+          <div class="cmp-note2">120 เอกสาร/เดือน · <b>＋ priority</b> queue</div>
           <a class="cmp-cta" href="#access">Request access</a>
         </div>
       </div>
-      <!-- rows -->
-      <div class="cmp-row">
-        <div class="cmp-lbl">The four engines<small>สี่เครื่องยนต์ · Galdr → Odin → Skadi → Norrsken</small></div>
-        <div class="cmp-cell">Galdr · Odin · Skadi</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>All four</div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg>All four</div>
+      <!-- everything every plan shares — one line, no noise -->
+      <div class="cmp-row cmp-incl">
+        <div><span class="ic">ทุกแพ็กเกจได้ครบ</span> Galdr chat ไม่จำกัด · Odin Summing · <b>Ø Think</b> · Skadi Present · เอกสารแคนวาส · แชร์ให้ลูกค้าคอมเมนต์ · export Word · PDF · deck <span class="en">— every plan includes the whole flow, unlimited idea chat, client sharing &amp; all exports.</span></div>
       </div>
+      <!-- only what actually differs between plans -->
       <div class="cmp-row">
-        <div class="cmp-lbl">Document canvas &amp; multi-canvas<small>เอกสารแคนวาส · แยกหลายชิ้นงาน</small></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Ø Think — the braver pass<small>Ø Think · ท้าให้กล้าขึ้น (Odin)</small></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Norrsken Refine — apex audit<small>รีไฟน์ขั้นสุด · ตรวจงานก่อนส่ง</small></div>
+        <div class="cmp-lbl">＋ Norrsken Refine — apex audit<small>รีไฟน์ขั้นสุด ตรวจงานก่อนส่ง · ตัวแยก Basic ↔ Pro</small></div>
         <div class="cmp-cell mut">—</div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Client share links &amp; comments<small>แชร์ให้ลูกค้าคอมเมนต์</small></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
+        <div class="cmp-lbl">Finished documents / month<small>เอกสารที่ทำเสร็จต่อเดือน · idea chat ไม่นับ · ทีม = ต่อ seat</small></div>
+        <div class="cmp-cell"><b style="color:var(--ink)">20</b></div>
+        <div class="cmp-cell"><b style="color:var(--ink)">60</b></div>
+        <div class="cmp-cell"><b style="color:var(--ink)">120</b></div>
       </div>
       <div class="cmp-row">
-        <div class="cmp-lbl">Export<small>ส่งออก · Word · PDF · built-in deck</small></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-        <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Finished documents<small>เอกสารที่ทำเสร็จ · ต่อเดือน (ต่อ seat สำหรับทีม)</small></div>
-        <div class="cmp-cell">20 / mo</div>
-        <div class="cmp-cell">60 / mo</div>
-        <div class="cmp-cell">120 / mo</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Idea brainstorming<small>ระดมไอเดียกับ Galdr · ไม่จำกัด</small></div>
-        <div class="cmp-cell">Unlimited</div>
-        <div class="cmp-cell">Unlimited</div>
-        <div class="cmp-cell">Unlimited</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-lbl">Priority processing<small>คิวประมวลผลเร็วกว่า</small></div>
+        <div class="cmp-lbl">＋ Priority processing<small>คิวประมวลผลเร็วกว่า</small></div>
         <div class="cmp-cell mut">—</div>
         <div class="cmp-cell mut">—</div>
         <div class="cmp-cell"><svg class="cmp-check"><use href="#ck"/></svg></div>
