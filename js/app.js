@@ -275,7 +275,7 @@
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
-      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Summing / Refine / Refined and cost shows up here</td></tr></tbody>'}
+      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Refine / Refined and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile}}
   function applyBlob(b){
@@ -562,7 +562,7 @@
     if(c.canvases)c.canvases.forEach(cv=>cv.id=uid('cv'));
     const i=sessions.indexOf(s);sessions.splice(i+1,0,c);currentSid=c.id;save();renderRail();openSession(c.id);toast('Duplicated')}
   function moveSession(id,pid){const s=sessions.find(x=>x.id===id);if(!s)return;s.projectId=pid;s.updatedAt=Date.now();save();renderRail();
-    toast(pid?'Moved into the project — the next Summing will see this project’s context':'Removed from the project')}
+    toast(pid?'Moved into the project — the next Crystallize will see this project’s context':'Removed from the project')}
   async function newProject(){const n=((await uiPrompt('Name the project','',{ok:'Create',placeholder:'Project name'}))||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
   async function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
@@ -646,7 +646,7 @@
   async function handleRefFiles(e){const fs=[...(e.target.files||[])];e.target.value='';const p=projects.find(x=>x.id===_refPid);if(!p||!fs.length)return;
     p.refs=p.refs||[];toast('Reading '+fs.length+' files…');let ok=0;
     for(const f of fs){try{const c=await extractFile(f);if(c&&c.trim()){p.refs.push({n:f.name,c:c.trim()});ok++}}catch(e){}}
-    save();renderRail();toast(ok?('Added '+ok+' references to the project — every session’s Summing will see them'):'Couldn’t read the files')}
+    save();renderRail();toast(ok?('Added '+ok+' references to the project — every session’s Crystallize will see them'):'Couldn’t read the files')}
   function removeProjectRef(pid,k){const p=projects.find(x=>x.id===pid);if(!p||!p.refs)return;p.refs.splice(k,1);save();toast('Reference removed')}
   function showCtx(e,html){const c=$('ctx');c.innerHTML=html;c.classList.add('show');
     const r=c.getBoundingClientRect();
@@ -865,7 +865,7 @@
       c.push({t:'Download Word (.doc)',run:()=>downloadDOC(),k:'export'});
       c.push({t:'Print / save PDF',run:()=>exportPDF(),k:'export'});
     }else{
-      A('Summing — crystallize into a canvas',()=>runSumming());
+      A('Crystallize — turn sources into a canvas',()=>runSumming());
       A('Attach files',()=>$('fileInput').click());
     }
     A('New project',()=>newProject());
@@ -942,7 +942,7 @@
     const c0=activeCv(s);if(c0)c0.md=genMd();
     s.cvId=id;const c=activeCv(s);s.canvas=c.md;
     renderDoc(s.canvas);save();renderTabs();$('cvView').scrollTop=0}
-  // Summing may split the work: ===CANVAS: Title=== before each part
+  // Crystallize may split the work: ===CANVAS: Title=== before each part
   function splitCanvases(md){
     const seg=String(md).split(/^===\s*CANVAS:\s*(.+?)\s*===\s*$/m);
     if(seg.length<3)return null;
@@ -985,11 +985,11 @@
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
-  function backToBrief(){showHome();toast('Chat more or tweak the sources, then Summing again — your document stays')}
+  function backToBrief(){showHome();toast('Chat more or tweak the sources, then Crystallize again — your document stays')}
   function toggleChain(){const s=cur();if(!s)return;
     if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
     s.chain=!s.chain;save();renderChain();
-    toast(s.chain?'Refined will run automatically after Summing':'Chain off — Refined stays manual')}
+    toast(s.chain?'Refined will run automatically after Crystallize':'Chain off — Refined stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
 
@@ -1022,16 +1022,16 @@
     if(!ideas.length){
       th.innerHTML='<div class="id-empty"><div class="ie-t">ไม่รู้จะเริ่มตรงไหน — ลองอันนี้ดู</div>'
         +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div>'
-        +'<div class="ie-how">Chat → <b>✚ Save</b> the parts you like → <b>Summing</b> turns them into a document</div></div>';
+        +'<div class="ie-how">Chat → <b>✚ Save</b> the parts you like → <b>Crystallize</b> turns them into a document</div></div>';
       return}
     const overHorizon=ideas.length>IDEA_CTX;
-    th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Summing</div>':'')
+    th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
       return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')
       +'<span class="id-acts">'
       +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
       +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Regenerate this reply">↻</button>':'')
-      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Summing">✚ Save</button>'
+      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Crystallize">✚ Save</button>'
       +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
 }
@@ -1109,7 +1109,7 @@
     s.sparks=s.sparks.filter(sp=>sp.id!==id);s.updatedAt=Date.now();save();renderSparks()}
   // keep the END of a long text — for conversations, the newest turns matter most
   const capTail=(t,n)=>{t=String(t||'');return t.length>n?'…[earlier messages trimmed]\n'+t.slice(-n):t};
-  // the raw idea chat → Summing input (when the "Idea chat" source is picked).
+  // the raw idea chat → Crystallize input (when the "Idea chat" source is picked).
   // Messages already saved as sparks are skipped so nothing is fed twice.
   function ideasContext(excludeTexts){
     const s=cur();let ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
@@ -1117,7 +1117,7 @@
     if(!ideas.length)return '';
     return '\n\n# Idea chat (raw conversation — curate: keep what serves the work, drop the rest)\n'
       +capTail(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
-  // sparks for the chosen topics → Summing input
+  // sparks for the chosen topics → Crystallize input
   function sparksContext(topics){
     const s=cur();const sp=(s&&s.sparks)||[];if(!sp.length||!topics||!topics.length)return '';
     const picked=sp.filter(x=>topics.includes(x.topic&&x.topic!=='…'?x.topic:'Filing…'));
@@ -1322,7 +1322,7 @@
     if(!imgs.length)return prompt;
     return [{type:'text',text:prompt},
       ...imgs.map(f=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.img.split(',')[1]}}))]}
-  // Summing entry — open the source picker when there's a choice to make, else sum the brief directly
+  // Crystallize entry — open the source picker when there's a choice to make, else sum the brief directly
   function runSumming(){
     if(_busy){toast('Working — one moment');return}
     if(_ideaBusy){toast('Galdr is replying — one moment');return}
@@ -1372,14 +1372,14 @@
       const t=(s.canvas.match(/^#\s+(.+)/m)||[])[1];
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
       s.updatedAt=Date.now();save();renderRail();showCanvas();
-      if(document.hidden)notifyDone('Summing');
+      if(document.hidden)notifyDone('Crystallize');
       if(s.chain){toast('Summed — Refined starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
       else toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
-        +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Summing</button>'
+        +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Crystallize</button>'
         +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
-    }finally{setBusy(false);go.disabled=false;go.innerHTML='Summing <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
+    }finally{setBusy(false);go.disabled=false;go.innerHTML='Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
   /* ═══ IMPROVE (per section) ═══ */
   function improveSection(btn){
