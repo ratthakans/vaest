@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser, planFor, checkDocQuota, applyDocBump } from '../lib/plans.js';
+import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump } from '../lib/plans.js';
+import { resolveAccess } from '../lib/billing.js';
 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
@@ -185,8 +186,9 @@ export default async function handler(req, res) {
   const user = await verifyUser(req);
   if (!user) { res.status(401).json({ error: 'Not signed in, or your session expired' }); return; }
 
-  // invite-only — must be on the allowlist
-  if (!isAllowed(user.email)) { res.status(403).json({ error: 'This account is not invited to VÆST' }); return; }
+  // access = active paid subscription, comp/invite, or internal. Otherwise → paywall.
+  const access = await resolveAccess(user.email);
+  if (!access.allowed) { res.status(402).json({ error: 'Choose a plan to start using VÆST', paywall: true }); return; }
 
   // burst guard — 12 calls/min/user (per warm instance; coarse but real)
   if (rateLimited(user.email)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
@@ -207,7 +209,7 @@ export default async function handler(req, res) {
 
   // ── per-plan limits ── engine gating + document caps.
   // 429 is used for all of these so the client shows a toast (403 triggers the "not invited" screen).
-  const plan = planFor(user.email);
+  const plan = access.plan;
   // Norrsken Refine (mode "mastering") is the priciest engine — Pro and above only.
   if (mode === 'mastering' && !plan.refine) {
     res.status(429).json({ error: 'Refine is on Pro and above — upgrade to unlock the apex audit.' });
