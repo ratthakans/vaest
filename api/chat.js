@@ -210,33 +210,33 @@ export default async function handler(req, res) {
   // ── per-plan limits ── engine gating + document caps.
   // 429 is used for all of these so the client shows a toast (403 triggers the "not invited" screen).
   const plan = access.plan;
-  // Norrsken Refine (mode "mastering") is the priciest engine — Pro and above only.
-  const countsRefine = mode === 'mastering';
-  if (countsRefine && !plan.refine) {
-    res.status(429).json({ error: 'Refine is on Pro and above — upgrade to unlock the apex audit.' });
-    return;
-  }
-  // Refine cap (Fable is the cost driver) — check before streaming, bump on success.
+  // Refine (mode "mastering") = the priciest engine (Fable). Allowed if the plan includes it
+  // OR the user has purchased credit refines (works even on Basic). One check handles both;
+  // consumes plan allowance first, then credit. Check before streaming, bump on success.
   // Fail-open on error so a counter glitch never blocks a paid user's Refine.
+  const countsRefine = mode === 'mastering';
   if (countsRefine) {
     try {
       const q = await checkRefineQuota(user.email, plan);
       if (!q.ok) {
-        res.status(429).json({ error: 'This month’s Refine allowance is used up — it refreshes on the 1st. Add a usage boost in Settings, or upgrade for more headroom.' });
+        const msg = q.planHasRefine
+          ? 'This month’s Refine allowance is used up — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade.'
+          : 'Refine unlocks on Pro — or add a usage credit pack in Settings to use it now.';
+        res.status(429).json({ error: msg });
         return;
       }
     } catch (e) { console.error('refine-cap check failed (allowing):', e?.message || e); }
   }
-  // a "document" = one Summing. Check monthly + weekly against the plan BEFORE streaming,
+  // a "document" = one Summing. Check the plan allowance (then credit) BEFORE streaming,
   // but only bump the counter after the document actually succeeds (see the success path),
-  // so a failed/aborted Summing never burns a document.
+  // so a failed/aborted Summing never burns usage.
   // Fail-open: any counter error allows the request, so a bug never blocks Summing.
   const countsDoc = mode === 'summing';
   if (countsDoc) {
     try {
       const q = await checkDocQuota(user.email, plan);
       if (!q.ok) {
-        res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage boost in Settings, or upgrade for more.' });
+        res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade for more.' });
         return;
       }
     } catch (e) { console.error('doc-cap check failed (allowing):', e?.message || e); }
@@ -276,8 +276,8 @@ export default async function handler(req, res) {
     // succeeded, bump the document counter — merged so the two don't clobber each other.
     const d0 = await readUsageData(user.email);
     let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
-    if (countsDoc) nextData = applyDocBump(nextData);
-    if (countsRefine) nextData = applyRefineBump(nextData);
+    if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
+    if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
     await writeUsageRow(user.email, nextData);
     // cost bucket only (galdr/norrsken/odin) — never the underlying model id
     const mid = String(usage.model || route.model || '');

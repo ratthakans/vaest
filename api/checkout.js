@@ -1,4 +1,4 @@
-import { verifyUser } from '../lib/plans.js';
+import { verifyUser, readUsageData, packsLeft, MAX_PACKS_PER_MONTH } from '../lib/plans.js';
 import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub } from '../lib/billing.js';
 
 // Create a Stripe Checkout Session (subscription mode) for the signed-in user.
@@ -18,7 +18,12 @@ export default async function handler(req, res) {
   if (plan === 'boost') {
     const boostPrice = process.env.STRIPE_PRICE_BOOST || '';
     if (!boostPrice) { res.status(503).json({ error: 'boost not configured' }); return; }
-    const packs = Math.max(1, Math.min(10, parseInt((req.body || {}).packs, 10) || 1));
+    const want = Math.max(1, Math.min(10, parseInt((req.body || {}).packs, 10) || 1));
+    // enforce the monthly purchase cap (beyond it, upgrading is the better deal)
+    const left = packsLeft(await readUsageData(user.email));
+    if (left <= 0) { res.status(429).json({ error: `You’ve added the maximum ${MAX_PACKS_PER_MONTH} credit packs this month — upgrade your plan for more.` }); return; }
+    if (want > left) { res.status(429).json({ error: `Only ${left} more credit pack${left > 1 ? 's' : ''} available this month — upgrade for more.` }); return; }
+    const packs = want;
     const origin2 = req.headers.origin || 'https://vaest.orions.agency';
     try {
       const sub = await readSub(user.email);

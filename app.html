@@ -305,12 +305,8 @@
         <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
         <div id="creditRow" style="display:none;margin-top:16px">
           <div class="set-lbl">Add usage credit</div>
-          <div class="set-note" style="margin:4px 0 10px">Each pack adds usage for this month · applies instantly</div>
-          <div style="display:flex;gap:8px">
-            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',1)">1 pack · ฿490</button>
-            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',3)">3 · ฿1,470</button>
-            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',5)">5 · ฿2,450</button>
-          </div>
+          <div class="set-note" style="margin:4px 0 10px">Never expires — carries over month to month · applies instantly</div>
+          <div id="creditOpts" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
         <button class="set-link" id="billingLink" style="margin-top:14px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
       </div>

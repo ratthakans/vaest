@@ -194,7 +194,14 @@
     const q=window.QUOTA;
     const bl=$('billingLink');if(bl)bl.style.display=(q&&q.canManage)?'':'none';
     // credit top-up = for paying customers only (comp/invite accounts upgrade instead)
-    const bo=$('creditRow');if(bo)bo.style.display=(q&&q.source==='stripe')?'':'none';}
+    const bo=$('creditRow');
+    if(bo){const on=(q&&q.source==='stripe');bo.style.display=on?'':'none';
+      const opts=$('creditOpts');
+      if(on&&opts){const left=(q.usage&&q.usage.packsLeft!=null)?q.usage.packsLeft:3;
+        if(left<=0){opts.innerHTML='<div class="set-note" style="color:var(--cin-d)">Monthly credit limit reached — <a onclick="closeSettings();openPortal()" style="color:var(--ink);cursor:pointer;text-decoration:underline">upgrade your plan</a> for more.</div>';}
+        else{let h='';for(let n=1;n<=left;n++){h+='<button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout(\'boost\',\'individual\','+n+')">'+n+' pack'+(n>1?'s':'')+' · ฿'+(490*n).toLocaleString()+'</button>';}opts.innerHTML=h;}
+      }
+    }}
   // usage meter — abstract by design: a percentage + reset date, never raw counts.
   const fmtReset=iso=>{try{const d=new Date(iso+'T00:00:00Z');
     return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'})}catch(e){return ''}};
@@ -202,9 +209,12 @@
     if(!q||q.internal)return '';
     const u=q.usage;if(!u||u.pct==null)return '';
     const pct=Math.min(100,u.pct);
-    return '<span class="qn">Usage this month'+(u.boosted?' · boosted':'')+'</span>'
-      +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span>'
-      +'<span class="qv">'+pct+'%'+(u.resetsOn?' · resets '+fmtReset(u.resetsOn):'')+'</span>';}
+    const onCredit=u.boosted&&pct>=100; // plan used up but purchased credit still covering
+    const label=onCredit?'Usage · running on credit':('Usage this month'+(u.boosted?' · credit ✓':''));
+    const val=onCredit?'credit active':(pct+'%'+(u.resetsOn?' · resets '+fmtReset(u.resetsOn):''));
+    return '<span class="qn">'+label+'</span>'
+      +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85&&!onCredit?' class="hot"':'')+'></i></span>'
+      +'<span class="qv">'+val+'</span>';}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';
     // if they had a subscription that lapsed, say so
@@ -214,7 +224,7 @@
   async function startCheckout(plan,kind,qty){
     if(!AUTH){showAuth('Sign in to continue to checkout');return}
     if(!await ensureAuth()){showAuth('Session expired — sign in again');return}
-    toast(plan==='boost'?'Opening secure checkout…':'Opening secure checkout…');
+    toast('Opening secure checkout…');
     try{const r=await fetch('/api/checkout',{method:'POST',
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
       body:JSON.stringify({plan,kind:kind||'individual',seats:qty,packs:qty})});
@@ -1870,7 +1880,7 @@
         for(let i=0;i<4&&!ok;i++){await new Promise(r=>setTimeout(r,1500));ok=await checkAccess()}
       }
       if(backFromCheckout){history.replaceState(null,'',location.pathname)}
-      if(ok){hideAuth();if(backFromCheckout==='success')toast(boosted?'Usage boost added — you have extra headroom this month':'You’re in — welcome to VÆST');await boot()}
+      if(ok){hideAuth();if(backFromCheckout==='success')toast(boosted?'Usage credit added — it carries over, use it anytime':'You’re in — welcome to VÆST');await boot()}
       else if(wantPlan&&['basic','pro','director'].includes(wantPlan)){history.replaceState(null,'',location.pathname);startCheckout(wantPlan)}
       else showNotInvited();
     }
