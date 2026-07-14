@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const access = await resolveAccess(user.email);
   const internal = access.internal;
 
-  let used = 0, cap = null, docsUsed = 0;
+  let used = 0, cap = null, docsUsed = 0, refinesUsed = 0;
   if (!internal) {
     try { used = (await readUsage(user.email)).used; } catch (e) {}
     const c = capFor(user.email);
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       const d = await readUsageData(user.email);
       const month = new Date().toISOString().slice(0, 7);
       docsUsed = d.docMonth === month ? (d.docCount || 0) : 0;
+      refinesUsed = d.refMonth === month ? (d.refCount || 0) : 0;
     } catch (e) {}
   }
 
@@ -31,11 +32,12 @@ export default async function handler(req, res) {
     source: access.source,            // internal | stripe | comp | invite | lapsed | none
     status: access.status || null,    // Stripe subscription status when source=stripe/lapsed
     canManage: !!access.customerId,    // has a Stripe customer → can open the billing portal
-    used, cap, docsUsed,
+    used, cap, docsUsed, refinesUsed,
     plan: p ? {
       name: p.name,
       refine: p.refine,                                  // false only on Basic
       docs: Number.isFinite(p.docs) ? p.docs : null,     // null = unlimited (JSON can't carry Infinity)
+      refineMonth: Number.isFinite(p.refineMonth) ? p.refineMonth : null,
     } : null,
   });
 }

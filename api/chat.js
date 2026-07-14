@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump } from '../lib/plans.js';
+import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 
 // ANTHROPIC_API_KEY comes from Vercel env only
@@ -211,9 +211,24 @@ export default async function handler(req, res) {
   // 429 is used for all of these so the client shows a toast (403 triggers the "not invited" screen).
   const plan = access.plan;
   // Norrsken Refine (mode "mastering") is the priciest engine — Pro and above only.
-  if (mode === 'mastering' && !plan.refine) {
+  const countsRefine = mode === 'mastering';
+  if (countsRefine && !plan.refine) {
     res.status(429).json({ error: 'Refine is on Pro and above — upgrade to unlock the apex audit.' });
     return;
+  }
+  // Refine cap (Fable is the cost driver) — check before streaming, bump on success.
+  // Fail-open on error so a counter glitch never blocks a paid user's Refine.
+  if (countsRefine) {
+    try {
+      const q = await checkRefineQuota(user.email, plan);
+      if (!q.ok) {
+        const msg = q.scope === 'week'
+          ? `Weekly Refine limit reached (${q.cap}/week on your plan) — resets Monday, or upgrade for more.`
+          : `Monthly Refine limit reached (${q.cap}/month on your plan) — upgrade for more, or wait for next month.`;
+        res.status(429).json({ error: msg });
+        return;
+      }
+    } catch (e) { console.error('refine-cap check failed (allowing):', e?.message || e); }
   }
   // a "document" = one Summing. Check monthly + weekly against the plan BEFORE streaming,
   // but only bump the counter after the document actually succeeds (see the success path),
@@ -268,6 +283,7 @@ export default async function handler(req, res) {
     const d0 = await readUsageData(user.email);
     let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
     if (countsDoc) nextData = applyDocBump(nextData);
+    if (countsRefine) nextData = applyRefineBump(nextData);
     await writeUsageRow(user.email, nextData);
     // cost bucket only (galdr/norrsken/odin) — never the underlying model id
     const mid = String(usage.model || route.model || '');
