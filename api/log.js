@@ -2,10 +2,24 @@ import { verifyUser, SB, svcHeaders } from '../lib/plans.js';
 
 // Lightweight error sink — clients POST runtime errors; kept capped per day so it
 // never grows unbounded. Read in Supabase: rows with email like 'errlog:%'.
+
+// Per-instance, per-email rate limit so a single client can't spam the sink.
+const HITS = new Map(); // email -> { n, min }
+function rateLimited(email) {
+  const min = Math.floor(Date.now() / 60000);
+  const h = HITS.get(email);
+  if (!h || h.min !== min) { HITS.set(email, { n: 1, min }); return false; }
+  h.n++;
+  return h.n > 20; // max 20 logs / minute / user on this instance
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
+  // Auth required — no anonymous writes to the sink (prevents unauthenticated spam).
   const user = await verifyUser(req);
-  const who = user ? user.email : 'anon';
+  if (!user) { res.status(204).end(); return; }
+  const who = user.email;
+  if (rateLimited(who)) { res.status(204).end(); return; }
   let body = {};
   try { body = req.body || {}; } catch (e) {}
   const entry = {

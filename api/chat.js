@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser, planFor, checkAndBumpDoc } from '../lib/plans.js';
+import { isAllowed, capFor, readUsage, readUsageData, writeUsageRow, verifyUser, planFor, checkDocQuota, applyDocBump } from '../lib/plans.js';
 
 // ANTHROPIC_API_KEY comes from Vercel env only
 const anthropic = new Anthropic();
@@ -193,6 +193,9 @@ export default async function handler(req, res) {
 
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
+  // reject unknown modes — otherwise an unknown mode falls back to ROUTE.summing (Opus)
+  // while skipping the document counter, and the Refine gate keys off literal mode strings.
+  if (!Object.prototype.hasOwnProperty.call(ROUTE, mode)) { res.status(400).json({ error: 'unknown mode' }); return; }
 
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
   const u = await readUsage(user.email);
@@ -210,11 +213,14 @@ export default async function handler(req, res) {
     res.status(429).json({ error: 'Refine is on Pro and above — upgrade to unlock the apex audit.' });
     return;
   }
-  // a "document" = one Summing. Count monthly + weekly against the plan.
+  // a "document" = one Summing. Check monthly + weekly against the plan BEFORE streaming,
+  // but only bump the counter after the document actually succeeds (see the success path),
+  // so a failed/aborted Summing never burns a document.
   // Fail-open: any counter error allows the request, so a bug never blocks Summing.
-  if (mode === 'summing') {
+  const countsDoc = mode === 'summing';
+  if (countsDoc) {
     try {
-      const q = await checkAndBumpDoc(user.email, plan);
+      const q = await checkDocQuota(user.email, plan);
       if (!q.ok) {
         const msg = q.scope === 'week'
           ? `Weekly document limit reached (${q.cap}/week on your plan) — resets Monday, or upgrade for more.`
@@ -255,8 +261,12 @@ export default async function handler(req, res) {
       }
     }
     const { inTok, outTok } = usage;
+    // single read-modify-write: record token usage and, only now that the document
+    // succeeded, bump the document counter — merged so the two don't clobber each other.
     const d0 = await readUsageData(user.email);
-    await writeUsageRow(user.email, { ...d0, month: u.month, used: u.used + inTok + outTok });
+    let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
+    if (countsDoc) nextData = applyDocBump(nextData);
+    await writeUsageRow(user.email, nextData);
     // cost bucket only (galdr/norrsken/odin) — never the underlying model id
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken' : /gemini|haiku|sonnet/.test(mid) ? 'galdr' : 'odin';

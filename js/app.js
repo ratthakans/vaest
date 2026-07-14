@@ -1,6 +1,6 @@
 /* ═══ helpers ═══ */
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function toast(m){$('toastMsg').textContent=m;$('toast').classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>$('toast').classList.remove('show'),2400)}
   function raf(fn){let p=false,last;return v=>{last=v;if(p)return;p=true;requestAnimationFrame(()=>{p=false;fn(last)})}}
   function nearBottom(el){return el.scrollHeight-el.scrollTop-el.clientHeight<90}
@@ -104,6 +104,10 @@
   // keep long-lived tabs signed in — refresh quietly before expiry
   setInterval(()=>{if(AUTH&&Date.now()>(AUTH.expires_at||0)-5*60*1000)authRefresh()},4*60*1000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AUTH&&Date.now()>(AUTH.expires_at||0)-5*60*1000)authRefresh()});
+  // refresh plan/quota when the tab regains focus so an upgrade or reset shows up
+  // without a reload (debounced to at most once a minute).
+  let _lastQuota=0;
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AUTH&&Date.now()-_lastQuota>60000){_lastQuota=Date.now();checkAccess()}});
   function confirmLogout(){if(!AUTH)return;if(confirm('Sign out ('+AUTH.email+') ?'))logout()}
   function logout(){const k=STORE+':'+((AUTH&&AUTH.email)||'anon');saveAuth(null);try{localStorage.removeItem(k);localStorage.removeItem(STORE)}catch(e){}location.reload()}
 
@@ -771,8 +775,13 @@
   async function wipeCloud(){
     if(!await uiConfirm('Delete your cloud copy? What’s on this device stays; other devices will lose the sync.',{ok:'Delete cloud',danger:true}))return;
     try{await ensureAuth();
-      await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent(SB.who),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+((AUTH&&AUTH.access_token)||SB.key)}});
-      toast('Cloud copy deleted')}catch(e){toast('Couldn’t delete, try again')}}
+      // return=representation so we can confirm a row was actually deleted — under RLS a
+      // blocked delete still returns 2xx with an empty body, which would otherwise look like success.
+      const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent(SB.who),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+((AUTH&&AUTH.access_token)||SB.key),Prefer:'return=representation'}});
+      const rows=r.ok?await r.json().catch(()=>[]):null;
+      if(r.ok&&Array.isArray(rows)&&rows.length){toast('Cloud copy deleted')}
+      else{toast('Couldn’t delete — nothing was removed')}}
+    catch(e){toast('Couldn’t delete, try again')}}
   function renderUsageBreak(){
     const rt=getRates();let o=0,f=0,idea=0;sessions.forEach(x=>{const t=x.tok||{};o+=t.opus||0;f+=t.fable||0;idea+=t.idea||0});
     const q=window.QUOTA;const qe=$('quotaRow2');

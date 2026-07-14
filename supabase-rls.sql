@@ -33,6 +33,12 @@ create policy "own_state_update" on public.vaest_state
   using (auth.jwt()->>'email' = email)
   with check (auth.jwt()->>'email' = email);
 
+-- Owner can delete their own state (the app's "delete cloud copy"). Without this,
+-- RLS silently blocks the delete and the client wrongly reports success.
+create policy "own_state_delete" on public.vaest_state
+  for delete to authenticated
+  using (auth.jwt()->>'email' = email);
+
 -- ── 2) SHARE ROWS — readable/writable by link visitors (comments), deletable
 --       by the app (revoke). Content here is what an owner chose to publish.
 --       NOTE: next tightening step (needs SUPABASE_SERVICE_KEY in Vercel):
