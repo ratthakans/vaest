@@ -41,7 +41,7 @@ export default async function handler(req, res) {
       // recover the account email and plan regardless of which event fires first.
       metadata: { email: user.email, plan, kind },
       subscription_data: { metadata: { email: user.email, plan, kind } },
-      success_url: `${origin}/app?checkout=success`,
+      success_url: `${origin}/app?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?checkout=cancel#access`,
     });
     res.status(200).json({ url: session.url });

@@ -1846,11 +1846,19 @@
     const backFromCheckout=qp.get('checkout');     // success | cancel (Stripe return)
     loadAuth();
     if(AUTH&&await ensureAuth()){
+      // just back from Stripe → confirm the session server-side to activate immediately
+      // (no webhook needed for the pay→activate path)
+      if(backFromCheckout==='success'){
+        const sessionId=qp.get('session_id');
+        if(sessionId){toast('Payment received — activating your plan…');
+          try{await fetch('/api/confirm',{method:'POST',
+            headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
+            body:JSON.stringify({session_id:sessionId})})}catch(e){}}
+      }
       let ok=await checkAccess();
-      // just paid → the webhook may lag a second; poll a few times before giving up
+      // fallback: if activation is a touch behind, retry a couple times
       if(!ok&&backFromCheckout==='success'){
-        toast('Payment received — activating your plan…');
-        for(let i=0;i<6&&!ok;i++){await new Promise(r=>setTimeout(r,1500));ok=await checkAccess()}
+        for(let i=0;i<4&&!ok;i++){await new Promise(r=>setTimeout(r,1500));ok=await checkAccess()}
       }
       if(backFromCheckout){history.replaceState(null,'',location.pathname)}
       if(ok){hideAuth();if(backFromCheckout==='success')toast('You’re in — welcome to VÆST');await boot()}
