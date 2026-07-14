@@ -48,7 +48,10 @@ Open each price and copy its **API ID** (`price_…`) → these become
 
 > Never put the secret key in code or git — only in Vercel env. Price ids are not secret.
 
-### 3. Create the webhook endpoint
+### 3. Create the webhook endpoint  — OPTIONAL for launch
+`/api/confirm` activates a paying customer on the checkout redirect, so onboarding
+works **without** a webhook. Add the webhook to keep plans in sync on later changes
+(cancellations, renewals, payment failures, edits made in the portal):
 Stripe Dashboard → Developers → Webhooks → **Add endpoint**
 - URL: `https://vaest.orions.agency/api/stripe-webhook`
 - Events: `checkout.session.completed`, `customer.subscription.created`,
