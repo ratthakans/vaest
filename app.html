@@ -303,8 +303,16 @@
         <div class="set-lbl">This month · by engine</div>
         <div id="usageBreak" class="usage-break"></div>
         <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
-        <button class="set-link" id="boostLink" style="margin-top:10px;display:none" onclick="closeSettings();startCheckout('boost')">Add usage boost · ฿490 →</button>
-        <button class="set-link" id="billingLink" style="margin-top:10px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
+        <div id="creditRow" style="display:none;margin-top:16px">
+          <div class="set-lbl">Add usage credit</div>
+          <div class="set-note" style="margin:4px 0 10px">Each pack adds usage for this month · applies instantly</div>
+          <div style="display:flex;gap:8px">
+            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',1)">1 pack · ฿490</button>
+            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',3)">3 · ฿1,470</button>
+            <button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout('boost','individual',5)">5 · ฿2,450</button>
+          </div>
+        </div>
+        <button class="set-link" id="billingLink" style="margin-top:14px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
       </div>
       <div class="set-pane" data-sp="privacy">
         <div class="set-lbl">Private session</div>

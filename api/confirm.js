@@ -26,8 +26,9 @@ export default async function handler(req, res) {
 
     // one-time usage boost → credit extra usage for this month (idempotent per session)
     if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
+      const packs = parseInt(s.metadata.packs, 10) || 1;
       const d = await readUsageData(user.email);
-      const next = applyBoost(d, s.id);
+      const next = applyBoost(d, s.id, packs);
       if (next !== d) await writeUsageRow(user.email, next);
       res.status(200).json({ activated: true, boosted: true });
       return;

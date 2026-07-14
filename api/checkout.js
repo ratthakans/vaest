@@ -18,16 +18,17 @@ export default async function handler(req, res) {
   if (plan === 'boost') {
     const boostPrice = process.env.STRIPE_PRICE_BOOST || '';
     if (!boostPrice) { res.status(503).json({ error: 'boost not configured' }); return; }
+    const packs = Math.max(1, Math.min(10, parseInt((req.body || {}).packs, 10) || 1));
     const origin2 = req.headers.origin || 'https://vaest.orions.agency';
     try {
       const sub = await readSub(user.email);
       const customerField = sub && sub.customerId ? { customer: sub.customerId } : { customer_email: user.email };
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
-        line_items: [{ price: boostPrice, quantity: 1 }],
+        line_items: [{ price: boostPrice, quantity: packs }],
         ...customerField,
         client_reference_id: user.email,
-        metadata: { email: user.email, boost: '1' },
+        metadata: { email: user.email, boost: '1', packs: String(packs) },
         success_url: `${origin2}/app?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin2}/app?checkout=cancel`,
       });

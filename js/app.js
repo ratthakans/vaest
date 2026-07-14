@@ -193,8 +193,8 @@
     const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';
     const q=window.QUOTA;
     const bl=$('billingLink');if(bl)bl.style.display=(q&&q.canManage)?'':'none';
-    // boost = for paying customers only (comp/invite accounts upgrade instead)
-    const bo=$('boostLink');if(bo)bo.style.display=(q&&q.source==='stripe')?'':'none';}
+    // credit top-up = for paying customers only (comp/invite accounts upgrade instead)
+    const bo=$('creditRow');if(bo)bo.style.display=(q&&q.source==='stripe')?'':'none';}
   // usage meter — abstract by design: a percentage + reset date, never raw counts.
   const fmtReset=iso=>{try{const d=new Date(iso+'T00:00:00Z');
     return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'})}catch(e){return ''}};
@@ -211,13 +211,13 @@
     const q=window.QUOTA;const lp=$('giLapsed');if(lp)lp.style.display=(q&&q.source==='lapsed')?'':'none';
     $('gateView').classList.add('show')}
   // ── billing: start Stripe Checkout / open the customer portal ──
-  async function startCheckout(plan,kind,seats){
+  async function startCheckout(plan,kind,qty){
     if(!AUTH){showAuth('Sign in to continue to checkout');return}
     if(!await ensureAuth()){showAuth('Session expired — sign in again');return}
-    toast('Opening secure checkout…');
+    toast(plan==='boost'?'Opening secure checkout…':'Opening secure checkout…');
     try{const r=await fetch('/api/checkout',{method:'POST',
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
-      body:JSON.stringify({plan,kind:kind||'individual',seats})});
+      body:JSON.stringify({plan,kind:kind||'individual',seats:qty,packs:qty})});
       const d=await r.json().catch(()=>({}));
       if(r.ok&&d.url){location.href=d.url;return}
       toast(d.error||'Couldn’t start checkout')}
@@ -327,7 +327,7 @@
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
       body:JSON.stringify({mode,messages,system:system||''})});
     if(r.status===401){showAuth('Session expired — sign in again');throw new Error('Session expired')}
-    if(r.status===403){showNotInvited();throw new Error('Not invited yet')}
+    if(r.status===402||r.status===403){checkAccess();showNotInvited();throw new Error('Choose a plan to continue')}
     if(r.status===429){let msg='Usage limit reached';try{msg=(await r.json()).error||msg}catch(e){}toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
     const reader=r.body.getReader(),dec=new TextDecoder();let full='',stopped=false;

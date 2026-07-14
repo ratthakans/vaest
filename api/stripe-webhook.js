@@ -70,8 +70,9 @@ export default async function handler(req, res) {
         if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
           const email = ((s.metadata && s.metadata.email) || s.client_reference_id || '').toLowerCase();
           if (email && s.payment_status === 'paid') {
+            const packs = parseInt(s.metadata.packs, 10) || 1;
             const d = await readUsageData(email);
-            const next = applyBoost(d, s.id);
+            const next = applyBoost(d, s.id, packs);
             if (next !== d) await writeUsageRow(email, next);
           }
           break;
