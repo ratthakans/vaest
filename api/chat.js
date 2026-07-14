@@ -222,10 +222,7 @@ export default async function handler(req, res) {
     try {
       const q = await checkRefineQuota(user.email, plan);
       if (!q.ok) {
-        const msg = q.scope === 'week'
-          ? `Weekly Refine limit reached (${q.cap}/week on your plan) — resets Monday, or upgrade for more.`
-          : `Monthly Refine limit reached (${q.cap}/month on your plan) — upgrade for more, or wait for next month.`;
-        res.status(429).json({ error: msg });
+        res.status(429).json({ error: `You've used all ${q.cap} Refines in your plan this month — they refresh on the 1st. Upgrade any time for more headroom.` });
         return;
       }
     } catch (e) { console.error('refine-cap check failed (allowing):', e?.message || e); }
@@ -239,10 +236,7 @@ export default async function handler(req, res) {
     try {
       const q = await checkDocQuota(user.email, plan);
       if (!q.ok) {
-        const msg = q.scope === 'week'
-          ? `Weekly document limit reached (${q.cap}/week on your plan) — resets Monday, or upgrade for more.`
-          : `Monthly document limit reached (${q.cap}/month on your plan) — upgrade for more, or wait for next month.`;
-        res.status(429).json({ error: msg });
+        res.status(429).json({ error: `That's all ${q.cap} documents in your plan this month — they refresh on the 1st. Want more now? Upgrade any time.` });
         return;
       }
     } catch (e) { console.error('doc-cap check failed (allowing):', e?.message || e); }
