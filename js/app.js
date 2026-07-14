@@ -1755,7 +1755,7 @@
     $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <span class="sh-lbl">Read-only · shared from VÆST</span></div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme" aria-label="Reading theme">☀︎</button><a class="tb dark sh-open" href="/app" style="text-decoration:none">Open VÆST →</a>';
     try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
     // privacy note — earn the client's trust in one line
-    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PRIVATE BY DESIGN — NO AI TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · INVITE-ONLY</div>');
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PRIVATE BY DESIGN — NO AI TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · BY ORIONS.AGENCY</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;
