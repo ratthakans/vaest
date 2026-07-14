@@ -39,26 +39,16 @@ create policy "own_state_delete" on public.vaest_state
   for delete to authenticated
   using (auth.jwt()->>'email' = email);
 
--- ── 2) SHARE ROWS — readable/writable by link visitors (comments), deletable
---       by the app (revoke). Content here is what an owner chose to publish.
---       NOTE: next tightening step (needs SUPABASE_SERVICE_KEY in Vercel):
---       move share reads server-side and drop public select to prevent listing.
-create policy "share_select" on public.vaest_state
-  for select to anon, authenticated
-  using (email like 'share:%');
-
-create policy "share_insert" on public.vaest_state
-  for insert to anon, authenticated
-  with check (email like 'share:%');
-
-create policy "share_update" on public.vaest_state
-  for update to anon, authenticated
-  using (email like 'share:%')
-  with check (email like 'share:%');
-
-create policy "share_delete" on public.vaest_state
-  for delete to anon, authenticated
-  using (email like 'share:%');
+-- ── 2) SHARE ROWS — server-only, NO policy on purpose (same as usage/errlog).
+--       All share access now goes through /api/share (service-role key):
+--         GET  → public read (owner email withheld)
+--         POST → append-only comments (public) · create/resolve (owner-authenticated)
+--         DELETE → revoke (owner-authenticated)
+--       With no anon/authenticated policy the public key can't read, list, write, or
+--       delete share rows — closing (a) enumeration via ?email=like.share:* and
+--       (b) canvas overwrite via the old anon UPDATE grant.
+--       ⚠️ SUPABASE_SERVICE_ROLE_KEY must be set in Vercel (it is) or /api/share can't
+--       reach these rows and sharing stops working.
 
 -- ── 3) WAITLIST — the public can add themselves, but can NOT read the list.
 create policy "wl_insert" on public.vaest_state
@@ -83,11 +73,12 @@ create policy "wl_update" on public.vaest_state
 --       usage metering + error logging stop (silently, best-effort). With the env set,
 --       both work through the service key and are unforgeable.
 
--- ═══ VERIFY (run after) — the public key must see only share:/wl: rows ═══
+-- ═══ VERIFY (run after) — the public key must see NO rows (wl: is insert-only) ═══
 -- 1) In the SQL editor this runs as postgres and bypasses RLS, so verify from
 --    the app or with:  select * from pg_policies where tablename='vaest_state';
 -- 2) Real test: log out of VÆST, then in the browser console run:
 --    fetch('https://yyhqcqlylnoukmovrpwo.supabase.co/rest/v1/vaest_state?select=email',
 --      {headers:{apikey:'<publishable>',Authorization:'Bearer <publishable>'}})
 --      .then(r=>r.json()).then(console.log)
---    → should return ONLY share:/wl: rows — never user-email state, usage:, or errlog:.
+--    → should return an EMPTY array — no user state, no share:, no usage:, no errlog:.
+--       (wl: rows are insert-only for anon, so they don't come back on select either.)

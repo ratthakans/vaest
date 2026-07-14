@@ -1092,7 +1092,9 @@
     $('expMenu').classList.remove('show');
     const s=cur();if(!s||!s.shareId)return;
     if(!await uiConfirm('Revoke this share link? Anyone with the URL loses access.',{ok:'Revoke',danger:true}))return;
-    try{await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('share:'+s.shareId),{method:'DELETE',headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
+    try{await ensureAuth();
+      const r=await fetch('/api/share?id='+encodeURIComponent(s.shareId),{method:'DELETE',headers:{Authorization:'Bearer '+((AUTH&&AUTH.access_token)||'')}});
+      if(!r.ok&&r.status!==204)throw new Error('revoke failed');
       s.shareId=null;_cmtCounts[s.id]=0;_cmtCache[s.id]=[];save();renderRail();renderOwnerComments();toast('Link revoked')}
     catch(e){toast('Couldn’t revoke, try again')}}
 
@@ -1568,9 +1570,11 @@
     const s=cur();if(!s||!s.canvas.trim()){toast('No document to share yet');return}
     if(!s.shareId)s.shareId='sh'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
     toast('Creating share link…');
-    try{await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
-      headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
-      body:JSON.stringify({email:'share:'+s.shareId,data:{title:$('mhTitle')?$('mhTitle').innerText.trim():s.title,canvas:genMd(),by:AUTH?AUTH.email:''},updated_at:new Date().toISOString()})});
+    try{await ensureAuth();
+      const r=await fetch('/api/share',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+((AUTH&&AUTH.access_token)||'')},
+        body:JSON.stringify({action:'create',id:s.shareId,title:$('mhTitle')?$('mhTitle').innerText.trim():s.title,canvas:genMd()})});
+      if(!r.ok)throw new Error('share failed');
       save();const link=location.origin+'/app?s='+s.shareId;copyToClip(link);toast('Read-only link copied — paste to share')}
     catch(e){toast('Couldn’t create the link, try again')}}
   function exportPDF(){$('expMenu').classList.remove('show');
@@ -1693,12 +1697,9 @@
 
   /* share view — read-only */
   async function loadShare(id){
-    try{const r=await fetch(SB.url+'/rest/v1/vaest_state?email=eq.'+encodeURIComponent('share:'+id)+'&select=data',{headers:{apikey:SB.key,Authorization:'Bearer '+SB.key}});
-      if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null}catch(e){return null}}
-  async function writeShareData(id,data){
-    await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
-      headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
-      body:JSON.stringify({email:'share:'+id,data,updated_at:new Date().toISOString()})})}
+    // read via the server-side broker (service key) — the public key can no longer touch share rows
+    try{const r=await fetch('/api/share?id='+encodeURIComponent(id));
+      if(!r.ok)return null;return await r.json()}catch(e){return null}}
   let _shareId=null;
   async function openShareView(id){
     hideAuth();$('app').classList.add('rail-off');_shareId=id;
@@ -1739,11 +1740,12 @@
       const name=f.querySelector('.cf-n').value.trim();
       const btn=f.querySelector('.send');btn.disabled=true;btn.textContent='Sending…';
       try{
-        const data=await loadShare(_shareId)||{};data.comments=data.comments||[];
-        data.comments.push({id:uid('c'),h:sec.getAttribute('data-h'),name,text,ts:Date.now()});
-        if(data.comments.length>80)data.comments=data.comments.slice(-80);
-        await writeShareData(_shareId,data);
-        f.remove();renderShareComments(data.comments);toast('Comment sent')}
+        const r=await fetch('/api/share?id='+encodeURIComponent(_shareId),{method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({comment:{h:sec.getAttribute('data-h'),name,text}})});
+        if(!r.ok)throw new Error('failed');
+        const out=await r.json();
+        f.remove();renderShareComments(out.comments||[]);toast('Comment sent')}
       catch(e){btn.disabled=false;btn.textContent='Send';toast('Failed to send, try again')}}}
 
   function toggleShareTheme(silent){
@@ -1787,10 +1789,13 @@
     finally{setBusy(false)}}
   async function resolveComment(cid){
     const s=cur();if(!s||!s.shareId)return;
-    try{const data=await loadShare(s.shareId)||{};
-      data.comments=(data.comments||[]).filter(c=>c.id!==cid);
-      await writeShareData(s.shareId,data);
-      _cmtCache[s.id]=data.comments;_cmtCounts[s.id]=data.comments.length;renderRail();renderOwnerComments();toast('Resolved')}
+    try{await ensureAuth();
+      const r=await fetch('/api/share',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+((AUTH&&AUTH.access_token)||'')},
+        body:JSON.stringify({action:'resolve',id:s.shareId,cid})});
+      if(!r.ok)throw new Error('failed');
+      const out=await r.json();const comments=out.comments||[];
+      _cmtCache[s.id]=comments;_cmtCounts[s.id]=comments.length;renderRail();renderOwnerComments();toast('Resolved')}
     catch(e){toast('Failed, try again')}}
 
   // paste an image into the canvas → embed as an image block in that section
