@@ -43,15 +43,20 @@ Open each price and copy its **API ID** (`price_…`) → these become
 | Var | Value | Secret? |
 |---|---|---|
 | `STRIPE_SECRET_KEY` | `sk_test_…` then `sk_live_…` | 🔒 yes |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_…` (from step 3) | 🔒 yes |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_…` (from step 3, optional) | 🔒 yes |
 | `STRIPE_PRICE_BASIC` / `_PRO` / `_DIRECTOR` | from step 1 | no |
+| `STRIPE_PRICE_BOOST` | one-time top-up price id | no |
 
 > Never put the secret key in code or git — only in Vercel env. Price ids are not secret.
 
-### 3. Create the webhook endpoint  — OPTIONAL for launch
-`/api/confirm` activates a paying customer on the checkout redirect, so onboarding
-works **without** a webhook. Add the webhook to keep plans in sync on later changes
-(cancellations, renewals, payment failures, edits made in the portal):
+### 3. Create the webhook endpoint  — OPTIONAL
+Two mechanisms already keep plans correct with **no webhook**:
+- `/api/confirm` activates a paying customer on the checkout redirect (onboarding), and
+- lazy re-verification (`resolveAccess`) re-checks a subscription straight from Stripe once
+  its paid period ends, so cancellations and failed renewals revoke access on their own.
+
+A webhook only makes those changes *instant* instead of at-period-boundary. Add it if you
+want same-second sync (cancellations, renewals, payment failures, portal edits):
 Stripe Dashboard → Developers → Webhooks → **Add endpoint**
 - URL: `https://vaest.orions.agency/api/stripe-webhook`
 - Events: `checkout.session.completed`, `customer.subscription.created`,
