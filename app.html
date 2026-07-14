@@ -179,9 +179,9 @@
     <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:20px">Signed in as <b id="giEmail" style="color:var(--ink)"></b> · pick a plan to start</p>
     <div id="giLapsed" style="display:none;font-size:13px;color:var(--cin-d);margin:-8px 0 18px">Your subscription lapsed — renew below to continue.</div>
     <div class="plan-pick" style="display:flex;flex-direction:column;gap:10px;text-align:left">
-      <button class="plan-opt" onclick="startCheckout('basic')"><span><b>Basic</b><small style="display:block;color:var(--mute);font-size:12px">20 documents / mo · Ø Think</small></span><span class="plan-price">฿390<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
-      <button class="plan-opt" onclick="startCheckout('pro')"><span><b>Pro</b> <em style="font-style:normal;color:var(--acc);font-size:11px;letter-spacing:.04em">POPULAR</em><small style="display:block;color:var(--mute);font-size:12px">60 documents / mo · + Norrsken Refine</small></span><span class="plan-price">฿1,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
-      <button class="plan-opt" onclick="startCheckout('director')"><span><b>Director</b><small style="display:block;color:var(--mute);font-size:12px">120 documents / mo · + priority</small></span><span class="plan-price">฿3,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+      <button class="plan-opt" onclick="startCheckout('basic')"><span><b>Basic</b><small style="display:block;color:var(--mute);font-size:12px">Essential monthly usage · Ø Think</small></span><span class="plan-price">฿390<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+      <button class="plan-opt" onclick="startCheckout('pro')"><span><b>Pro</b> <em style="font-style:normal;color:var(--acc);font-size:11px;letter-spacing:.04em">POPULAR</em><small style="display:block;color:var(--mute);font-size:12px">3× Basic usage · + Norrsken Refine</small></span><span class="plan-price">฿1,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+      <button class="plan-opt" onclick="startCheckout('director')"><span><b>Director</b><small style="display:block;color:var(--mute);font-size:12px">6× Basic usage · + priority</small></span><span class="plan-price">฿3,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
     </div>
     <p style="font-size:12px;color:var(--mute);margin:18px 0 0">Team & Business · <a href="mailto:rakan@orions.agency" style="color:var(--dim)">talk to us →</a></p>
     <div class="auth-sw" style="margin-top:18px"><button type="button" id="giReq" onclick="requestInvite()">Request an invite instead</button> · <button type="button" onclick="logout()">Sign out</button></div>
@@ -303,6 +303,7 @@
         <div class="set-lbl">This month · by engine</div>
         <div id="usageBreak" class="usage-break"></div>
         <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
+        <button class="set-link" id="boostLink" style="margin-top:10px;display:none" onclick="closeSettings();startCheckout('boost')">Add usage boost · ฿490 →</button>
         <button class="set-link" id="billingLink" style="margin-top:10px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
       </div>
       <div class="set-pane" data-sp="privacy">

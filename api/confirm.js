@@ -1,4 +1,4 @@
-import { verifyUser } from '../lib/plans.js';
+import { verifyUser, readUsageData, writeUsageRow, applyBoost } from '../lib/plans.js';
 import { getStripe, planForPrice, writeSub } from '../lib/billing.js';
 
 // Confirm a just-completed Checkout Session and activate the subscription immediately
@@ -23,6 +23,15 @@ export default async function handler(req, res) {
     if (owner !== user.email) { res.status(403).json({ error: 'not your session' }); return; }
     // must actually be paid/complete
     if (s.payment_status !== 'paid' && s.status !== 'complete') { res.status(200).json({ activated: false }); return; }
+
+    // one-time usage boost → credit extra usage for this month (idempotent per session)
+    if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
+      const d = await readUsageData(user.email);
+      const next = applyBoost(d, s.id);
+      if (next !== d) await writeUsageRow(user.email, next);
+      res.status(200).json({ activated: true, boosted: true });
+      return;
+    }
 
     const sub = s.subscription;
     if (!sub || typeof sub === 'string') { res.status(200).json({ activated: false }); return; }

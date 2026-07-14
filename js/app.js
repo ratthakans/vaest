@@ -131,7 +131,9 @@
       else{const res=await authSignup(email,pass);
         if(res==='confirm'){$('authErr').textContent='Signed up — check your email to confirm, then sign in';
           _authMode='signup';toggleAuthMode();go.disabled=false;return}}
-      if(await checkAccess()){hideAuth();await boot()}else showNotInvited();
+      if(await checkAccess()){hideAuth();await boot()}
+      else if(window._wantPlan){const p=window._wantPlan;window._wantPlan=null;hideAuth();startCheckout(p)}
+      else showNotInvited();
     }catch(e){$('authErr').textContent=e.message}
     finally{go.disabled=false;go.textContent=_authMode==='login'?'Sign in':'Sign up'}}
 
@@ -189,15 +191,20 @@
       mb.title=locked?'Refine is on Pro and above — upgrade to unlock the apex audit'
         :'Refined — make it cleaner: catch contradictions, repetition and broken logic';}
     const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';
-    const bl=$('billingLink');if(bl)bl.style.display=(window.QUOTA&&window.QUOTA.canManage)?'':'none';}
-  // usage bar — prefer the plan's document quota (the meaningful limit); fall back to the token cap
+    const q=window.QUOTA;
+    const bl=$('billingLink');if(bl)bl.style.display=(q&&q.canManage)?'':'none';
+    // boost = for paying customers only (comp/invite accounts upgrade instead)
+    const bo=$('boostLink');if(bo)bo.style.display=(q&&q.source==='stripe')?'':'none';}
+  // usage meter — abstract by design: a percentage + reset date, never raw counts.
+  const fmtReset=iso=>{try{const d=new Date(iso+'T00:00:00Z');
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'})}catch(e){return ''}};
   function quotaBarHTML(q){
     if(!q||q.internal)return '';
-    if(q.plan&&q.plan.docs){const used=q.docsUsed||0,cap=q.plan.docs,pct=Math.min(100,Math.round(used/cap*100));
-      return '<span class="qn">Documents this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+used+' / '+cap+'</span>';}
-    if(q.cap){const pct=Math.min(100,Math.round(q.used/q.cap*100));
-      return '<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>';}
-    return '';}
+    const u=q.usage;if(!u||u.pct==null)return '';
+    const pct=Math.min(100,u.pct);
+    return '<span class="qn">Usage this month'+(u.boosted?' · boosted':'')+'</span>'
+      +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span>'
+      +'<span class="qv">'+pct+'%'+(u.resetsOn?' · resets '+fmtReset(u.resetsOn):'')+'</span>';}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';
     // if they had a subscription that lapsed, say so
@@ -1848,12 +1855,14 @@
     if(AUTH&&await ensureAuth()){
       // just back from Stripe → confirm the session server-side to activate immediately
       // (no webhook needed for the pay→activate path)
+      let boosted=false;
       if(backFromCheckout==='success'){
         const sessionId=qp.get('session_id');
-        if(sessionId){toast('Payment received — activating your plan…');
-          try{await fetch('/api/confirm',{method:'POST',
+        if(sessionId){toast('Payment received — one moment…');
+          try{const cr=await fetch('/api/confirm',{method:'POST',
             headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
-            body:JSON.stringify({session_id:sessionId})})}catch(e){}}
+            body:JSON.stringify({session_id:sessionId})});
+            const cd=await cr.json().catch(()=>({}));boosted=!!cd.boosted}catch(e){}}
       }
       let ok=await checkAccess();
       // fallback: if activation is a touch behind, retry a couple times
@@ -1861,9 +1870,12 @@
         for(let i=0;i<4&&!ok;i++){await new Promise(r=>setTimeout(r,1500));ok=await checkAccess()}
       }
       if(backFromCheckout){history.replaceState(null,'',location.pathname)}
-      if(ok){hideAuth();if(backFromCheckout==='success')toast('You’re in — welcome to VÆST');await boot()}
+      if(ok){hideAuth();if(backFromCheckout==='success')toast(boosted?'Usage boost added — you have extra headroom this month':'You’re in — welcome to VÆST');await boot()}
       else if(wantPlan&&['basic','pro','director'].includes(wantPlan)){history.replaceState(null,'',location.pathname);startCheckout(wantPlan)}
       else showNotInvited();
     }
-    else{saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);showAuth()}
+    else{
+      // remember the plan they clicked on the site — after sign-in/up, go straight to checkout
+      if(wantPlan&&['basic','pro','director'].includes(wantPlan)){window._wantPlan=wantPlan;history.replaceState(null,'',location.pathname)}
+      saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);showAuth()}
   })();

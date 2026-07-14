@@ -13,6 +13,32 @@ export default async function handler(req, res) {
   if (!stripe) { res.status(503).json({ error: 'billing not configured' }); return; }
 
   const { plan, kind = 'individual', seats } = req.body || {};
+
+  // ── usage boost: one-time top-up that credits extra usage for the current month ──
+  if (plan === 'boost') {
+    const boostPrice = process.env.STRIPE_PRICE_BOOST || '';
+    if (!boostPrice) { res.status(503).json({ error: 'boost not configured' }); return; }
+    const origin2 = req.headers.origin || 'https://vaest.orions.agency';
+    try {
+      const sub = await readSub(user.email);
+      const customerField = sub && sub.customerId ? { customer: sub.customerId } : { customer_email: user.email };
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{ price: boostPrice, quantity: 1 }],
+        ...customerField,
+        client_reference_id: user.email,
+        metadata: { email: user.email, boost: '1' },
+        success_url: `${origin2}/app?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin2}/app?checkout=cancel`,
+      });
+      res.status(200).json({ url: session.url });
+    } catch (e) {
+      console.error('boost checkout error:', e?.message || e);
+      res.status(500).json({ error: 'could not start checkout' });
+    }
+    return;
+  }
+
   if (!SELF_SERVE_PLANS.has(plan)) { res.status(400).json({ error: 'unknown plan' }); return; }
 
   const isTeam = kind === 'team';

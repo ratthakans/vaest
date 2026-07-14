@@ -222,7 +222,7 @@ export default async function handler(req, res) {
     try {
       const q = await checkRefineQuota(user.email, plan);
       if (!q.ok) {
-        res.status(429).json({ error: `You've used all ${q.cap} Refines in your plan this month — they refresh on the 1st. Upgrade any time for more headroom.` });
+        res.status(429).json({ error: 'This month’s Refine allowance is used up — it refreshes on the 1st. Add a usage boost in Settings, or upgrade for more headroom.' });
         return;
       }
     } catch (e) { console.error('refine-cap check failed (allowing):', e?.message || e); }
@@ -236,7 +236,7 @@ export default async function handler(req, res) {
     try {
       const q = await checkDocQuota(user.email, plan);
       if (!q.ok) {
-        res.status(429).json({ error: `That's all ${q.cap} documents in your plan this month — they refresh on the 1st. Want more now? Upgrade any time.` });
+        res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage boost in Settings, or upgrade for more.' });
         return;
       }
     } catch (e) { console.error('doc-cap check failed (allowing):', e?.message || e); }

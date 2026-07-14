@@ -1,3 +1,4 @@
+import { readUsageData, writeUsageRow, applyBoost } from '../lib/plans.js';
 import { getStripe, planForPrice, readSub, writeSub } from '../lib/billing.js';
 
 // Stripe posts events here. We MUST verify the signature against the raw request
@@ -64,6 +65,17 @@ export default async function handler(req, res) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const s = event.data.object;
+        // one-time usage boost → credit extras (idempotent per session id, so /api/confirm
+        // and this webhook can both fire without double-crediting)
+        if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
+          const email = ((s.metadata && s.metadata.email) || s.client_reference_id || '').toLowerCase();
+          if (email && s.payment_status === 'paid') {
+            const d = await readUsageData(email);
+            const next = applyBoost(d, s.id);
+            if (next !== d) await writeUsageRow(email, next);
+          }
+          break;
+        }
         if (s.mode === 'subscription' && s.subscription) {
           const sub = await stripe.subscriptions.retrieve(s.subscription);
           // carry the session's email/plan onto the subscription metadata if Stripe hasn't yet
