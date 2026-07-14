@@ -210,7 +210,7 @@
     const u=q.usage;if(!u||u.pct==null)return '';
     const pct=Math.min(100,u.pct);
     const onCredit=u.boosted&&pct>=100; // plan used up but purchased credit still covering
-    const label=onCredit?'Usage · running on credit':('Usage this month'+(u.boosted?' · credit ✓':''));
+    const label=onCredit?'Usage · running on credit':('Usage this month'+(u.boosted?' · +credit':''));
     const val=onCredit?'credit active':(pct+'%'+(u.resetsOn?' · resets '+fmtReset(u.resetsOn):''));
     return '<span class="qn">'+label+'</span>'
       +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85&&!onCredit?' class="hot"':'')+'></i></span>'
