@@ -300,9 +300,12 @@
       </div>
       <div class="set-pane" data-sp="usage">
         <div class="quota-row" id="quotaRow2" style="display:none"></div>
-        <div class="set-lbl">This month · by engine</div>
-        <div id="usageBreak" class="usage-break"></div>
-        <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
+        <!-- internal (ORIONS team) only — token breakdown + real-cost tool reveal margin/provider -->
+        <div id="internalUsage" style="display:none">
+          <div class="set-lbl">This month · by engine</div>
+          <div id="usageBreak" class="usage-break"></div>
+          <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
+        </div>
         <div id="creditRow" style="display:none;margin-top:16px">
           <div class="set-lbl">Add usage credit</div>
           <div class="set-note" style="margin:4px 0 10px">Never expires — carries over month to month · applies instantly</div>

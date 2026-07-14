@@ -192,6 +192,8 @@
         :'Refined — make it cleaner: catch contradictions, repetition and broken logic';}
     const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';
     const q=window.QUOTA;
+    // token breakdown + real-cost tool are internal (ORIONS team) only — they reveal margin/provider
+    const iu=$('internalUsage');if(iu)iu.style.display=(q&&q.internal)?'':'none';
     const bl=$('billingLink');if(bl)bl.style.display=(q&&q.canManage)?'':'none';
     // credit top-up = for paying customers only (comp/invite accounts upgrade instead)
     const bo=$('creditRow');
@@ -254,7 +256,7 @@
   function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0,idea:+$('rateIdea').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
   function docCost(s,rt){const t=s.tok||{};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable+(t.idea||0)/1e6*(rt.idea||0)}
   const baht=n=>'฿'+(n>=1000?Math.round(n).toLocaleString():n.toFixed(n<10?2:1));
-  function openStats(){const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('rateIdea').value=rt.idea||0;$('statsView').classList.add('show');renderStats()}
+  function openStats(){if(!(window.QUOTA&&window.QUOTA.internal))return;const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('rateIdea').value=rt.idea||0;$('statsView').classList.add('show');renderStats()}
   function closeStats(){$('statsView').classList.remove('show')}
   function renderStats(){
     const rt=getRates();
@@ -869,7 +871,7 @@
       A('Attach files',()=>$('fileInput').click());
     }
     A('New project',()=>newProject());
-    A('Usage & cost',()=>openStats());
+    if(window.QUOTA&&window.QUOTA.internal)A('Usage & cost',()=>openStats());
     A('Sign out'+(AUTH?' ('+AUTH.email+')':''),()=>confirmLogout());
     sessions.forEach(s=>c.push({t:s.title||'Untitled',sub:fmtAgo(s.updatedAt),run:()=>openSession(s.id),k:'session'}));
     return c}
