@@ -22,16 +22,22 @@ Settings ▸ Manage billing ──POST /api/portal──▶  Stripe Billing Port
 ## One-time setup
 
 ### 1. Create products & prices (THB, monthly)
+
+**Option A — script (needs Node):**
 ```bash
 STRIPE_SECRET_KEY=sk_test_xxx node scripts/stripe-setup.mjs
 ```
-It prints:
-```
-STRIPE_PRICE_BASIC=price_...
-STRIPE_PRICE_PRO=price_...
-STRIPE_PRICE_DIRECTOR=price_...
-```
-(Re-runnable — it reuses products/prices it already tagged.)
+It prints the three `STRIPE_PRICE_*=price_...` lines. Re-runnable (reuses what it tagged).
+
+**Option B — Stripe Dashboard (no Node):** Products → **Add product**, three times:
+| Product | Price | Billing |
+|---|---|---|
+| VÆST Basic | ฿390 | Recurring · monthly · THB |
+| VÆST Pro | ฿1,490 | Recurring · monthly · THB |
+| VÆST Director | ฿3,490 | Recurring · monthly · THB |
+
+Open each price and copy its **API ID** (`price_…`) → these become
+`STRIPE_PRICE_BASIC` / `_PRO` / `_DIRECTOR`.
 
 ### 2. Add env vars in Vercel → Project → Settings → Environment Variables
 | Var | Value | Secret? |
