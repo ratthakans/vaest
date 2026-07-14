@@ -188,7 +188,8 @@
     if(mb){mb.classList.toggle('locked',locked);
       mb.title=locked?'Refine is on Pro and above — upgrade to unlock the apex audit'
         :'Refined — make it cleaner: catch contradictions, repetition and broken logic';}
-    const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';}
+    const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';
+    const bl=$('billingLink');if(bl)bl.style.display=(window.QUOTA&&window.QUOTA.canManage)?'':'none';}
   // usage bar — prefer the plan's document quota (the meaningful limit); fall back to the token cap
   function quotaBarHTML(q){
     if(!q||q.internal)return '';
@@ -198,7 +199,30 @@
       return '<span class="qn">Fair-use this month</span><span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span><span class="qv">'+fmtTok(q.used)+' / '+fmtTok(q.cap)+'</span>';}
     return '';}
   function showNotInvited(){
-    hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';$('gateView').classList.add('show')}
+    hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';
+    // if they had a subscription that lapsed, say so
+    const q=window.QUOTA;const lp=$('giLapsed');if(lp)lp.style.display=(q&&q.source==='lapsed')?'':'none';
+    $('gateView').classList.add('show')}
+  // ── billing: start Stripe Checkout / open the customer portal ──
+  async function startCheckout(plan,kind,seats){
+    if(!AUTH){showAuth('Sign in to continue to checkout');return}
+    if(!await ensureAuth()){showAuth('Session expired — sign in again');return}
+    toast('Opening secure checkout…');
+    try{const r=await fetch('/api/checkout',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
+      body:JSON.stringify({plan,kind:kind||'individual',seats})});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok&&d.url){location.href=d.url;return}
+      toast(d.error||'Couldn’t start checkout')}
+    catch(e){toast('Couldn’t start checkout, try again')}}
+  async function openPortal(){
+    if(!AUTH)return;if(!await ensureAuth())return;
+    toast('Opening billing…');
+    try{const r=await fetch('/api/portal',{method:'POST',headers:{Authorization:'Bearer '+AUTH.access_token}});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok&&d.url){location.href=d.url;return}
+      toast(d.error||'No billing to manage yet')}
+    catch(e){toast('Couldn’t open billing, try again')}}
   async function requestInvite(){
     if(!AUTH)return;const b=$('giReq');b.disabled=true;b.textContent='Sending…';
     try{await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
@@ -1816,10 +1840,21 @@
     // 2) share link (read-only) — no login needed
     const sid=new URLSearchParams(location.search).get('s');
     if(sid){await openShareView(sid);return}
-    // 3) normal — needs login + must be invited (invite-only)
+    // 3) normal — needs login; access = paid subscription, comp/invite, or internal
+    const qp=new URLSearchParams(location.search);
+    const wantPlan=qp.get('plan');                 // from a marketing "Get started" CTA
+    const backFromCheckout=qp.get('checkout');     // success | cancel (Stripe return)
     loadAuth();
     if(AUTH&&await ensureAuth()){
-      if(await checkAccess()){hideAuth();await boot()}
+      let ok=await checkAccess();
+      // just paid → the webhook may lag a second; poll a few times before giving up
+      if(!ok&&backFromCheckout==='success'){
+        toast('Payment received — activating your plan…');
+        for(let i=0;i<6&&!ok;i++){await new Promise(r=>setTimeout(r,1500));ok=await checkAccess()}
+      }
+      if(backFromCheckout){history.replaceState(null,'',location.pathname)}
+      if(ok){hideAuth();if(backFromCheckout==='success')toast('You’re in — welcome to VÆST');await boot()}
+      else if(wantPlan&&['basic','pro','director'].includes(wantPlan)){history.replaceState(null,'',location.pathname);startCheckout(wantPlan)}
       else showNotInvited();
     }
     else{saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);showAuth()}

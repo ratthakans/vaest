@@ -175,11 +175,16 @@
       <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ag3" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ag3)" stroke-width="3.6" stroke-linecap="round"/></svg>
       <div class="wm">V<i>Æ</i>ST</div>
     </div>
-    <div class="auth-h">Not invited yet</div>
-    <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:8px">VÆST is invite-only · the account <b id="giEmail" style="color:var(--ink)"></b> isn’t on the list yet</p>
-    <p style="font-size:13px;color:var(--mute);margin-bottom:26px">Contact <a href="mailto:rakan@orions.agency" style="color:var(--dim)">rakan@orions.agency</a> for access</p>
-    <button class="auth-go" id="giReq" onclick="requestInvite()">Request an invite</button>
-    <div class="auth-sw" style="margin-top:14px"><button type="button" onclick="logout()">Sign out / use another account</button></div>
+    <div class="auth-h">Choose your plan</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:20px">Signed in as <b id="giEmail" style="color:var(--ink)"></b> · pick a plan to start</p>
+    <div id="giLapsed" style="display:none;font-size:13px;color:var(--cin-d);margin:-8px 0 18px">Your subscription lapsed — renew below to continue.</div>
+    <div class="plan-pick" style="display:flex;flex-direction:column;gap:10px;text-align:left">
+      <button class="plan-opt" onclick="startCheckout('basic')"><span><b>Basic</b><small style="display:block;color:var(--mute);font-size:12px">20 documents / mo · Ø Think</small></span><span class="plan-price">฿390<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+      <button class="plan-opt" onclick="startCheckout('pro')"><span><b>Pro</b> <em style="font-style:normal;color:var(--acc);font-size:11px;letter-spacing:.04em">POPULAR</em><small style="display:block;color:var(--mute);font-size:12px">60 documents / mo · + Norrsken Refine</small></span><span class="plan-price">฿1,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+      <button class="plan-opt" onclick="startCheckout('director')"><span><b>Director</b><small style="display:block;color:var(--mute);font-size:12px">120 documents / mo · + priority</small></span><span class="plan-price">฿3,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+    </div>
+    <p style="font-size:12px;color:var(--mute);margin:18px 0 0">Team & Business · <a href="mailto:rakan@orions.agency" style="color:var(--dim)">talk to us →</a></p>
+    <div class="auth-sw" style="margin-top:18px"><button type="button" id="giReq" onclick="requestInvite()">Request an invite instead</button> · <button type="button" onclick="logout()">Sign out</button></div>
   </div>
 </div>
 <div class="stats" id="statsView" onclick="if(event.target===this)closeStats()">
@@ -298,6 +303,7 @@
         <div class="set-lbl">This month · by engine</div>
         <div id="usageBreak" class="usage-break"></div>
         <button class="set-link" style="margin-top:16px" onclick="closeSettings();openStats()">Full cost breakdown →</button>
+        <button class="set-link" id="billingLink" style="margin-top:10px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
       </div>
       <div class="set-pane" data-sp="privacy">
         <div class="set-lbl">Private session</div>

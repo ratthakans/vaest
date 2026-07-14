@@ -60,7 +60,12 @@ create policy "wl_update" on public.vaest_state
   using (email like 'wl:%')
   with check (email like 'wl:%');
 
--- ── 4) USAGE + ERRLOG ROWS — server-only, NO policy on purpose.
+-- ── 4) USAGE + ERRLOG + SUB ROWS — server-only, NO policy on purpose.
+--       (usage:% metering · errlog:% error sink · sub:% Stripe subscription state)
+--       sub:<email> is written only by the Stripe webhook and read only by the API,
+--       both with the service-role key. own_state_select checks email = jwt-email, and
+--       'sub:foo@bar' never equals 'foo@bar', so a user can't read their own sub row
+--       with the public key either — billing state is unforgeable.
 --       The API writes usage:% (fair-use metering) and errlog:% (error sink) with the
 --       service-role key (SUPABASE_SERVICE_ROLE_KEY), which bypasses RLS entirely — so
 --       they need no policy. With no anon/authenticated policy, the public key can't read

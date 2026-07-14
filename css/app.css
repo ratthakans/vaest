@@ -417,6 +417,13 @@
   .auth-go:hover{background:#fff;transform:translateY(-1px)}
   .auth-err{font-size:12.5px;color:var(--cin-d);min-height:18px;line-height:1.5}
   .auth-sw{margin-top:18px;font-size:13px;color:var(--dim)}
+  .plan-opt{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+    padding:14px 16px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:12px;
+    background:rgba(255,255,255,.02);color:var(--ink,#f2f1ee);cursor:pointer;text-align:left;
+    transition:border-color .2s,background .2s,transform .2s var(--ease)}
+  .plan-opt:hover{border-color:var(--acc,#ff5a1f);background:rgba(255,255,255,.05);transform:translateY(-1px)}
+  .plan-opt b{font-size:15px}
+  .plan-price{font-size:15px;font-weight:650;white-space:nowrap}
   .auth-sw button{color:var(--ink);font-weight:650;text-decoration:underline;text-underline-offset:3px;margin-left:6px}
   .auth-foot{margin-top:40px;text-align:center}
   .auth-foot .af-line{font-family:var(--ui);font-size:13px;color:var(--dim);letter-spacing:.01em}

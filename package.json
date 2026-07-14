@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.70.0"
+    "@anthropic-ai/sdk": "^0.70.0",
+    "stripe": "^18.0.0"
   },
   "devDependencies": {
     "jsdom": "^29.1.1"
