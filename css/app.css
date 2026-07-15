@@ -657,8 +657,10 @@
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}
   /* optional brief, demoted below the chat */
   .opt-lbl{margin:28px 0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
-  .brief-box.secondary{background:rgba(255,255,255,.028);box-shadow:0 1px 2px rgba(0,0,0,0.28)}
-  .brief-box.secondary textarea{min-height:64px}
+  /* the optional brief/files box recedes — a quiet secondary to the Idea hero, not a second card */
+  .brief-box.secondary{background:transparent;border-color:rgba(255,255,255,.06);box-shadow:none}
+  .brief-box.secondary:focus-within{border-color:rgba(255,255,255,.14);box-shadow:none;transform:none}
+  .brief-box.secondary textarea{min-height:44px}
   .id-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
   .id-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;flex:none}
   .id-hint{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
