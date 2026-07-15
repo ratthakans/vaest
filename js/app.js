@@ -789,7 +789,42 @@
   function setSetTab(t){
     document.querySelectorAll('.set-tab').forEach(b=>b.classList.toggle('on',b.getAttribute('data-st')===t));
     document.querySelectorAll('.set-pane').forEach(p=>p.classList.toggle('on',p.getAttribute('data-sp')===t));
-    if(t==='usage')renderUsageBreak()}
+    if(t==='usage')renderUsageBreak();
+    if(t==='api')renderApiKeys()}
+  /* ═══ API keys — build VÆST into your own tools ═══ */
+  async function renderApiKeys(){
+    const list=$('apiKeyList');if(!list)return;
+    list.innerHTML='<div class="set-note">Loading…</div>';
+    try{if(!await ensureAuth()){list.innerHTML='<div class="set-note">Sign in again.</div>';return}
+      const r=await fetch('/api/keys',{headers:{Authorization:'Bearer '+AUTH.access_token}});
+      if(r.status===402){list.innerHTML='<div class="set-note">API access needs an active plan.</div>';return}
+      const d=await r.json().catch(()=>({keys:[]}));
+      const keys=(d.keys||[]).filter(k=>!k.revokedAt);
+      list.innerHTML=keys.length?keys.map(k=>'<div class="api-key"><div class="api-kmeta"><b>'+esc(k.name||'API key')+'</b><span class="api-kp">'+esc(k.prefix||'vsk_live_')+'…</span></div><button class="set-link" style="color:var(--cin-d)" onclick="revokeApiKeyUI(\''+k.id+'\')">Revoke</button></div>').join('')
+        :'<div class="set-note">No keys yet — create one to start.</div>';
+    }catch(e){list.innerHTML='<div class="set-note">Couldn’t load keys.</div>'}}
+  async function createNewApiKey(){
+    const name=await uiPrompt('Name this key','',{ok:'Create',placeholder:'e.g. Production, Zapier'});
+    if(name===null)return;
+    try{if(!await ensureAuth())return;
+      const r=await fetch('/api/keys',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},body:JSON.stringify({name:name||'API key'})});
+      if(r.status===429){toast('Max 5 keys — revoke one first');return}
+      if(r.status===402){toast('API access needs an active plan');return}
+      const d=await r.json().catch(()=>({}));
+      if(!d.key)throw new Error('failed');
+      const box=$('apiKeyNew');box.style.display='';
+      box.innerHTML='<div class="api-new"><div class="api-new-lbl">Copy your key now — it won’t be shown again</div>'
+        +'<div class="api-newkey" id="apiNewKey">'+esc(d.key)+'</div>'
+        +'<button class="api-copy" onclick="copyToClip($(\'apiNewKey\').textContent);toast(\'Key copied\')">Copy key</button></div>';
+      renderApiKeys();}
+    catch(e){toast('Couldn’t create key, try again')}}
+  async function revokeApiKeyUI(id){
+    if(!await uiConfirm('Revoke this key? Anything using it stops working immediately.',{ok:'Revoke',danger:true}))return;
+    try{if(!await ensureAuth())return;
+      await fetch('/api/keys?id='+encodeURIComponent(id),{method:'DELETE',headers:{Authorization:'Bearer '+AUTH.access_token}});
+      const b=$('apiKeyNew');if(b){b.style.display='none';b.innerHTML=''}
+      renderApiKeys();toast('Key revoked')}
+    catch(e){toast('Couldn’t revoke, try again')}}
   function openSettings(){renderTone();
     document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===getLang()));
     const pr=getProfile();$('pfName').value=pr.name||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
