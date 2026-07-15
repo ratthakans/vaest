@@ -1,9 +1,13 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 
-// ANTHROPIC_API_KEY comes from Vercel env only
-const anthropic = new Anthropic();
+// Lazy-load the Anthropic SDK — the Idea chat (Galdr = Gemini) never needs it, so a cold
+// start on that hot path doesn't pay to import/parse the SDK. ANTHROPIC_API_KEY from env.
+let _anthropic = null;
+async function getAnthropic() {
+  if (!_anthropic) { const mod = await import('@anthropic-ai/sdk'); const Anthropic = mod.default || mod; _anthropic = new Anthropic(); }
+  return _anthropic;
+}
 
 // VÆST 1.3 — Galdr (Idea/sandbox) = Gemini Flash · Odin (Think/write) = Opus 4.8 · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
 const GEMINI_MODEL = 'gemini-flash-latest';
@@ -169,6 +173,7 @@ async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
   const system = [{ type: 'text', text: base, cache_control: { type: 'ephemeral' } }];
   if (dynamic) system.push({ type: 'text', text: dynamic });
   params.system = system;
+  const anthropic = await getAnthropic();
   const stream = anthropic.messages.stream(params);
   let inTok = 0, outTok = 0;
   for await (const ev of stream) {
@@ -186,21 +191,20 @@ export default async function handler(req, res) {
   const user = await verifyUser(req);
   if (!user) { res.status(401).json({ error: 'Not signed in, or your session expired' }); return; }
 
-  // access = active paid subscription, comp/invite, or internal. Otherwise → paywall.
-  const access = await resolveAccess(user.email);
-  if (!access.allowed) { res.status(402).json({ error: 'Choose a plan to start using VÆST', paywall: true }); return; }
-
-  // burst guard — 12 calls/min/user (per warm instance; coarse but real)
-  if (rateLimited(user.email)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
-
+  // sync validation first — fail fast before any I/O
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
   // reject unknown modes — otherwise an unknown mode falls back to ROUTE.summing (Opus)
   // while skipping the document counter, and the Refine gate keys off literal mode strings.
   if (!Object.prototype.hasOwnProperty.call(ROUTE, mode)) { res.status(400).json({ error: 'unknown mode' }); return; }
+  // burst guard — 12 calls/min/user (per warm instance; coarse but real)
+  if (rateLimited(user.email)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
 
+  // the two independent reads run in parallel — shaves a Supabase round-trip off time-to-first-token
+  const [access, u] = await Promise.all([resolveAccess(user.email), readUsage(user.email)]);
+  // access = active paid subscription, comp/invite, or internal. Otherwise → paywall.
+  if (!access.allowed) { res.status(402).json({ error: 'Choose a plan to start using VÆST', paywall: true }); return; }
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
-  const u = await readUsage(user.email);
   const cap = capFor(user.email);
   if (u.used >= cap) {
     res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
