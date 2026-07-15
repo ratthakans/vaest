@@ -224,7 +224,8 @@
   .genning .gen-body,.genning #genBody{position:relative}
   .gen-body .cursor,#genBody .cursor{box-shadow:0 0 10px 1px rgba(79,195,255,.7)}
   .gen-body .ph{font-family:var(--ui);font-weight:700}
-  .cursor{display:inline-block;width:2px;height:1em;background:var(--cinnabar);margin-left:1px;vertical-align:text-bottom;animation:bl 1s steps(2) infinite}
+  .cursor{display:inline-block;width:2px;height:1.05em;border-radius:2px;background:var(--cinnabar);margin-left:2px;vertical-align:text-bottom;animation:curfade 1.1s var(--ease) infinite}
+  @keyframes curfade{0%,100%{opacity:1}50%{opacity:.28}}
   @keyframes bl{0%,50%{opacity:1}51%,100%{opacity:0}}
 
   /* ===== MASTERING panel ===== */
@@ -662,7 +663,8 @@
   .idea.hero{margin-top:14px;background:transparent;border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
   .idea.hero:focus-within{box-shadow:none}
   .idea.hero .id-thread{max-height:none;overflow:visible;padding:2px 2px}
-  .idea.hero .id-m .tx{font-size:15.5px;line-height:1.78}
+  .idea.hero .id-m .tx{font-size:16px;line-height:1.85}
+  .idea.hero .id-in textarea{font-size:15.5px;line-height:1.65}
   .idea.hero .id-in{padding:14px 12px 14px 18px}
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}

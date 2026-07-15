@@ -1059,6 +1059,27 @@
     if((s.title==='New'||!s.title)&&s.ideas.length===1){s.title=text.replace(/\s+/g,' ').slice(0,42);renderRail()}
     renderIdeas();save();
     await streamIdeaReply(s,true)}
+  // Fluid streaming: buffer incoming text and reveal it at a smooth, steady pace so the
+  // reply flows evenly regardless of network bursts. Reveals to word/newline boundaries so
+  // partial markdown never flashes. render(text, streaming) is called each animation frame.
+  function smoothStreamer(render){
+    let target='',shown=0,raf=0,ended=false,doneCb=null;
+    const tick=()=>{
+      raf=0;
+      if(shown<target.length){
+        const gap=target.length-shown;
+        let next=shown+Math.max(2,Math.ceil(gap*0.2)); // ease: faster when far behind
+        if(next<target.length){const b=Math.max(target.lastIndexOf(' ',next),target.lastIndexOf('\n',next));if(b>shown)next=b+1}
+        else next=target.length;
+        shown=next;
+        render(target.slice(0,shown),shown<target.length||!ended);
+      }
+      if(shown<target.length)schedule();
+      else if(ended){render(target,false);if(doneCb){const c=doneCb;doneCb=null;c()}}
+    };
+    const schedule=()=>{if(!raf)raf=requestAnimationFrame(tick)};
+    return {push(t){target=t||'';schedule()},finish(cb){ended=true;doneCb=cb;schedule()}};
+  }
   async function streamIdeaReply(s,restoreOnFail){
     _ideaBusy=true;setIdeaSendMode(true);
     const th=$('ideaThread');
@@ -1066,9 +1087,11 @@
     th.appendChild(live);th.scrollTop=th.scrollHeight;
     try{
       const msgs=s.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
-      const out=await streamAPI('idea',msgs,toneSys(),
-        raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full)+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}}));
+      const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');th.scrollTop=th.scrollHeight}});
+      const out=await streamAPI('idea',msgs,toneSys(),full=>sr.push(full));
       if(out&&out.trim()){s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
+      sr.push(out||'');
+      await new Promise(r=>sr.finish(r)); // let the fluid reveal catch up before swapping in the final message
       save();renderIdeas()}
     catch(e){
       live.remove();
