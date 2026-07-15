@@ -21,8 +21,13 @@ export default async function handler(req, res) {
     // the session must belong to this signed-in account
     const owner = ((s.metadata && s.metadata.email) || s.client_reference_id || '').toLowerCase();
     if (owner !== user.email) { res.status(403).json({ error: 'not your session' }); return; }
-    // must actually be paid/complete
-    if (s.payment_status !== 'paid' && s.status !== 'complete') { res.status(200).json({ activated: false }); return; }
+    // must actually be paid/complete. PromptPay can settle a moment after redirect, so flag
+    // an unpaid boost as `pending` — the client retries confirm until it clears.
+    if (s.payment_status !== 'paid' && s.status !== 'complete') {
+      const pending = s.payment_status === 'processing' || !!(s.metadata && s.metadata.boost);
+      res.status(200).json({ activated: false, pending });
+      return;
+    }
 
     // one-time usage boost → credit extra usage for this month (idempotent per session)
     if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
