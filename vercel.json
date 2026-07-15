@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
+  "regions": ["sin1"],
   "rewrites": [
     { "source": "/app", "destination": "/app.html" }
   ]
