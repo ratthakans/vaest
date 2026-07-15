@@ -1,0 +1,50 @@
+import { SB, SERVICE_KEY } from '../lib/plans.js';
+import { rateLimit } from '../lib/ratelimit.js';
+
+// Server-side sign-up that skips the email-confirmation round-trip. Payment is the real
+// gate (you can't use VÆST without an active plan), so we create a pre-confirmed user via
+// the admin API and return a session immediately — no "check your email, then sign in"
+// detour at the exact moment someone is ready to pay. Works regardless of the project's
+// "Confirm email" setting. Password reset still verifies ownership by its own email link.
+export default async function handler(req, res) {
+  if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
+  const { email, password } = req.body || {};
+  const e = String(email || '').trim().toLowerCase();
+  if (!e || !password || String(password).length < 6) {
+    res.status(400).json({ error: 'Enter an email and a password of at least 6 characters' });
+    return;
+  }
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
+  if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
+
+  try {
+    // create a confirmed user (admin API, service key)
+    const cr = await fetch(`${SB.url}/auth/v1/admin/users`, {
+      method: 'POST',
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: e, password, email_confirm: true }),
+    });
+    if (!cr.ok) {
+      const d = await cr.json().catch(() => ({}));
+      const msg = (d.msg || d.error_description || d.error || '').toLowerCase();
+      if (cr.status === 422 || cr.status === 409 || msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+        res.status(409).json({ error: 'An account with this email already exists — sign in instead' });
+        return;
+      }
+      res.status(400).json({ error: d.msg || d.error_description || 'Sign-up failed' });
+      return;
+    }
+    // sign them in → hand back a session
+    const tk = await fetch(`${SB.url}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { apikey: SB.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: e, password }),
+    });
+    const session = await tk.json().catch(() => ({}));
+    if (!tk.ok || !session.access_token) { res.status(200).json({ pending: true }); return; } // created; client falls back to sign in
+    res.status(200).json(session);
+  } catch (err) {
+    console.error('signup error:', err?.message || err);
+    res.status(500).json({ error: 'Sign-up failed, try again' });
+  }
+}

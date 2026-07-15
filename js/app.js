@@ -85,11 +85,13 @@
     if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Wrong email or password');
     applySession(d)}
   async function authSignup(email,pass){
-    const r=await fetch(SB.url+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password:pass})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-up failed');
+    // server-side signup: auto-confirmed, returns a session immediately (no email round-trip)
+    const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json().catch(()=>({}));
+    if(r.status===409)throw new Error(d.error||'Account exists — sign in instead');
+    if(!r.ok)throw new Error(d.error||'Sign-up failed');
     if(d.access_token){applySession(d);return 'ok'}
-    return 'confirm' // must confirm email first
+    return 'confirm' // fallback — created but no session; ask them to sign in
   }
   async function authRefresh(){
     if(!AUTH||!AUTH.refresh_token)return false;
