@@ -710,11 +710,10 @@
   .id-m .tx{font-size:13.5px;line-height:1.7;color:var(--ink);word-break:break-word}
   .id-m.you .tx{color:#cfccc4}
   .id-m .tx p{margin:8px 0}.id-m .tx ul,.id-m .tx ol{margin:8px 0 8px 20px}.id-m .tx li{margin:5px 0}
-  .id-m .tx h1{font-family:var(--ui);font-size:21px;font-weight:600;letter-spacing:-.01em;margin:16px 0 8px;color:#fff}
-  .id-m .tx h2{font-family:var(--ui);font-size:17.5px;font-weight:600;margin:16px 0 6px;color:#fff}
-  .id-m .tx h3{font-size:14.5px;font-weight:700;margin:12px 0 4px;color:#fff}
+  /* markdown headings render as .ph — give replies real heading presence (มีหัว) */
+  .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:-.005em;line-height:1.35;margin:18px 0 8px;color:#fff}
+  .id-m .tx .ph:first-child{margin-top:0}
   .id-m .tx strong,.id-m .tx b{font-weight:700;color:#fff}
-  .id-m .tx h1:first-child,.id-m .tx h2:first-child,.id-m .tx h3:first-child{margin-top:0}
   .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035);margin-top:14px;transition:border-color .2s,background .2s}
   .id-in:focus-within{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.05)}
   .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:140px;padding:6px 4px}
