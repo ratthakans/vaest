@@ -1029,10 +1029,7 @@
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&s.ideas)||[];
     const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0); // Crystallize appears once there's a conversation
-    if(!ideas.length){
-      th.innerHTML='<div class="id-empty"><div class="ie-t">ลองเริ่มจาก…</div>'
-        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div></div>';
-      return}
+    if(!ideas.length){ th.innerHTML=''; return} // clean empty state — just the input, Claude-style
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
