@@ -55,7 +55,6 @@
         <div class="idea hero" id="ideaBox">
           <div class="id-hd">
             <span class="id-lbl">Idea</span>
-            <span class="id-hint">chat freely · save what you like</span>
             <button class="id-sum" onclick="runSumming()" title="Crystallize the chat, brief & files into a canvas document">Crystallize →</button>
           </div>
           <div class="id-thread" id="ideaThread"></div>
@@ -66,9 +65,9 @@
           <div class="spark-tray" id="sparkTray"></div>
         </div>
 
-        <!-- optional brief & files that feed Crystallize -->
-        <div class="opt-lbl">Optional · add a brief or files</div>
-        <div class="brief-box secondary" id="briefBox">
+        <!-- optional brief & files — revealed on demand so the home stays a clean chat -->
+        <div class="add-src-row"><button class="add-src" id="addSrcBtn" onclick="toggleBrief()">＋ Brief or files</button></div>
+        <div class="brief-box secondary collapsed" id="briefBox">
           <textarea id="brief" placeholder="Paste a brief if you have one — messy is fine. Attach files too." oninput="briefChanged()" onpaste="briefPaste(event)" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){event.preventDefault();runSumming()}"></textarea>
           <div class="chips" id="chips"></div>
           <div class="bb-foot">
