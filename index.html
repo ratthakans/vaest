@@ -299,7 +299,13 @@
   .eng.reveal.in .e-card:nth-child(2){transition-delay:.12s}
 
   /* ── pricing comparison matrix ── */
-  .cmp-scroll{margin-top:52px;overflow-x:auto;border:1px solid var(--line);border-radius:16px}
+  .cmp-scroll{margin-top:52px;overflow-x:auto;border:1px solid var(--line);border-radius:16px;scroll-snap-type:x proximity}
+  /* mobile: the matrix scrolls sideways — say so, and snap column edges */
+  .cmp-hint{display:none}
+  @media(max-width:760px){
+    .cmp-hint{display:block;margin:14px 0 -38px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+    .cmp-row.head .cmp-col{scroll-snap-align:start}
+  }
   .cmp{min-width:760px;background:#0a0a0c}
   .cmp-row{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr}
   .cmp-row>div{padding:20px 24px;border-top:1px solid var(--line)}
@@ -551,6 +557,7 @@
     <button class="pr-tab" data-m="team" onclick="setPriceMode('team')">Team · ทีม</button>
   </div>
 
+  <div class="cmp-hint">← เลื่อนดูทั้ง 3 แพ็กเกจ · swipe →</div>
   <div class="cmp-scroll reveal">
     <div class="cmp">
       <!-- header -->
