@@ -60,8 +60,13 @@ create policy "wl_update" on public.vaest_state
   using (email like 'wl:%')
   with check (email like 'wl:%');
 
--- ── 4) USAGE + ERRLOG + SUB ROWS — server-only, NO policy on purpose.
---       (usage:% metering · errlog:% error sink · sub:% Stripe subscription state)
+-- ── 4) USAGE + ERRLOG + SUB + APIKEY ROWS — server-only, NO policy on purpose.
+--       (usage:% metering · errlog:% error sink · sub:% Stripe subscription state ·
+--        apikey:<hash>% + apikeys:<email>% — public API key issuance/lookup)
+--       apikey:/apikeys: rows are written/read only by api/keys.js and api/v1/*.js with
+--       the service-role key. Nothing here grants anon/authenticated access to them, so a
+--       client can't enumerate key hashes or forge a key's owner — same unforgeable
+--       pattern as sub:.
 --       sub:<email> is written only by the Stripe webhook and read only by the API,
 --       both with the service-role key. own_state_select checks email = jwt-email, and
 --       'sub:foo@bar' never equals 'foo@bar', so a user can't read their own sub row
