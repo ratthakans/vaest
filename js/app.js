@@ -1152,7 +1152,9 @@
     const s=cur();const docTitle=title||(s?s.title:'Document');
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
-      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div></div>';
+      +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
+      +(_shareId?'':'<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="runThink()">Ø Think <em>optional</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>')
+      +'</div>';
     if(!_shareId)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
