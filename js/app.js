@@ -794,6 +794,8 @@
   /* ═══ API keys — build VÆST into your own tools ═══ */
   async function renderApiKeys(){
     const list=$('apiKeyList');if(!list)return;
+    // show the same monthly usage meter as the app — API calls count here too (sync)
+    const uq=$('apiUsage');if(uq){const h=quotaBarHTML(window.QUOTA);uq.innerHTML=h||'';uq.style.display=h?'':'none'}
     list.innerHTML='<div class="set-note">Loading…</div>';
     try{if(!await ensureAuth()){list.innerHTML='<div class="set-note">Sign in again.</div>';return}
       const r=await fetch('/api/keys',{headers:{Authorization:'Bearer '+AUTH.access_token}});

@@ -272,6 +272,17 @@ Content-Type: application/json
   -H "Content-Type: application/json" \
   -d '{"brief":"rebrand a small Ari coffee shop for the 25-40 creative crowd"}'</div>
 
+      <div class="code">// JavaScript (Node 18+ / browser)
+const r = await fetch("https://vaest.orions.agency/api/v1/crystallize", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer vsk_live_…",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ brief: "your brief — messy is fine" }),
+});
+const { document, usage } = await r.json();</div>
+
       <p><b>More engines</b> — same auth and shape, each takes a <code>document</code>:</p>
       <div class="code">POST /api/v1/think     { document }  → { pushes }   // creative-director provocations
 POST /api/v1/refine    { document }  → { notes }    // inconsistency · redundancy · logic
