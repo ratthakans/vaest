@@ -658,12 +658,12 @@
   .idea{margin-top:26px;background:rgba(255,255,255,.035);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
     border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden}
   /* the idea chat is the main surface — give it presence */
-  .idea.hero{margin-top:8px;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);
-    box-shadow:0 1px 2px rgba(0,0,0,0.36),0 12px 40px rgba(0,0,0,0.46)}
-  .idea.hero:focus-within{box-shadow:0 2px 4px rgba(0,0,0,0.40),0 18px 52px rgba(0,0,0,0.58)}
-  .idea.hero .id-thread{max-height:46vh}
-  .idea.hero .id-m .tx{font-size:14.5px}
-  .idea.hero .id-in{padding:13px 14px}
+  /* Claude-like: the chat is an open thread, not a boxed card */
+  .idea.hero{margin-top:14px;background:transparent;border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
+  .idea.hero:focus-within{box-shadow:none}
+  .idea.hero .id-thread{max-height:none;overflow:visible;padding:2px 2px}
+  .idea.hero .id-m .tx{font-size:15.5px;line-height:1.78}
+  .idea.hero .id-in{padding:14px 12px 14px 18px}
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}
   /* optional brief, demoted below the chat */
@@ -680,7 +680,7 @@
   .brief-box.secondary{background:transparent;border-color:rgba(255,255,255,.06);box-shadow:none}
   .brief-box.secondary:focus-within{border-color:rgba(255,255,255,.14);box-shadow:none;transform:none}
   .brief-box.secondary textarea{min-height:44px}
-  .id-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .id-hd{display:flex;align-items:center;gap:10px;padding:0 2px 10px}
   .id-lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;flex:none}
   .id-hint{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .id-sum{margin-left:auto;flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:600;color:var(--ink);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 13px;transition:border-color .2s,background .2s}
@@ -703,14 +703,20 @@
   .id-m:hover .id-use.ghost{opacity:1}
   /* memory-horizon notice when the chat runs past what Galdr sees */
   .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
-  .id-m{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .id-m{padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)}
   .id-m:last-child{border-bottom:none}
-  .id-m .who{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--mute);margin-bottom:4px}
+  .id-m .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mute);margin-bottom:9px}
   .id-m.ai .who{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .id-m .tx{font-size:13.5px;line-height:1.7;color:var(--ink);word-break:break-word}
   .id-m.you .tx{color:#cfccc4}
-  .id-m .tx p{margin:4px 0}.id-m .tx ul,.id-m .tx ol{margin:4px 0 4px 18px}.id-m .tx li{margin:2px 0}
-  .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px}
+  .id-m .tx p{margin:8px 0}.id-m .tx ul,.id-m .tx ol{margin:8px 0 8px 20px}.id-m .tx li{margin:5px 0}
+  .id-m .tx h1{font-family:var(--ui);font-size:21px;font-weight:600;letter-spacing:-.01em;margin:16px 0 8px;color:#fff}
+  .id-m .tx h2{font-family:var(--ui);font-size:17.5px;font-weight:600;margin:16px 0 6px;color:#fff}
+  .id-m .tx h3{font-size:14.5px;font-weight:700;margin:12px 0 4px;color:#fff}
+  .id-m .tx strong,.id-m .tx b{font-weight:700;color:#fff}
+  .id-m .tx h1:first-child,.id-m .tx h2:first-child,.id-m .tx h3:first-child{margin-top:0}
+  .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035);margin-top:14px;transition:border-color .2s,background .2s}
+  .id-in:focus-within{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.05)}
   .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:140px;padding:6px 4px}
   .id-in textarea::placeholder{color:var(--mute)}
   .id-send{flex:none;width:32px;height:32px;border-radius:50%;background:var(--ink);color:#0a0a0a;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center}
