@@ -955,7 +955,10 @@
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     document.querySelector('.main').classList.remove('has-top');
-    $('brief').value=s?s.brief:'';renderChips();renderTone();renderChain();renderIdeas();renderSparks();renderOutline();renderTabs()}
+    $('brief').value=s?s.brief:'';
+    // auto-reveal the brief panel only if this session already has a brief or files; else keep the home a clean chat
+    const bb=$('briefBox');if(bb){const has=!!(s&&(s.brief||(s.files&&s.files.length)));bb.classList.toggle('collapsed',!has);const asb=$('addSrcBtn');if(asb)asb.textContent=has?'— Hide':'＋ Brief or files'}
+    renderChips();renderTone();renderChain();renderIdeas();renderSparks();renderOutline();renderTabs()}
 
   /* scroll-spy — the outline follows where you are; back-to-top past 600px */
   function initScrollSpy(){
@@ -994,6 +997,10 @@
     toast(s.chain?'Refined will run automatically after Crystallize':'Chain off — Refined stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
+  // reveal the optional brief/files panel on demand — keeps the home a clean Idea chat by default
+  function toggleBrief(){const bb=$('briefBox');if(!bb)return;bb.classList.toggle('collapsed');
+    const open=!bb.classList.contains('collapsed');const btn=$('addSrcBtn');if(btn)btn.textContent=open?'— Hide':'＋ Brief or files';
+    if(open){const t=$('brief');if(t)setTimeout(()=>t.focus(),40)}}
 
   /* brief templates — a scaffold that teaches a good brief */
   const TPL={
@@ -1021,10 +1028,10 @@
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&s.ideas)||[];
+    const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0); // Crystallize appears once there's a conversation
     if(!ideas.length){
-      th.innerHTML='<div class="id-empty"><div class="ie-t">ไม่รู้จะเริ่มตรงไหน — ลองอันนี้ดู</div>'
-        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div>'
-        +'<div class="ie-how">Chat → <b>✚ Save</b> the parts you like → <b>Crystallize</b> turns them into a document</div></div>';
+      th.innerHTML='<div class="id-empty"><div class="ie-t">ลองเริ่มจาก…</div>'
+        +'<div class="ie-chips">'+IDEA_SUGGEST.map(t=>'<button class="ie-chip" onclick="startIdea('+JSON.stringify(t).replace(/"/g,'&quot;')+')">'+esc(t)+'</button>').join('')+'</div></div>';
       return}
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')

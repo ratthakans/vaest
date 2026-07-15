@@ -668,6 +668,14 @@
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}
   /* optional brief, demoted below the chat */
   .opt-lbl{margin:28px 0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  /* home stays a clean Idea chat; brief/files reveal on demand via a quiet toggle */
+  .add-src-row{text-align:center}
+  .add-src{display:inline-flex;align-items:center;gap:7px;margin:16px auto 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:none;border:none;cursor:pointer;transition:color .15s}
+  .add-src:hover{color:var(--dim)}
+  .brief-box.collapsed{display:none}
+  /* the Crystallize entry surfaces only once there's a conversation to crystallize */
+  .idea.hero .id-sum{opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
+  .idea.hero.has-chat .id-sum{opacity:1;pointer-events:auto}
   /* the optional brief/files box recedes — a quiet secondary to the Idea hero, not a second card */
   .brief-box.secondary{background:transparent;border-color:rgba(255,255,255,.06);box-shadow:none}
   .brief-box.secondary:focus-within{border-color:rgba(255,255,255,.14);box-shadow:none;transform:none}
