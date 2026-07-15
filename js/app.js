@@ -1900,10 +1900,13 @@
       if(backFromCheckout==='success'){
         const sessionId=qp.get('session_id');
         if(sessionId){toast('Payment received — one moment…');
-          try{const cr=await fetch('/api/confirm',{method:'POST',
+          const confirmOnce=async()=>{try{const cr=await fetch('/api/confirm',{method:'POST',
             headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
-            body:JSON.stringify({session_id:sessionId})});
-            const cd=await cr.json().catch(()=>({}));boosted=!!cd.boosted}catch(e){}}
+            body:JSON.stringify({session_id:sessionId})});return await cr.json().catch(()=>({}))}catch(e){return {}}};
+          let cd=await confirmOnce();
+          // PromptPay can settle just after redirect — keep retrying while it's pending
+          for(let i=0;i<6&&!cd.activated&&cd.pending;i++){await new Promise(r=>setTimeout(r,2000));cd=await confirmOnce()}
+          boosted=!!cd.boosted;}
       }
       let ok=await checkAccess();
       // fallback: if activation is a touch behind, retry a couple times
