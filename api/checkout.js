@@ -30,6 +30,9 @@ export default async function handler(req, res) {
       const customerField = sub && sub.customerId ? { customer: sub.customerId } : { customer_email: user.email };
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        // one-time top-up → offer PromptPay (THB QR) alongside card. PromptPay can't do
+        // subscriptions, so plan checkouts stay card-only.
+        payment_method_types: ['card', 'promptpay'],
         line_items: [{ price: boostPrice, quantity: packs }],
         ...customerField,
         client_reference_id: user.email,
