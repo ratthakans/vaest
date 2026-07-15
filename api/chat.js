@@ -4,14 +4,16 @@ import { resolveAccess } from '../lib/billing.js';
 // Lazy-load the Anthropic SDK — the Idea chat (Galdr = Gemini) never needs it, so a cold
 // start on that hot path doesn't pay to import/parse the SDK. ANTHROPIC_API_KEY from env.
 let _anthropic = null;
-async function getAnthropic() {
+// exported so api/v1/*.js (the public API surface) can reuse the same client/prompts
+// instead of re-declaring them — one source of truth for the engine text.
+export async function getAnthropic() {
   if (!_anthropic) { const mod = await import('@anthropic-ai/sdk'); const Anthropic = mod.default || mod; _anthropic = new Anthropic(); }
   return _anthropic;
 }
 
 // VÆST 1.3 — Galdr (Idea/sandbox) = Gemini Flash · Odin (Think/write) = Opus 4.8 · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
 const GEMINI_MODEL = 'gemini-flash-latest';
-const ROUTE = {
+export const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
   tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
   summing:   { model: 'claude-opus-4-8' },
@@ -25,7 +27,7 @@ const ROUTE = {
 
 // ── Persona ~30% ORIONS ──
 // Base = a standard, helpful Claude · a creative-director lens as seasoning, not theatre
-const BASE = `You are VÆST — the idea-crystallizing instrument of the studio ORIONS.Agency.
+export const BASE = `You are VÆST — the idea-crystallizing instrument of the studio ORIONS.Agency.
 
 Work like a sharp professional: clear, readable, natural. No role-play, no announcing yourself, never cold.
 Always carried (about 30% of your instinct) is a creative director's lens:
@@ -35,7 +37,7 @@ Always carried (about 30% of your instinct) is a creative director's lens:
 
 Mirror the user's language: Thai question → Thai answer, English question → English answer. When sources are mixed, follow the language the user themselves writes in — never switch to English just because the sources are English. Use clean markdown: clear headings, short paragraphs, tables/lists when they speed understanding.`;
 
-const TASK = {
+export const TASK = {
   idea: `${BASE}
 
 # CURRENT TASK: IDEA — the sandbox. You are a generous creative sparring partner.
