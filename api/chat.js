@@ -1,5 +1,6 @@
 import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
+import { rateLimit } from '../lib/ratelimit.js';
 
 // Lazy-load the Anthropic SDK — the Idea chat (Galdr = Gemini) never needs it, so a cold
 // start on that hot path doesn't pay to import/parse the SDK. ANTHROPIC_API_KEY from env.
@@ -95,16 +96,6 @@ Format each as: "- **short title** {{a short exact quote from the document where
 The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
 };
 
-// sliding-window burst guard (per warm serverless instance)
-const _hits = new Map();
-function rateLimited(email) {
-  const now = Date.now();
-  const arr = (_hits.get(email) || []).filter(t => now - t < 60_000);
-  if (arr.length >= 12) { _hits.set(email, arr); return true; }
-  arr.push(now); _hits.set(email, arr);
-  if (_hits.size > 500) _hits.clear(); // memory backstop
-  return false;
-}
 
 // Gemini (Idea sandbox) — streamed via SSE, rough token estimate. Throws on any error so the caller can fall back.
 async function streamGemini(res, base, dynamic, messages, maxTokens) {
@@ -199,8 +190,8 @@ export default async function handler(req, res) {
   // reject unknown modes — otherwise an unknown mode falls back to ROUTE.summing (Opus)
   // while skipping the document counter, and the Refine gate keys off literal mode strings.
   if (!Object.prototype.hasOwnProperty.call(ROUTE, mode)) { res.status(400).json({ error: 'unknown mode' }); return; }
-  // burst guard — 12 calls/min/user (per warm instance; coarse but real)
-  if (rateLimited(user.email)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
+  // burst guard — 12 calls/min/user (distributed when KV is connected, else per-instance)
+  if (await rateLimit('chat:' + user.email, 12, 60)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
 
   // the two independent reads run in parallel — shaves a Supabase round-trip off time-to-first-token
   const [access, u] = await Promise.all([resolveAccess(user.email), readUsage(user.email)]);

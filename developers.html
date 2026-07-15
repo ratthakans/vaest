@@ -272,7 +272,12 @@ Content-Type: application/json
   -H "Content-Type: application/json" \
   -d '{"brief":"rebrand a small Ari coffee shop for the 25-40 creative crowd"}'</div>
 
-      <p><b>Errors.</b> <code>401</code> missing/invalid key · <code>402</code> no active plan · <code>429</code> rate limit (12/min) or monthly usage reached · <code>400</code> missing brief.</p>
+      <p><b>More engines</b> — same auth and shape, each takes a <code>document</code>:</p>
+      <div class="code">POST /api/v1/think     { document }  → { pushes }   // creative-director provocations
+POST /api/v1/refine    { document }  → { notes }    // inconsistency · redundancy · logic
+POST /api/v1/present   { document }  → { slides }   // a parsed deck (array of slides)</div>
+
+      <p><b>Errors.</b> <code>401</code> missing/invalid key · <code>402</code> no active plan · <code>429</code> rate limit (12/min) or monthly usage reached · <code>400</code> missing input.</p>
 
       <div class="note">Streaming, file input, and the Think · Refine · Present endpoints are on the way. Building something? — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a>.</div>
     </section>
