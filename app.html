@@ -266,6 +266,7 @@
       <button class="set-tab" data-st="persona" onclick="setSetTab('persona')">Persona</button>
       <button class="set-tab" data-st="usage" onclick="setSetTab('usage')">Usage</button>
       <button class="set-tab" data-st="privacy" onclick="setSetTab('privacy')">Privacy</button>
+      <button class="set-tab" data-st="api" onclick="setSetTab('api')">API</button>
     </div>
     <div class="set-body">
       <div class="set-pane on" data-sp="profile">
@@ -323,6 +324,13 @@
         <button class="set-link" onclick="exportAllData()">Export everything (JSON) →</button><br>
         <button class="set-link" style="margin-top:10px;color:var(--cin-d)" onclick="wipeCloud()">Delete my cloud copy →</button>
         <div class="set-note">Deleting the cloud copy keeps what's on this device. <a href="/privacy.html" style="color:var(--dim)">Privacy policy</a></div>
+      </div>
+      <div class="set-pane" data-sp="api">
+        <div class="set-lbl">API keys</div>
+        <div class="set-note" style="margin:4px 0 14px">Build VÆST into your own tools. Calls draw from your plan's monthly usage — no separate billing. <a href="/developers#api" target="_blank" style="color:var(--dim)">Read the docs →</a></div>
+        <div id="apiKeyNew" style="display:none;margin-bottom:14px"></div>
+        <div id="apiKeyList"></div>
+        <button class="dlg-ok" style="margin-top:14px" onclick="createNewApiKey()">Create new key</button>
       </div>
     </div>
   </div>

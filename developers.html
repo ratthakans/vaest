@@ -38,6 +38,7 @@
   .doc li{font-family:var(--th);font-size:14.5px;line-height:1.8;color:var(--dim);margin:6px 0}
   .doc li b{color:var(--ink);font-weight:600}
   .doc kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line2);border-radius:5px;padding:2px 7px;color:var(--ink);white-space:nowrap}
+  .doc p code{font-family:var(--mono);font-size:.88em;background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink)}
   .doc .note{border:1px solid var(--line2);border-radius:10px;padding:15px 17px;margin-top:18px;background:#0a0a0c;max-width:66ch}
   .doc .note b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
   .doc .code{font-family:var(--mono);font-size:12.5px;line-height:1.9;background:#0a0a0c;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:18px;color:#cfd4da;overflow-x:auto;white-space:pre;max-width:66ch}
@@ -78,7 +79,7 @@
     <a href="#export">Export &amp; decks</a>
     <a href="#settings">Settings &amp; privacy</a>
     <a href="#keys">Shortcuts</a>
-    <a href="#api">API (coming)</a>
+    <a href="#api">API</a>
   </aside>
 
   <div class="doc">
@@ -245,17 +246,35 @@
 
     <section id="api">
       <span class="eyebrow">16 · Build with it</span>
-      <h2>The API — coming</h2>
-      <p>The same pipeline that powers the app is being opened as an API, so your tools, agents and integrations can call VÆST directly. On the roadmap:</p>
-      <div class="code">POST /v1/summing     brief + files      → document
-POST /v1/think       document           → creative pushes
-POST /v1/refine      document           → suggestions
-POST /v1/present     document           → slides
+      <h2>The API</h2>
+      <p>The same engine that powers the app is open as an HTTP API — call VÆST from your own tools, agents and integrations. <b>Live now</b>, starting with Crystallize; Think, Refine and Present follow.</p>
 
-Auth:      Authorization: Bearer vst_live_…   (per-org key)
-Webhooks:  client.commented · document.approved
-MCP:       VÆST as a tool your agents can call</div>
-      <div class="note">Early access opens to Business-plan studios first. Tell us what you'd integrate — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a>.</div>
+      <p><b>Get a key.</b> In the app, open <b>Settings → API → Create new key</b>. The key (<code>vsk_live_…</code>) is shown once, so copy it then. Keys require an active VÆST plan and draw from the same monthly usage as the app — no separate billing.</p>
+
+      <p><b>Crystallize</b> — a brief becomes one sharp document.</p>
+      <div class="code">POST https://vaest.orions.agency/api/v1/crystallize
+Authorization: Bearer vsk_live_…
+Content-Type: application/json
+
+{
+  "brief":   "your brief — messy is fine",
+  "context": "optional extra source text"
+}
+
+→ 200 OK
+{
+  "document": "# Title\n\n## Section\n…",          // markdown
+  "usage":    { "input_tokens": 1234, "output_tokens": 890 }
+}</div>
+
+      <div class="code">curl -X POST https://vaest.orions.agency/api/v1/crystallize \
+  -H "Authorization: Bearer vsk_live_…" \
+  -H "Content-Type: application/json" \
+  -d '{"brief":"rebrand a small Ari coffee shop for the 25-40 creative crowd"}'</div>
+
+      <p><b>Errors.</b> <code>401</code> missing/invalid key · <code>402</code> no active plan · <code>429</code> rate limit (12/min) or monthly usage reached · <code>400</code> missing brief.</p>
+
+      <div class="note">Streaming, file input, and the Think · Refine · Present endpoints are on the way. Building something? — <a href="mailto:rakan@orions.agency" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">rakan@orions.agency</a>.</div>
     </section>
   </div>
 </div>
