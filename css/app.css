@@ -154,7 +154,8 @@
   .si-go{flex:none;font-size:12.5px;font-weight:650;color:#0a0a0a;background:var(--ink);padding:8px 14px;border-radius:7px}
   .si-go:hover{background:#fff}
   /* whole-document idea bar */
-  .doc-idea{display:flex;align-items:flex-end;gap:9px;margin:0 0 30px;padding:9px 11px;background:rgba(255,255,255,.028);border:1px solid var(--line);border-radius:11px;transition:border-color .16s,opacity .2s}
+  /* quiet secondary input — recedes so the document itself is the focus (matches .brief-box.secondary) */
+  .doc-idea{display:flex;align-items:flex-end;gap:9px;margin:0 0 30px;padding:9px 11px;background:transparent;border:1px solid rgba(255,255,255,.06);border-radius:11px;transition:border-color .16s,opacity .2s}
   .doc-idea:focus-within{border-color:var(--line2)}
   .doc-idea.working{opacity:.5;pointer-events:none}
   .doc-idea textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.55;max-height:120px;padding:6px 5px}
