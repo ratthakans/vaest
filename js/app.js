@@ -1131,6 +1131,10 @@
     const ideas=(s&&curChat(s).ideas)||[];
     const anyChat=s?chatsOf(s).some(c=>c.ideas.length):false;
     const box=$('ideaBox');if(box)box.classList.toggle('has-chat',anyChat); // Crystallize appears once any chat has a conversation
+    // the desk premise, always visible: this button sums SOURCES, not just the open chat
+    const sb=$('idSumBtn');
+    if(sb&&s){const n=chatsOf(s).filter(c=>c.ideas.length).length+(s.files||[]).length+((s.brief||'').trim()?1:0);
+      sb.textContent=n>1?('Crystallize · '+n+' sources →'):'Crystallize →'}
     if(!ideas.length){ th.innerHTML=''; return} // clean empty state — just the input, Claude-style
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
