@@ -1629,6 +1629,18 @@
     flow:'Focus only on "coherence and order" — do the parts flow, is anything self-contradicting?',
     complete:'Focus only on "completeness" — any important point missing, any section too thin?'};
   const LENS_LBL={'':'All',tone:'Tone',flow:'Coherence',complete:'Completeness'};
+  // what the canvas was built FROM — so Refine can catch what the document *dropped*,
+  // not just what it says. Compact digest: titles and names only, never full content.
+  function sourcesDigest(){
+    const s=cur();if(!s)return '';
+    const bits=[];
+    chatsOf(s).filter(c=>c.ideas.length).forEach(c=>bits.push('chat “'+(c.title||'untitled')+'” · '+c.ideas.length+' messages'));
+    if(s.brief&&s.brief.trim())bits.push('brief: '+s.brief.replace(/\s+/g,' ').slice(0,140));
+    (s.files||[]).forEach(f=>bits.push((f.img?'image: ':'file: ')+f.n));
+    const tp=sparkTopics();Object.keys(tp).forEach(t=>bits.push('saved sparks · '+t+' ('+tp[t].length+')'));
+    if(!bits.length)return '';
+    return capTxt('This document was crystallized from these sources:\n- '+bits.join('\n- ')
+      +'\nIf something a source clearly carries never made it into the document, flag it as one of your points.',1500)}
   function mastHead(lens){
     return '<div class="mast-hd"><div class="mast-ttl">Refine · '+LENS_LBL[lens||'']+'</div><div class="mast-sub">Make it cleaner — catch contradictions, repetition and broken logic. Approve to fix.</div></div>'}
   function mastHeader(){return mastHead(_mast&&_mast.lens)}
@@ -1647,7 +1659,11 @@
     const wEl=$('mastWait');wEl.textContent=waits[0];
     const wt=setInterval(()=>{wi++;const el=$('mastWait');if(el)el.textContent=waits[wi%waits.length]},2600);
     const prompt='Here is the full document:\n\n'+genMd();
-    streamAPI('mastering',[{role:'user',content:prompt}],(LENS[lens]||''),
+    // toneSys carries persona + project voice + taste memory (every approve/skip so far) —
+    // Refine judged blind to all of it before this. The sources digest closes the loop:
+    // the final gate knows what the work was built from, not just what it became.
+    const sys=[toneSys(),(LENS[lens]||''),sourcesDigest()].filter(Boolean).join('\n\n');
+    streamAPI('mastering',[{role:'user',content:prompt}],sys,
         raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
       .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:'mastering'};renderMast();if(document.hidden)notifyDone('Refine')})
       .catch(e=>{box.remove();toast('Refine failed: '+e.message)})
