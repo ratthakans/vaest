@@ -869,8 +869,12 @@
     const rt=getRates();let o=0,f=0,idea=0,mi=0;sessions.forEach(x=>{const t=x.tok||{};o+=t.opus||0;f+=t.fable||0;idea+=t.idea||0;mi+=t.mimir||0});
     const q=window.QUOTA;const qe=$('quotaRow2');
     if(qe){const h=quotaBarHTML(q);if(h){qe.style.display='';qe.innerHTML=h}else qe.style.display='none'}
-    $('usageBreak').innerHTML=[['ODIN · write',o],['MIMIR · think',mi],['NORRSKEN · refine',f],['Galdr · idea',idea]]
-      .map(r=>'<div class="ub-row"><span>'+r[0]+'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
+    // Norrsken rides the same Anthropic key as Odin. `false` here means the key is absent, so that
+    // engine has been silently falling back — the tokens above would be landing in another bucket.
+    const en=(window.QUOTA&&window.QUOTA.engines)||null;
+    $('usageBreak').innerHTML=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['Galdr · idea',idea,'galdr']]
+      .map(r=>'<div class="ub-row"><span>'+r[0]+(en&&en[r[2]]===false?' <em class="ub-off">no key — falling back</em>':'')
+        +'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
   function closeSettings(){$('setView').classList.remove('show')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
