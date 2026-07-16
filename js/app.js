@@ -2,7 +2,9 @@
   const $=id=>document.getElementById(id);
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function toast(m){$('toastMsg').textContent=m;$('toast').classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>$('toast').classList.remove('show'),2400)}
-  function raf(fn){let p=false,last;return v=>{last=v;if(p)return;p=true;requestAnimationFrame(()=>{p=false;fn(last)})}}
+  // .stop() kills any queued frame — call it before painting a final result, or the pending
+  // frame fires after your write and resurrects the streaming text + cursor on top of it.
+  function raf(fn){let p=false,last,dead=false;const g=v=>{last=v;if(p||dead)return;p=true;requestAnimationFrame(()=>{p=false;if(!dead)fn(last)})};g.stop=()=>{dead=true};return g}
   function nearBottom(el){return el.scrollHeight-el.scrollTop-el.clientHeight<90}
   function softScroll(el){if(nearBottom(el))el.scrollTop=el.scrollHeight}
   // rAF smooth scroll — reliable across browsers (no scroll-behavior)
@@ -1475,9 +1477,10 @@
     box.remove();pushUndo();setBusy(true);sec.classList.add('flash');
     const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
       +'\n\nWork this idea into the section, keeping what still serves it: '+idea+'\n\nReturn ONLY the revised section body (markdown, no heading).';
-    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
-      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
+    const r=raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
+      .catch(e=>{r.stop();c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false);sec.classList.remove('flash')})}
   // flow-trail "Ø Think" → there is no global Think anymore; light the per-section buttons up instead
   function hintSectionThink(){
@@ -1500,9 +1503,9 @@
     box.innerHTML='<div class="sth-hd"><b style="font-family:var(--mono)">Ø</b> Think — pushing this section…</div><div class="sth-stream"><span class="cursor"></span></div>';
     c.after(box);
     const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nSection body:\n'+curTxt;
-    streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),
-        raf(full=>{const m=box.querySelector('.sth-stream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{renderSectionThink(sec,box,h,parsePoints(text))})
+    const r=raf(full=>{const m=box.querySelector('.sth-stream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();renderSectionThink(sec,box,h,parsePoints(text))})
       .catch(e=>{box.remove();toast('Ø Think failed: '+e.message)})
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy')})}
   function renderSectionThink(sec,box,h,points){
@@ -1534,10 +1537,11 @@
       +'\n\nWork this push into the section, keeping what still serves it: '+point.t
       +(point.q?(' (it concerns this part: "'+point.q+'")'):'')
       +'\n\nReturn ONLY the revised section body (markdown, no heading).';
-    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);
+    const r=raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);
         box.__done[i]='fixed';tasteLog('approved',point);schedulePersist();paintSectionThink(box)})
-      .catch(e=>{c.innerHTML=old;paintSectionThink(box);toast('Failed: '+e.message)})
+      .catch(e=>{r.stop();c.innerHTML=old;paintSectionThink(box);toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false)})}
   // whole-document idea — weave a direction across the canvas (Odin)
   async function canvasIdea(){
