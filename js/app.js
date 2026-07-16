@@ -1492,6 +1492,14 @@
       if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t);else if(k==='chat')sel.chats.push(cb.dataset.id)});
     if(!sel.brief&&!sel.files.length&&!sel.topics.length&&!sel.chats.length){toast('Pick at least one source');return}
     closeSummingPicker();doSumming(sel)}
+  // readable source names for the crystallize moment — chat titles, brief, files, spark topics
+  function crystallizeSources(sel,imgs){
+    const s=cur();if(!s)return [];const out=[];
+    (sel.chats||[]).forEach(id=>{const c=chatsOf(s).find(x=>x.id===id);if(c)out.push(c.title||'Idea chat')});
+    if(sel.brief&&s.brief)out.push('Brief');
+    (sel.files||[]).forEach(i=>{const f=s.files[i];if(f)out.push((f.img?'▦ ':'')+f.n)});
+    (sel.topics||[]).forEach(t=>out.push(t));
+    return out.map(x=>String(x).slice(0,24))}
   async function doSumming(sel){
     if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
@@ -1507,7 +1515,13 @@
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> VÆST is crystallizing…</div><div class="gen-body" id="genBody"></div></div>';
+    // the crystallize moment — name each source and let them converge, so the premise is visible:
+    // scattered thinking becoming one document. Purely presentational; streaming starts underneath.
+    const labels=crystallizeSources(sel,imgs);
+    const conv=labels.length>1
+      ? '<div class="gen-conv">'+labels.map((l,i)=>'<span class="gc-src" style="animation-delay:'+(i*90)+'ms">'+esc(l)+'</span>').join('<span class="gc-plus">+</span>')+'</div>'
+      : '';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Crystallizing'+(labels.length>1?' '+labels.length+' sources':'')+'…</div>'+conv+'<div class="gen-body" id="genBody"></div></div>';
     try{
       const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
       const split=splitCanvases(md);
