@@ -2,7 +2,9 @@
   const $=id=>document.getElementById(id);
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function toast(m){$('toastMsg').textContent=m;$('toast').classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>$('toast').classList.remove('show'),2400)}
-  function raf(fn){let p=false,last;return v=>{last=v;if(p)return;p=true;requestAnimationFrame(()=>{p=false;fn(last)})}}
+  // .stop() kills any queued frame — call it before painting a final result, or the pending
+  // frame fires after your write and resurrects the streaming text + cursor on top of it.
+  function raf(fn){let p=false,last,dead=false;const g=v=>{last=v;if(p||dead)return;p=true;requestAnimationFrame(()=>{p=false;if(!dead)fn(last)})};g.stop=()=>{dead=true};return g}
   function nearBottom(el){return el.scrollHeight-el.scrollTop-el.clientHeight<90}
   function softScroll(el){if(nearBottom(el))el.scrollTop=el.scrollHeight}
   // rAF smooth scroll — reliable across browsers (no scroll-behavior)
@@ -1224,7 +1226,7 @@
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
-      +(_shareId?'':'<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="runThink()">Ø Think <em>optional</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>')
+      +(_shareId?'':'<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Ø Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>')
       +'</div>';
     if(!_shareId)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
@@ -1475,21 +1477,72 @@
     box.remove();pushUndo();setBusy(true);sec.classList.add('flash');
     const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
       +'\n\nWork this idea into the section, keeping what still serves it: '+idea+'\n\nReturn ONLY the revised section body (markdown, no heading).';
-    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
-      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
+    const r=raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
+      .catch(e=>{r.stop();c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false);sec.classList.remove('flash')})}
+  // flow-trail "Ø Think" → there is no global Think anymore; light the per-section buttons up instead
+  function hintSectionThink(){
+    const btns=document.querySelectorAll('#doc .sec-tools .st.think');
+    if(!btns.length){toast('No sections yet');return}
+    btns.forEach(b=>{b.classList.add('hint');setTimeout(()=>b.classList.remove('hint'),2400)});
+    const first=btns[0].closest('.sec');
+    if(first){const cv=$('cvView');smoothTo(cv,cv.scrollTop+first.getBoundingClientRect().top-cv.getBoundingClientRect().top-80)}
+    toast('Ø Think lives in each section now — pick the one to push')}
+  /* Ø Think per section — Mimir proposes pushes for this one section; nothing changes until
+     the user approves a point, and then Odin rewrites only this section. Propose and write
+     stay separate models on purpose: the critique comes from outside the document's voice. */
   function sectionThink(btn){
     if(_busy){toast('Working…');return}
     const sec=btn.closest('.sec'),hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
-    const h=hEl?hEl.innerText.trim():'',old=c.innerHTML,curTxt=c.innerText.trim();
-    pushUndo();setBusy(true);btn.disabled=true;btn.classList.add('busy');
-    const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
-      +'\n\nØ Think: push this section braver — a sharper cultural angle, a bolder move, the idea it stops one step short of. Rewrite it stronger while keeping its intent and language. Return ONLY the revised section body (markdown, no heading).';
-    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Ø Think pushed “'+h+'”')})
-      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
+    const h=hEl?hEl.innerText.trim():'',curTxt=c.innerText.trim();
+    const ex=sec.querySelector('.sec-think');if(ex){ex.remove();return}
+    setBusy(true);btn.disabled=true;btn.classList.add('busy');
+    const box=document.createElement('div');box.className='sec-think';
+    box.innerHTML='<div class="sth-hd"><b style="font-family:var(--mono)">Ø</b> Think — pushing this section…</div><div class="sth-stream"><span class="cursor"></span></div>';
+    c.after(box);
+    const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nSection body:\n'+curTxt;
+    const r=raf(full=>{const m=box.querySelector('.sth-stream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();renderSectionThink(sec,box,h,parsePoints(text))})
+      .catch(e=>{box.remove();toast('Ø Think failed: '+e.message)})
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy')})}
+  function renderSectionThink(sec,box,h,points){
+    box.__pts=points;box.__done={};box.__h=h;
+    paintSectionThink(box)}
+  function paintSectionThink(box){
+    const pts=box.__pts,done=box.__done;
+    const remain=pts.filter((p,i)=>!done[i]).length;
+    let html='<div class="sth-hd"><b style="font-family:var(--mono)">Ø</b> Think · this section <span class="sth-count">'+(remain?remain+' pushes':'all done')+'</span></div>';
+    pts.forEach((p,i)=>{const st=done[i];
+      html+='<div class="sth-i'+(st?' done':'')+'"><div class="sth-t">'+mdInline(p.t)+'</div>'
+        +(st==='fixed'?'<div class="mi-tag ok">✓ Applied</div>'
+          :st==='skip'?'<div class="mi-tag skip">— Skipped</div>'
+          :'<div class="mi-act"><button class="mi-ap" onclick="applySectionPush(this,'+i+')">Approve</button><button class="mi-sk" onclick="skipSectionPush(this,'+i+')">Skip</button></div>')
+        +'</div>'});
+    html+='<div class="sth-foot"><button class="mi-close" onclick="this.closest(\'.sec-think\').remove()">Close</button></div>';
+    box.innerHTML=html}
+  function skipSectionPush(el,i){
+    const box=el.closest('.sec-think');if(!box)return;
+    box.__done[i]='skip';tasteLog('skipped',box.__pts[i]);paintSectionThink(box)}
+  function applySectionPush(el,i){
+    if(_busy){toast('Working…');return}
+    const box=el.closest('.sec-think'),sec=el.closest('.sec');if(!box||!sec)return;
+    const c=sec.querySelector('.sec-c'),point=box.__pts[i],h=box.__h;
+    const old=c.innerHTML,curTxt=c.innerText.trim();
+    pushUndo();setBusy(true);
+    const act=box.querySelector('.sth-i:not(.done) .mi-act');if(act)act.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying…</span>';
+    const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt
+      +'\n\nWork this push into the section, keeping what still serves it: '+point.t
+      +(point.q?(' (it concerns this part: "'+point.q+'")'):'')
+      +'\n\nReturn ONLY the revised section body (markdown, no heading).';
+    const r=raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),r)
+      .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);
+        box.__done[i]='fixed';tasteLog('approved',point);schedulePersist();paintSectionThink(box)})
+      .catch(e=>{r.stop();c.innerHTML=old;paintSectionThink(box);toast('Failed: '+e.message)})
+      .finally(()=>{setBusy(false)})}
   // whole-document idea — weave a direction across the canvas (Odin)
   async function canvasIdea(){
     if(_busy){toast('Working…');return}
@@ -1511,35 +1564,29 @@
     flow:'Focus only on "coherence and order" — do the parts flow, is anything self-contradicting?',
     complete:'Focus only on "completeness" — any important point missing, any section too thin?'};
   const LENS_LBL={'':'All',tone:'Tone',flow:'Coherence',complete:'Completeness'};
-  const MAST_SUB={think:'Make it braver — bend the safe choices, find the sharper angle. Approve what lands.',
-    mastering:'Make it cleaner — catch contradictions, repetition and broken logic. Approve to fix.'};
-  function mastHead(kind,lens){
-    const ttl=kind==='think'?'Ø Think · Senior Creative':'Refine · '+LENS_LBL[lens||''];
-    return '<div class="mast-hd"><div class="mast-ttl">'+ttl+'</div><div class="mast-sub">'+MAST_SUB[kind==='think'?'think':'mastering']+'</div></div>'}
-  function mastHeader(){return mastHead(_mast&&_mast.kind,_mast&&_mast.lens)}
-  function startAudit(kind,lens,btn){
+  function mastHead(lens){
+    return '<div class="mast-hd"><div class="mast-ttl">Refine · '+LENS_LBL[lens||'']+'</div><div class="mast-sub">Make it cleaner — catch contradictions, repetition and broken logic. Approve to fix.</div></div>'}
+  function mastHeader(){return mastHead(_mast&&_mast.lens)}
+  function runMastering(lens){
+    if(!canRefine()){toast('Refine is on Pro and above — upgrade to unlock the apex audit');return}
+    lens=lens||'';const btn=$('mastBtn');
     if(_busy){toast('Working…');return}
     const s=cur();if(!s||!s.canvas.trim()){toast('No document yet');return}
     setBusy(true);if(btn)btn.disabled=true;
     const old=$('doc').querySelector('.mast');if(old)old.remove();unmarkFlaws();
     const box=document.createElement('div');box.className='mast';
-    box.innerHTML='<div class="mast-top">'+mastHead(kind,lens)+'<span class="mast-count" id="mastWait"></span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
+    box.innerHTML='<div class="mast-top">'+mastHead(lens)+'<span class="mast-count" id="mastWait"></span></div><div class="mi"><span class="mi-dot"></span><div class="mi-b"><div class="mi-t" id="mastStream"><span class="cursor"></span></div></div></div>';
     $('doc').prepend(box);$('cvView').scrollTop=0;
     // persona-flavored waiting lines — the model is genuinely thinking, show it
     const waits=PERSONA_WAIT[personaKey()];let wi=0;
     const wEl=$('mastWait');wEl.textContent=waits[0];
     const wt=setInterval(()=>{wi++;const el=$('mastWait');if(el)el.textContent=waits[wi%waits.length]},2600);
     const prompt='Here is the full document:\n\n'+genMd();
-    streamAPI(kind==='think'?'think':'mastering',[{role:'user',content:prompt}],
-        (kind==='think'?toneSys():(LENS[lens]||'')),
+    streamAPI('mastering',[{role:'user',content:prompt}],(LENS[lens]||''),
         raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:kind};renderMast();if(document.hidden)notifyDone(kind==='think'?'Ø Think':'Refine')})
-      .catch(e=>{box.remove();toast((kind==='think'?'Ø Think':'Refine')+' failed: '+e.message)})
+      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:'mastering'};renderMast();if(document.hidden)notifyDone('Refine')})
+      .catch(e=>{box.remove();toast('Refine failed: '+e.message)})
       .finally(()=>{clearInterval(wt);setBusy(false);if(btn)btn.disabled=false})}
-  function runMastering(lens){
-    if(!canRefine()){toast('Refine is on Pro and above — upgrade to unlock the apex audit');return}
-    startAudit('mastering',lens||'',$('mastBtn'))}
-  function runThink(){startAudit('think','',$('thinkBtn'))}
   function parsePoints(t){
     const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));
     const raw=pts.length?pts:[String(t).trim()];

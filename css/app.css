@@ -163,6 +163,20 @@
   .st.busy{color:var(--cin-d);pointer-events:none}
   .st.think b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
   .st.think:hover b{-webkit-text-fill-color:var(--ink)}
+  /* flow-trail hint — light the per-section Think buttons so people find the moved control */
+  .st.think.hint{color:var(--ink);background:rgba(255,255,255,.09);animation:pl 1.1s ease-in-out 2}
+  .sec-tools:has(.st.hint){opacity:1}
+  /* ── Ø Think per section — Mimir proposes, approve applies to this section only ── */
+  .sec-think{border:1px solid var(--line);border-radius:10px;background:var(--card);margin:14px 0 6px;padding:4px 16px 10px;animation:chipIn .24s var(--ease)}
+  .sth-hd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:650;color:var(--ink);padding:10px 0 4px}
+  .sth-hd b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sth-count{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute)}
+  .sth-stream{font-size:13.5px;line-height:1.75;color:var(--dim);padding:6px 0 8px}
+  .sth-i{padding:10px 0;border-top:1px solid var(--line)}
+  .sth-i .sth-t{font-size:13.5px;line-height:1.7;color:var(--ink)}
+  .sth-i.done .sth-t{color:var(--mute)}
+  .sth-i .mi-act{display:flex;gap:8px;margin-top:9px}
+  .sth-foot{display:flex;border-top:1px solid var(--line);padding-top:4px;margin-top:2px}
   /* inline section idea composer */
   .sec-idea{display:flex;align-items:flex-end;gap:8px;margin:10px 0 6px;padding:9px 10px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;animation:chipIn .24s var(--ease)}
   .sec-idea textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.55;max-height:140px;padding:5px 4px}
