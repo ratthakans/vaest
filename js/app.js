@@ -1595,7 +1595,7 @@
         +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
     }finally{setBusy(false);go.disabled=false;go.innerHTML='Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
-  /* ═══ SECTION IDEA + Ø THINK (per section · Odin) ═══ */
+  /* ═══ SECTION IDEA (Odin writes) + Ø THINK (Mimir proposes, Odin applies) — per section ═══ */
   function sectionIdea(btn){
     const sec=btn.closest('.sec');const ex=sec.querySelector('.sec-idea');
     if(ex){ex.remove();return}
