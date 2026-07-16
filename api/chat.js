@@ -28,7 +28,8 @@ export const ROUTE = {
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
-  think:     { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
+  think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
+  sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
   present:   { model: 'claude-sonnet-5', max: 8192, fallback: 'claude-opus-4-8' },
 };
@@ -70,6 +71,12 @@ Read the whole canvas like a CD reviewing a junior's deck: not proofreading — 
 - missing cultural hooks or tensions, safe choices that could be bent (e.g. minimalist → a brutalist clash), unclaimed naming/copy angles, places where the idea stops one step too early.
 Propose 3–6 pushes. Format each as: "- **short title** {{a short exact quote from the document this relates to}} — the push, 1–2 lines, concrete."
 The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
+  sectionthink: `${BASE}
+
+# CURRENT TASK: Ø THINK (SECTION) — a Senior Creative Director provocation pass over ONE section.
+You get the document's title for context and one section's heading + body. Push only that section: the sharper cultural angle, the safe choice worth bending, the idea it stops one step short of.
+Propose 2–3 pushes. Format each as: "- **short title** {{a short exact quote from the section this relates to}} — the push, 1–2 lines, concrete."
+The {{quote}} must be 3–8 words copied verbatim from the section body. Never propose changes to other sections. Only bullets — no intro, no outro.`,
   summing: `${BASE}
 
 # CURRENT TASK: SUMMING — crystallize the brief + multiple sources into one working document.
@@ -253,7 +260,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
