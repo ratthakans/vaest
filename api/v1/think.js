@@ -7,7 +7,8 @@ import { runApiEngine } from '../../lib/apiengine.js';
 export default async function handler(req, res) {
   const out = await runApiEngine(req, res, {
     taskKey: 'think',
-    model: 'claude-opus-4-8',
+    openai: 'gpt-5.6-sol',
+    fallback: 'claude-opus-4-8',
     maxTokens: 4096,
     buildContent: (b) => (b.document || '').trim() || null,
   });

@@ -1,6 +1,7 @@
 import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
+import { streamOpenAI } from '../lib/openai.js';
 
 // Lazy-load the Anthropic SDK — the Idea chat (Galdr = Gemini) never needs it, so a cold
 // start on that hot path doesn't pay to import/parse the SDK. ANTHROPIC_API_KEY from env.
@@ -12,7 +13,13 @@ export async function getAnthropic() {
   return _anthropic;
 }
 
-// VÆST 1.3 — Galdr (Idea/sandbox) = Gemini Flash · Odin (Think/write) = Opus 4.8 · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
+// VÆST 1.4 — Galdr (Idea/sandbox) = Gemini Flash · Odin (write) = Opus 4.8 · Mimir (Ø Think) = GPT-5.6 Sol
+// · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
+//
+// Critic vs writer: Mimir and Norrsken only ever *propose* (Think pushes / Refine points) — they never
+// write into the canvas. Every mode that puts words in the document (summing, apply, improve, edit) stays
+// on Odin, so one document keeps one voice. Mimir is deliberately a different model family from Odin:
+// the point of Ø Think is a second opinion the author wouldn't have reached on its own.
 const GEMINI_MODEL = 'gemini-flash-latest';
 export const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
@@ -21,7 +28,7 @@ export const ROUTE = {
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
-  think:     { model: 'claude-opus-4-8' },
+  think:     { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
   present:   { model: 'claude-sonnet-5', max: 8192, fallback: 'claude-opus-4-8' },
 };
@@ -246,7 +253,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
@@ -256,6 +263,17 @@ export default async function handler(req, res) {
       // Idea sandbox → Gemini Flash, but never let a Gemini hiccup break the flow: fall back to Haiku
       try { usage = await streamGemini(res, base, system || '', messages, maxTok); }
       catch (ge) { usage = await streamAnthropic(res, route.fallback, base, system || '', messages, 2048); usage.model = route.fallback; }
+    } else if (route.openai) {
+      // Ø Think → Mimir. Any OpenAI problem (no key, outage, rate limit) falls back to Odin so the
+      // feature never hard-fails — but only if nothing streamed yet, so we never double up text.
+      try {
+        usage = await streamOpenAI(res, route.openai, base, system || '', messages, maxTok);
+      } catch (oe) {
+        if (res.__wrote || !route.fallback) throw oe;
+        console.error('mimir failed, falling back to odin:', oe?.message || oe);
+        usage = await streamAnthropic(res, route.fallback, base, system || '', messages, maxTok);
+        usage.model = route.fallback;
+      }
     } else {
       // Specialty models (NORRSKEN·Fable, Present·Sonnet) fall back to Opus if the model
       // is ever unavailable — but only if nothing has streamed yet, so we never double up text.
@@ -276,9 +294,11 @@ export default async function handler(req, res) {
     if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
     if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
     await writeUsageRow(user.email, nextData);
-    // cost bucket only (galdr/norrsken/odin) — never the underlying model id
+    // cost bucket only (galdr/mimir/norrsken/odin) — never the underlying model id.
+    // Keyed off the model that actually ran, so a Mimir→Odin fallback is billed as Odin.
     const mid = String(usage.model || route.model || '');
-    const bucket = /fable/.test(mid) ? 'norrsken' : /gemini|haiku|sonnet/.test(mid) ? 'galdr' : 'odin';
+    const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
+      : /gemini|haiku|sonnet/.test(mid) ? 'galdr' : 'odin';
     res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`); // lets the client show per-document cost
     res.end();
   } catch (e) {

@@ -10,7 +10,7 @@
     "jsdom": "^29.1.1"
   },
   "scripts": {
-    "test": "node tests/unit.mjs",
+    "test": "node tests/unit.mjs && node tests/openai.mjs",
     "eval": "node tests/eval-run.mjs"
   }
 }
