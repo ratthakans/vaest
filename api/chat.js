@@ -194,16 +194,46 @@ async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
 
-  // 1) auth
-  const user = await verifyUser(req);
-  if (!user) { res.status(401).json({ error: 'Not signed in, or your session expired' }); return; }
-
-  // sync validation first — fail fast before any I/O
+  // sync validation first — identical for anonymous and signed-in, fail fast before any I/O
   const { mode = 'summing', messages = [], system = '' } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) { res.status(400).json({ error: 'messages required' }); return; }
   // reject unknown modes — otherwise an unknown mode falls back to ROUTE.summing (Opus)
   // while skipping the document counter, and the Refine gate keys off literal mode strings.
   if (!Object.prototype.hasOwnProperty.call(ROUTE, mode)) { res.status(400).json({ error: 'unknown mode' }); return; }
+
+  // 1) auth
+  const user = await verifyUser(req);
+
+  // ── Anonymous trial ── no account for the free Galdr idea chat ONLY. Everything that spends a
+  // paid engine (summing/think/refine/present/edit/…) still needs a plan. Guarded by a per-IP
+  // burst + hourly limit and a hard context cap; never touches the DB and never records usage.
+  // Gemini-only: an anon call that fails does NOT fall back to Anthropic (no paid engine for anon).
+  if (!user) {
+    if (mode !== 'idea') { res.status(401).json({ error: 'Sign up to use this — the free trial covers the Idea chat', signup: true }); return; }
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
+    if (await rateLimit('anonburst:' + ip, 6, 60)) { res.status(429).json({ error: 'One at a time — give it a few seconds' }); return; }
+    if (await rateLimit('anon:' + ip, 40, 3600)) { res.status(429).json({ error: 'You’ve used the free trial for now — sign up to keep going', signup: true }); return; }
+    // anonymous can't push large or image context — text-only, last few turns, capped length
+    const trimmed = messages.slice(-8).map(m => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(typeof m.content === 'string' ? m.content : (m.content || []).map(c => c.text || '').join('\n')).slice(0, 4000),
+    }));
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('X-Engine', 'GALDR');
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    try {
+      await streamGemini(res, TASK.idea, system || '', trimmed, 2048);
+      res.write('\n[[USAGE]]0,0,galdr');
+      res.end();
+    } catch (e) {
+      console.error('anon idea error:', e?.message || e);
+      res.write('\n[[ERROR]] The engine hit a snag — try again in a moment');
+      res.end();
+    }
+    return;
+  }
+
   // burst guard — 12 calls/min/user (distributed when KV is connected, else per-instance)
   if (await rateLimit('chat:' + user.email, 12, 60)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
 

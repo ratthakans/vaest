@@ -730,6 +730,21 @@
   .add-src{display:inline-flex;align-items:center;gap:7px;margin:16px auto 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:none;border:none;cursor:pointer;transition:color .15s}
   .add-src:hover{color:var(--dim)}
   .brief-box.collapsed{display:none}
+  /* ── anonymous trial — log in / sign up, top-right (ChatGPT-style) ── */
+  .anon-bar{position:absolute;top:14px;right:20px;z-index:30;display:flex;align-items:center;gap:10px}
+  .anon-tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+  .anon-login{font-size:13px;font-weight:600;color:var(--dim);padding:7px 13px;border-radius:8px;transition:.14s}
+  .anon-login:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+  .anon-signup{font-size:13px;font-weight:650;color:#0a0a0a;background:var(--ink);padding:7px 15px;border-radius:8px;transition:.14s}
+  .anon-signup:hover{background:#fff}
+  @media(max-width:640px){.anon-tag{display:none}.anon-bar{top:10px;right:12px}}
+  /* free-messages-left hint under the Idea input */
+  .anon-limit{margin:14px 2px 2px;font-size:12.5px;color:var(--mute);text-align:center}
+  .anon-limit .al-n{font-family:var(--mono);color:var(--cin-d);font-weight:600}
+  .anon-limit button{font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+  .anon-limit button:hover{color:var(--cin-d)}
+  /* the trial hides the account-only footer — settings gear, sign-out, sync/who row */
+  .app.anon .r-foot{display:none}
   /* the Crystallize entry surfaces only once there's a conversation to crystallize */
   .idea.hero .id-sum{opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
   .idea.hero.has-chat .id-sum{opacity:1;pointer-events:auto}
