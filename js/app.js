@@ -191,7 +191,7 @@
     const mb=$('mastBtn');
     if(mb){mb.classList.toggle('locked',locked);
       mb.title=locked?'Refine is on Pro and above — upgrade to unlock the apex audit'
-        :'Refined — make it cleaner: catch contradictions, repetition and broken logic';}
+        :'Refine — make it cleaner: catch contradictions, repetition and broken logic';}
     const cb=$('chainBtn');if(cb)cb.style.display=locked?'none':'';
     const q=window.QUOTA;
     // token breakdown + real-cost tool are internal (ORIONS team) only — they reveal margin/provider
@@ -280,7 +280,7 @@
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
-      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Refine / Refined and cost shows up here</td></tr></tbody>'}
+      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Ø Think / Refine and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile}}
   function applyBlob(b){
@@ -498,7 +498,7 @@
     try{const text=await streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}));
       c.innerHTML=renderMd(text);s.canvas=genMd();s.updatedAt=Date.now();save();renderDoc(s.canvas);
       const nEl=[...document.querySelectorAll('#doc .sec')].find(x=>x.getAttribute('data-h')===h);if(nEl){nEl.classList.add('flash');setTimeout(()=>nEl.classList.remove('flash'),1300)}
-      toast('Merged files into this section — hit Refined to check whole-document coherence')}
+      toast('Merged files into this section — hit Refine to check whole-document coherence')}
     catch(e){c.innerHTML=renderMd(beforeTxt);toast('Failed: '+e.message)}
     finally{setBusy(false)}}
   function removeSecFile(h,k){const s=cur();if(!s||!s.secFiles||!s.secFiles[h])return;s.secFiles[h].splice(k,1);if(!s.secFiles[h].length)delete s.secFiles[h];save();renderDoc(s.canvas)}
@@ -891,10 +891,10 @@
       A('Back to home — chat & brief',()=>backToBrief());
       A('Add files to document',()=>$('addFileInput').click());
       A('Paste text into document',()=>openAddPaste());
-      A('Refined — full recheck',()=>runMastering(''));
-      A('Refined · tone only',()=>runMastering('tone'));
-      A('Refined · coherence only',()=>runMastering('flow'));
-      A('Refined · completeness only',()=>runMastering('complete'));
+      A('Refine — full recheck',()=>runMastering(''));
+      A('Refine · tone only',()=>runMastering('tone'));
+      A('Refine · coherence only',()=>runMastering('flow'));
+      A('Refine · completeness only',()=>runMastering('complete'));
       A('Save this version',()=>saveSnapshot());
       A('Saved versions…',()=>openSnapshots());
       A('Undo last change',()=>undoCanvas());
@@ -1034,7 +1034,7 @@
   function toggleChain(){const s=cur();if(!s)return;
     if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
     s.chain=!s.chain;save();renderChain();
-    toast(s.chain?'Refined will run automatically after Crystallize':'Chain off — Refined stays manual')}
+    toast(s.chain?'Refine will run automatically after Crystallize':'Chain off — Refine stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
   // reveal the optional brief/files panel on demand — keeps the home a clean Idea chat by default
@@ -1235,8 +1235,7 @@
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
           +'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
-          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take (Odin)"><b style="font-family:var(--mono)">Ø</b> Think</button>'
-          +'<button class="st" onclick="improveSection(this)" title="Let VÆST refine it"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Refine</button>'
+          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take"><b style="font-family:var(--mono)">Ø</b> Think</button>'
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
         +'<div class="sec-c" contenteditable="true" spellcheck="false">'+renderMd(sec.body.join('\n'))+'</div>'
@@ -1444,27 +1443,13 @@
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
       s.updatedAt=Date.now();save();renderRail();showCanvas();
       if(document.hidden)notifyDone('Crystallize');
-      if(s.chain){toast('Summed — Refined starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
+      if(s.chain){toast('Summed — Refine starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
       else toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
         +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Crystallize</button>'
         +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
     }finally{setBusy(false);go.disabled=false;go.innerHTML='Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
-
-  /* ═══ IMPROVE (per section) ═══ */
-  function improveSection(btn){
-    if(_busy){toast('Working…');return}
-    const sec=btn.closest('.sec'),hEl=sec.querySelector('.sec-h'),c=sec.querySelector('.sec-c');
-    const h=hEl?hEl.innerText.trim():'',old=c.innerHTML,curTxt=c.innerText.trim();
-    pushUndo();setBusy(true);
-    btn.disabled=true;btn.classList.add('busy');btn.innerHTML='<span class="pulse"></span> Refining…';
-    const prompt='Document context: "'+($('mhTitle').innerText.trim())+'"\n\nSection: "'+h+'"\nCurrent text:\n'+curTxt+'\n\nImprove this section.';
-    streamAPI('improve',[{role:'user',content:prompt}],toneSys(),raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Refined “'+h+'”')})
-      .catch(e=>{c.innerHTML=old;toast('Failed: '+e.message)})
-      .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy');
-        btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Refine'})}
 
   /* ═══ SECTION IDEA + Ø THINK (per section · Odin) ═══ */
   function sectionIdea(btn){
@@ -1525,7 +1510,7 @@
   const MAST_SUB={think:'Make it braver — bend the safe choices, find the sharper angle. Approve what lands.',
     mastering:'Make it cleaner — catch contradictions, repetition and broken logic. Approve to fix.'};
   function mastHead(kind,lens){
-    const ttl=kind==='think'?'Ø Think · Senior Creative':'Refined · '+LENS_LBL[lens||''];
+    const ttl=kind==='think'?'Ø Think · Senior Creative':'Refine · '+LENS_LBL[lens||''];
     return '<div class="mast-hd"><div class="mast-ttl">'+ttl+'</div><div class="mast-sub">'+MAST_SUB[kind==='think'?'think':'mastering']+'</div></div>'}
   function mastHeader(){return mastHead(_mast&&_mast.kind,_mast&&_mast.lens)}
   function startAudit(kind,lens,btn){
@@ -1544,8 +1529,8 @@
     streamAPI(kind==='think'?'think':'mastering',[{role:'user',content:prompt}],
         (kind==='think'?toneSys():(LENS[lens]||'')),
         raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:kind};renderMast();if(document.hidden)notifyDone(kind==='think'?'Ø Think':'Refined')})
-      .catch(e=>{box.remove();toast((kind==='think'?'Ø Think':'Check')+' failed: '+e.message)})
+      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:kind};renderMast();if(document.hidden)notifyDone(kind==='think'?'Ø Think':'Refine')})
+      .catch(e=>{box.remove();toast((kind==='think'?'Ø Think':'Refine')+' failed: '+e.message)})
       .finally(()=>{clearInterval(wt);setBusy(false);if(btn)btn.disabled=false})}
   function runMastering(lens){
     if(!canRefine()){toast('Refine is on Pro and above — upgrade to unlock the apex audit');return}
@@ -1804,7 +1789,7 @@
     }catch(e){setSync('off')}
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
-  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refined for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hit **Ø Think** (top right) — a Senior Creative rips this document and pushes it bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refined** for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left), paste your own brief and drop your files — messy is fine. That first document is where VÆST earns its place.';
+  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hit **Ø Think** (top right) — a Senior Creative rips this document and pushes it bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left), paste your own brief and drop your files — messy is fine. That first document is where VÆST earns its place.';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
 
   /* share view — read-only */
