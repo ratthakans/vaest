@@ -76,6 +76,12 @@
   /* ═══ auth — Supabase email+password ═══ */
   const AUTH_STORE='vaest_auth';
   let AUTH=null; // {access_token,refresh_token,expires_at,email}
+  // ── Anonymous trial ── use Galdr free without an account; a few messages, then a signup wall.
+  let ANON=false;
+  const ANON_MAX=5, ANON_N_KEY='vaest_anon_n';
+  function anonCount(){try{return +localStorage.getItem(ANON_N_KEY)||0}catch(e){return 0}}
+  function anonBump(){try{localStorage.setItem(ANON_N_KEY,anonCount()+1)}catch(e){}}
+  function anonLeft(){return Math.max(0,ANON_MAX-anonCount())}
   function loadAuth(){try{AUTH=JSON.parse(localStorage.getItem(AUTH_STORE))||null}catch(e){AUTH=null}return AUTH}
   function saveAuth(a){AUTH=a;try{a?localStorage.setItem(AUTH_STORE,JSON.stringify(a)):localStorage.removeItem(AUTH_STORE)}catch(e){}}
   function authHeaders(){return {apikey:SB.key,'Content-Type':'application/json'}}
@@ -126,6 +132,42 @@
     $('authErr').textContent=''}
   function showAuth(msg){$('authView').classList.add('show');if(msg)$('authErr').textContent=msg;setTimeout(()=>$('authEmail').focus(),50)}
   function hideAuth(){$('authView').classList.remove('show')}
+  // enter the free trial — home + Galdr only, log in / sign up top-right (ChatGPT-style)
+  function startAnon(){
+    ANON=true;SB.who='anon';
+    const bar=$('anonBar');if(bar)bar.style.display='';
+    $('app').classList.add('anon');
+    if(!loadLocal()){projects=[];sessions=[];usage=0}
+    if(!sessions.length)sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}];
+    if(!currentSid||!cur())currentSid=sessions[0].id;
+    renderRail();showHome();renderAnonLimit()}
+  function anonLogin(){if(_authMode!=='login')toggleAuthMode();showAuth()}
+  function anonSignup(){if(_authMode!=='signup')toggleAuthMode();showAuth('Free account — keep your chat and unlock Crystallize')}
+  // the wall: a few free messages, then sign up. Reason is shown as the auth headline.
+  function anonWall(reason){
+    if(_authMode!=='signup')toggleAuthMode();
+    showAuth(reason||'That’s the free trial — sign up (free) to keep going and save this chat')}
+  // small "N free messages left" hint under the Idea input
+  function renderAnonLimit(){
+    const el=$('anonLimit');if(!el)return;
+    if(!ANON){el.style.display='none';return}
+    const left=anonLeft();el.style.display='';
+    el.innerHTML=left>0
+      ?'<span class="al-n">'+left+'</span> free message'+(left>1?'s':'')+' left · <button onclick="anonSignup()">Sign up free</button> for unlimited Galdr + the whole studio'
+      :'You’ve used your free messages — <button onclick="anonSignup()">Sign up free</button> to keep going'}
+  // capture the trial chat so it survives the jump into a real account
+  function snapshotAnonChats(){
+    try{return sessions.filter(s=>chatsOf(s).some(c=>c.ideas.length))
+      .map(s=>{const c=JSON.parse(JSON.stringify(s));c.id=uid('s');c.shareId=null;
+        if(c.chats)c.chats.forEach(x=>x.id=uid('ch'));if(c.chats&&c.chats[0])c.chatId=c.chats[0].id;
+        c.title=s.title&&s.title!=='New'?s.title:(c.chats&&c.chats[0]&&c.chats[0].title)||'From your trial';
+        return c})}catch(e){return []}}
+  // called from the auth-success path when we were anonymous — hand the chat to the account
+  function endAnon(){
+    if(!ANON)return;
+    window._anonCarry=snapshotAnonChats();
+    ANON=false;const bar=$('anonBar');if(bar)bar.style.display='none';$('app').classList.remove('anon');
+    try{localStorage.removeItem(ANON_N_KEY);localStorage.removeItem(STORE+':anon')}catch(e){}}
   async function submitAuth(){
     const email=$('authEmail').value.trim().toLowerCase(),pass=$('authPass').value;
     if(!email||pass.length<6){$('authErr').textContent='Enter an email and a password of at least 6 characters';return}
@@ -135,6 +177,7 @@
       else{const res=await authSignup(email,pass);
         if(res==='confirm'){$('authErr').textContent='Signed up — check your email to confirm, then sign in';
           _authMode='signup';toggleAuthMode();go.disabled=false;return}}
+      endAnon(); // if we were on the free trial, carry the chat into the account
       if(await checkAccess()){hideAuth();await boot()}
       else if(window._wantPlan){const p=window._wantPlan;window._wantPlan=null;hideAuth();startCheckout(p)}
       else showNotInvited();
@@ -338,14 +381,23 @@
   function notifyDone(what){if(_origTitle===null)_origTitle=document.title;document.title='✓ '+what+' done — VÆST'}
   addEventListener('visibilitychange',()=>{if(!document.hidden&&_origTitle!==null){document.title=_origTitle;_origTitle=null}});
   async function streamAPI(mode,messages,system,onText){
-    if(!await ensureAuth()){showAuth('Session expired — sign in again');throw new Error('Not signed in')}
+    const headers={'Content-Type':'application/json'};
+    if(ANON){
+      // free trial covers Galdr (idea) only — anything else is the signup wall
+      if(mode!=='idea'){anonWall();throw new Error('Sign up to use this')}
+    }else{
+      if(!await ensureAuth()){showAuth('Session expired — sign in again');throw new Error('Not signed in')}
+      headers.Authorization='Bearer '+AUTH.access_token;
+    }
     _abort=new AbortController();
-    const r=await fetch('/api/chat',{method:'POST',signal:_abort.signal,
-      headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
+    const r=await fetch('/api/chat',{method:'POST',signal:_abort.signal,headers,
       body:JSON.stringify({mode,messages,system:system||''})});
-    if(r.status===401){showAuth('Session expired — sign in again');throw new Error('Session expired')}
+    if(r.status===401){
+      if(ANON){anonWall();throw new Error('Sign up to continue')}
+      showAuth('Session expired — sign in again');throw new Error('Session expired')}
     if(r.status===402||r.status===403){checkAccess();showNotInvited();throw new Error('Choose a plan to continue')}
-    if(r.status===429){let msg='Usage limit reached';try{msg=(await r.json()).error||msg}catch(e){}toast(msg);throw new Error(msg)}
+    if(r.status===429){let d={};try{d=await r.json()}catch(e){}const msg=d.error||'Usage limit reached';
+      if(ANON&&d.signup){anonWall(msg)}else toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
     const reader=r.body.getReader(),dec=new TextDecoder();let full='',stopped=false;
     try{for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full.split('[[USAGE]]')[0])}}
@@ -1158,8 +1210,10 @@
     if(_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;
     const inp=$('ideaInput');const text=inp.value.trim();if(!text)return;
+    if(ANON&&anonLeft()<=0){anonWall();return} // free trial spent — wall before sending
     inp.value='';inp.style.height='';
     const ch=curChat(s);ch.ideas.push({r:'user',c:text,ts:Date.now()});
+    if(ANON){anonBump();renderAnonLimit()}
     if(ch.ideas.length>IDEA_MAX){ch.ideas=ch.ideas.slice(-IDEA_MAX);if(!_trimWarned){_trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
     // auto-title the chat from its first message (and the session, off its first chat)
     if(!ch.title&&ch.ideas.length===1)ch.title=text.replace(/\s+/g,' ').slice(0,36);
@@ -1468,6 +1522,7 @@
       ...imgs.map(f=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.img.split(',')[1]}}))]}
   // Crystallize entry — open the source picker when there's a choice to make, else sum the brief directly
   function runSumming(){
+    if(ANON){anonWall('Sign up (free) to crystallize your chats into a document');return}
     if(_busy){toast('Working — one moment');return}
     if(_ideaBusy){toast('Galdr is replying — one moment');return}
     const s=cur();if(!s)return;
@@ -1937,6 +1992,12 @@
         if(empty){seedSample();renderRail();showCanvas()}
         cloudSave()}
     }catch(e){setSync('off')}
+    // carry the free-trial chat in, if we just came from anonymous
+    if(window._anonCarry){const carry=window._anonCarry;window._anonCarry=null;
+      if(carry&&carry.length){try{
+        sessions=carry.concat(sessions.filter(x=>(x.canvas&&x.canvas.trim())||x.files.length||(x.brief&&x.brief.trim())||chatsOf(x).some(c=>c.ideas.length)));
+        currentSid=carry[0].id;save();cloudSave();renderRail();showHome();
+        toast('Your trial chat is saved to your account')}catch(e){}}}
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
   const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Ø Think** — Mimir, a second mind, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left), paste your own brief and drop your files — messy is fine. That first document is where VÆST earns its place.';
@@ -2094,7 +2155,9 @@
       else showNotInvited();
     }
     else{
-      // remember the plan they clicked on the site — after sign-in/up, go straight to checkout
-      if(wantPlan&&['basic','pro','director'].includes(wantPlan)){window._wantPlan=wantPlan;history.replaceState(null,'',location.pathname)}
-      saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);showAuth()}
+      saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);
+      // came from a pricing CTA → they want to buy, go straight to signup+checkout
+      if(wantPlan&&['basic','pro','director'].includes(wantPlan)){window._wantPlan=wantPlan;history.replaceState(null,'',location.pathname);if(_authMode!=='signup')toggleAuthMode();showAuth()}
+      // otherwise land in the free Galdr trial — no wall until they've tried it
+      else startAnon()}
   })();
