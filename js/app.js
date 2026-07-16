@@ -566,6 +566,7 @@
     const s=sessions.find(x=>x.id===id);if(!s)return;
     const c=JSON.parse(JSON.stringify(s));c.id=uid('s');c.title=(s.title||'Untitled')+' copy';c.updatedAt=Date.now();
     c.shareId=null;c.snaps=[];c.ideas=s.ideas?JSON.parse(JSON.stringify(s.ideas)):[];
+    if(s.chats){c.chats=JSON.parse(JSON.stringify(s.chats));c.chats.forEach(x=>x.id=uid('ch'));c.chatId=c.chats[0]&&c.chats[0].id}
     if(c.canvases)c.canvases.forEach(cv=>cv.id=uid('cv'));
     const i=sessions.indexOf(s);sessions.splice(i+1,0,c);currentSid=c.id;save();renderRail();openSession(c.id);toast('Duplicated')}
   function moveSession(id,pid){const s=sessions.find(x=>x.id===id);if(!s)return;s.projectId=pid;s.updatedAt=Date.now();save();renderRail();
@@ -1071,10 +1072,65 @@
     'ถกไอเดียนี้แบบ Creative Director',
   ];
   function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text;sendIdea()}
+  /* ═══ MULTI-CHAT — one session holds several topic chats (beans / location / trend / …) ═══
+     Every chat is a Summing source. s.ideas stays as a mirror of the ACTIVE chat so an
+     old client that hasn't reloaded yet still reads a sane thread from the cloud blob. */
+  function chatsOf(s){
+    if(!s.chats||!s.chats.length){
+      const t=(s.ideas&&s.ideas.length&&s.ideas[0].c)?String(s.ideas[0].c).replace(/\s+/g,' ').slice(0,36):'';
+      s.chats=[{id:uid('ch'),title:t,ideas:s.ideas||[]}];s.chatId=s.chats[0].id}
+    if(!s.chatId||!s.chats.some(c=>c.id===s.chatId))s.chatId=s.chats[0].id;
+    s.ideas=(s.chats.find(c=>c.id===s.chatId)||s.chats[0]).ideas; // legacy mirror
+    return s.chats}
+  function curChat(s){const cs=chatsOf(s);return cs.find(c=>c.id===s.chatId)||cs[0]}
+  function newChat(){
+    if(_ideaBusy){toast('Galdr is replying — one moment');return}
+    const s=cur();if(!s)return;
+    const cs=chatsOf(s);
+    const empty=cs.find(c=>!c.ideas.length);
+    if(empty){s.chatId=empty.id} // never stack empty chats
+    else{const c={id:uid('ch'),title:'',ideas:[]};cs.push(c);s.chatId=c.id}
+    save();renderIdeas();const inp=$('ideaInput');if(inp)inp.focus()}
+  function switchChat(id){
+    if(_ideaBusy){toast('Galdr is replying — one moment');return}
+    const s=cur();if(!s)return;s.chatId=id;save();renderIdeas()}
+  async function deleteChat(ev,id){
+    ev.stopPropagation();
+    const s=cur();if(!s)return;const cs=chatsOf(s);
+    const c=cs.find(x=>x.id===id);if(!c)return;
+    if(c.ideas.length&&!await uiConfirm('Delete “'+(c.title||'this chat')+'”? Its messages are gone (saved sparks stay).',{ok:'Delete',danger:true}))return;
+    s.chats=cs.filter(x=>x.id!==id);
+    if(!s.chats.length)s.chats=[{id:uid('ch'),title:'',ideas:[]}];
+    if(s.chatId===id)s.chatId=s.chats[0].id;
+    save();renderIdeas()}
+  function chatMd(c){
+    return '# '+(c.title||'Idea chat')+'\n\n'
+      +c.ideas.map(m=>(m.r==='user'?'**You**':'**VÆST**')+'\n\n'+m.c).join('\n\n---\n\n')+'\n'}
+  function downloadChatMd(ev,id){
+    ev.stopPropagation();
+    const s=cur();if(!s)return;const c=chatsOf(s).find(x=>x.id===id);if(!c||!c.ideas.length){toast('Nothing to save yet');return}
+    const name=(c.title||'idea-chat').replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'idea-chat';
+    const blob=new Blob([chatMd(c)],{type:'text/markdown'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'.md';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Saved “'+(c.title||'chat')+'.md”')}
+  function renderChatTabs(s){
+    const el=$('chatTabs');if(!el)return;
+    const cs=chatsOf(s);
+    // a single fresh chat needs no tab bar — the surface stays clean until topics multiply
+    if(cs.length===1&&!cs[0].ideas.length){el.innerHTML='';return}
+    el.innerHTML=cs.map(c=>{const on=c.id===s.chatId;
+      return '<button class="ct'+(on?' on':'')+'" onclick="switchChat(\''+c.id+'\')" title="'+esc(c.title||'New chat')+'">'
+        +esc((c.title||'New chat').slice(0,22))
+        +(on?'<span class="ct-x" onclick="downloadChatMd(event,\''+c.id+'\')" title="Save as .md">⤓</span><span class="ct-x" onclick="deleteChat(event,\''+c.id+'\')" title="Delete chat">✕</span>':'')
+        +'</button>'}).join('')
+      +'<button class="ct add" onclick="newChat()" title="New topic — a separate chat, all of them feed Crystallize">＋</button>'}
+
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
-    const ideas=(s&&s.ideas)||[];
-    const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0); // Crystallize appears once there's a conversation
+    if(s)renderChatTabs(s);
+    const ideas=(s&&curChat(s).ideas)||[];
+    const anyChat=s?chatsOf(s).some(c=>c.ideas.length):false;
+    const box=$('ideaBox');if(box)box.classList.toggle('has-chat',anyChat); // Crystallize appears once any chat has a conversation
     if(!ideas.length){ th.innerHTML=''; return} // clean empty state — just the input, Claude-style
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
@@ -1087,11 +1143,11 @@
       +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
 }
-  function copyIdea(i){const s=cur();const m=s&&s.ideas&&s.ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
+  function copyIdea(i){const s=cur();const m=s&&curChat(s).ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
   function regenIdea(){
     if(_ideaBusy||_busy){toast('Working — one moment');return}
-    const s=cur();if(!s||!s.ideas||!s.ideas.length)return;
-    if(s.ideas[s.ideas.length-1].r!=='user')s.ideas.pop(); // drop the reply, keep the question
+    const s=cur();if(!s)return;const ch=curChat(s);if(!ch.ideas.length)return;
+    if(ch.ideas[ch.ideas.length-1].r!=='user')ch.ideas.pop(); // drop the reply, keep the question
     save();renderIdeas();streamIdeaReply(s,false)}
   async function sendIdea(){
     if(_ideaBusy){toast('Galdr is replying — one moment');return}
@@ -1099,10 +1155,11 @@
     const s=cur();if(!s)return;
     const inp=$('ideaInput');const text=inp.value.trim();if(!text)return;
     inp.value='';inp.style.height='';
-    s.ideas=s.ideas||[];s.ideas.push({r:'user',c:text,ts:Date.now()});
-    if(s.ideas.length>IDEA_MAX){s.ideas=s.ideas.slice(-IDEA_MAX);if(!_trimWarned){_trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
-    // auto-title the session from the first message (like any modern assistant)
-    if((s.title==='New'||!s.title)&&s.ideas.length===1){s.title=text.replace(/\s+/g,' ').slice(0,42);renderRail()}
+    const ch=curChat(s);ch.ideas.push({r:'user',c:text,ts:Date.now()});
+    if(ch.ideas.length>IDEA_MAX){ch.ideas=ch.ideas.slice(-IDEA_MAX);if(!_trimWarned){_trimWarned=true;toast('Long chat — only the last '+IDEA_MAX+' messages are kept. Save key points with ✚')}}
+    // auto-title the chat from its first message (and the session, off its first chat)
+    if(!ch.title&&ch.ideas.length===1)ch.title=text.replace(/\s+/g,' ').slice(0,36);
+    if((s.title==='New'||!s.title)){s.title=text.replace(/\s+/g,' ').slice(0,42);renderRail()}
     renderIdeas();save();
     await streamIdeaReply(s,true)}
   // Fluid streaming: buffer incoming text and reveal it at a smooth, steady pace so the
@@ -1128,22 +1185,23 @@
   }
   async function streamIdeaReply(s,restoreOnFail){
     _ideaBusy=true;setIdeaSendMode(true);
+    const ch=curChat(s); // pin the chat — replies land here even if the user switches tabs mid-stream
     const th=$('ideaThread');
     const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
     th.appendChild(live);th.scrollTop=th.scrollHeight;
     try{
-      const msgs=s.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
+      const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');th.scrollTop=th.scrollHeight}});
       const out=await streamAPI('idea',msgs,toneSys(),full=>sr.push(full));
-      if(out&&out.trim()){s.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
+      if(out&&out.trim()){ch.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
       sr.push(out||'');
       await new Promise(r=>sr.finish(r)); // let the fluid reveal catch up before swapping in the final message
       save();renderIdeas()}
     catch(e){
       live.remove();
       // a failed send must not poison the thread: pull the question back into the input
-      const last=s.ideas[s.ideas.length-1];
-      if(restoreOnFail&&last&&last.r==='user'){s.ideas.pop();const inp=$('ideaInput');if(inp&&!inp.value)inp.value=last.c;
+      const last=ch.ideas[ch.ideas.length-1];
+      if(restoreOnFail&&last&&last.r==='user'){ch.ideas.pop();const inp=$('ideaInput');if(inp&&!inp.value)inp.value=last.c;
         save();renderIdeas();toast('Failed — your message is back in the box, try again')}
       else toast('Failed — try again in a moment')}
     finally{_ideaBusy=false;setIdeaSendMode(false);const inp=$('ideaInput');if(inp)inp.focus()}}
@@ -1153,8 +1211,8 @@
     b.onclick=busy?function(){stopGen()}:function(){sendIdea()}}
   /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
   function addSpark(i){
-    const s=cur();if(!s||!s.ideas||!s.ideas[i])return;
-    const m=s.ideas[i];const text=(m.c||'').trim();if(!text)return;
+    const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m)return;
+    const text=(m.c||'').trim();if(!text)return;
     s.sparks=s.sparks||[];
     if(s.sparks.some(sp=>sp.text===text)){toast('Already saved');return}
     const sp={id:uid('sp'),text:text,topic:'…',ts:Date.now()};
@@ -1185,13 +1243,19 @@
   // keep the END of a long text — for conversations, the newest turns matter most
   const capTail=(t,n)=>{t=String(t||'');return t.length>n?'…[earlier messages trimmed]\n'+t.slice(-n):t};
   // the raw idea chat → Crystallize input (when the "Idea chat" source is picked).
+  // Selected chats → Crystallize input, one block per chat so Odin sees the topic boundaries.
   // Messages already saved as sparks are skipped so nothing is fed twice.
-  function ideasContext(excludeTexts){
-    const s=cur();let ideas=(s&&s.ideas)||[];if(!ideas.length)return '';
-    if(excludeTexts&&excludeTexts.size)ideas=ideas.filter(m=>!excludeTexts.has((m.c||'').trim()));
-    if(!ideas.length)return '';
-    return '\n\n# Idea chat (raw conversation — curate: keep what serves the work, drop the rest)\n'
-      +capTail(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),6000)}
+  function chatsContext(chatIds,excludeTexts){
+    const s=cur();if(!s||!chatIds||!chatIds.length)return '';
+    const per=Math.max(2500,Math.floor(9000/chatIds.length)); // shared budget — every picked chat gets a voice
+    const blocks=chatsOf(s).filter(c=>chatIds.includes(c.id)).map(c=>{
+      let ideas=c.ideas;
+      if(excludeTexts&&excludeTexts.size)ideas=ideas.filter(m=>!excludeTexts.has((m.c||'').trim()));
+      if(!ideas.length)return '';
+      return '## Chat: '+(c.title||'Untitled')+'\n'+capTail(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),per)
+    }).filter(Boolean);
+    if(!blocks.length)return '';
+    return '\n\n# Idea chats (raw conversations — curate: keep what serves the work, drop the rest)\n'+blocks.join('\n\n')}
   // sparks for the chosen topics → Crystallize input
   function sparksContext(topics){
     const s=cur();const sp=(s&&s.sparks)||[];if(!sp.length||!topics||!topics.length)return '';
@@ -1404,13 +1468,14 @@
     if(_ideaBusy){toast('Galdr is replying — one moment');return}
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
-    const srcs=[!!s.brief,s.files.length>0,(s.sparks||[]).length>0,(s.ideas||[]).length>0].filter(Boolean).length;
+    const liveChats=chatsOf(s).filter(c=>c.ideas.length);
+    const srcs=[!!s.brief,s.files.length>0,(s.sparks||[]).length>0,liveChats.length>0].filter(Boolean).length;
     if(!srcs){toast('Chat with Galdr, paste a brief, or attach a file first');return}
-    if(srcs>1||s.files.length||(s.sparks||[]).length){openSummingPicker();return} // 2+ sources or itemized ones → curate
-    doSumming({brief:!!s.brief,files:[],topics:[],ideas:(s.ideas||[]).length>0})}
+    if(srcs>1||s.files.length||(s.sparks||[]).length||liveChats.length>1){openSummingPicker();return} // 2+ sources or itemized ones → curate
+    doSumming({brief:!!s.brief,files:[],topics:[],chats:liveChats.map(c=>c.id)})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
-    if((s.ideas||[]).length)rows.push('<label class="sum-r"><input type="checkbox" data-k="ideas" checked><span class="sum-nm">Idea chat</span><span class="sum-sub">'+s.ideas.length+' message'+(s.ideas.length>1?'s':'')+' · raw conversation — saved sparks are never double-counted</span></label>');
+    chatsOf(s).filter(c=>c.ideas.length).forEach(c=>rows.push('<label class="sum-r"><input type="checkbox" data-k="chat" data-id="'+c.id+'" checked><span class="sum-nm">'+esc(c.title||'Idea chat')+'</span><span class="sum-sub">'+c.ideas.length+' message'+(c.ideas.length>1?'s':'')+' · chat — saved sparks are never double-counted</span></label>'));
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
     s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
     const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
@@ -1418,10 +1483,10 @@
     $('sumView').classList.add('show')}
   function closeSummingPicker(){$('sumView').classList.remove('show')}
   function doSummingFromPicker(){
-    const sel={brief:false,files:[],topics:[],ideas:false};
+    const sel={brief:false,files:[],topics:[],chats:[]};
     document.querySelectorAll('#sumSrc input:checked').forEach(cb=>{const k=cb.dataset.k;
-      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t);else if(k==='ideas')sel.ideas=true});
-    if(!sel.brief&&!sel.files.length&&!sel.topics.length&&!sel.ideas){toast('Pick at least one source');return}
+      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t);else if(k==='chat')sel.chats.push(cb.dataset.id)});
+    if(!sel.brief&&!sel.files.length&&!sel.topics.length&&!sel.chats.length){toast('Pick at least one source');return}
     closeSummingPicker();doSumming(sel)}
   async function doSumming(sel){
     if(_busy){toast('Working — one moment');return}
@@ -1434,7 +1499,7 @@
     const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
       +sparksContext(sel.topics)
-      +(sel.ideas?ideasContext(new Set(((s.sparks||[]).map(sp=>(sp.text||'').trim())))):'')
+      +chatsContext(sel.chats,new Set(((s.sparks||[]).map(sp=>(sp.text||'').trim()))))
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
