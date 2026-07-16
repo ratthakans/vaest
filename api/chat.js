@@ -223,7 +223,15 @@ export default async function handler(req, res) {
     res.setHeader('X-Engine', 'GALDR');
     if (typeof res.flushHeaders === 'function') res.flushHeaders();
     try {
-      await streamGemini(res, TASK.idea, system || '', trimmed, 2048);
+      try { await streamGemini(res, TASK.idea, system || '', trimmed, 2048); }
+      catch (ge) {
+        // a brand-new visitor's very first message must not dead-end on a Gemini blip (503s happen).
+        // Fall back to Haiku — the cheapest engine — only if nothing streamed yet. Cost stays tiny:
+        // anon is capped at the client's free-message limit plus the per-IP hourly limit above.
+        if (res.__wrote) throw ge;
+        console.error('anon gemini failed, falling back to haiku:', ge?.message || ge);
+        await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, system || '', trimmed, 1024);
+      }
       res.write('\n[[USAGE]]0,0,galdr');
       res.end();
     } catch (e) {
