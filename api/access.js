@@ -31,5 +31,14 @@ export default async function handler(req, res) {
       name: p.name,
       refine: p.refine,               // false only on Basic
     } : null,
+    // Engine wiring — ORIONS team only, booleans, never a key value. Every engine falls back
+    // silently on a missing/bad key (Mimir→Odin, Galdr→Haiku), which is right for customers but
+    // means an unwired engine looks identical to a working one from the outside. This is the
+    // only way to tell "Ø Think runs on Mimir" from "Ø Think has been quietly running on Odin".
+    engines: internal ? {
+      odin: !!process.env.ANTHROPIC_API_KEY,
+      mimir: !!process.env.OPENAI_API_KEY,
+      galdr: !!process.env.GEMINI_API_KEY,
+    } : undefined,
   });
 }
