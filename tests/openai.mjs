@@ -69,7 +69,9 @@ await t('stream request sets stream+include_usage and a system-first message lis
   assert.equal(b.model, 'gpt-5.6-sol');
   assert.equal(b.stream, true);
   assert.deepEqual(b.stream_options, { include_usage: true });
-  assert.equal(b.max_tokens, 4096);
+  assert.equal(b.max_completion_tokens, 4096, 'GPT-5.x needs max_completion_tokens, not max_tokens');
+  assert.equal(b.max_tokens, undefined, 'max_tokens must not be sent — GPT-5.x rejects it (400)');
+  assert.equal(b.temperature, undefined, 'temperature must not be sent — GPT-5.x reasoning models reject non-default');
   assert.equal(b.messages[0].role, 'system');
   assert.equal(b.messages[0].content, 'BASE\n\nTONE', 'dynamic tone must ride on the system prompt');
   assert.deepEqual(b.messages[1], { role: 'user', content: 'hi' });
