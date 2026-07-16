@@ -1,7 +1,10 @@
 :root{
     --ink:#f2f1ee; --charcoal:#0a0a0b; --snow:#f2f1ee; --cinnabar:#e2582c; --cin-d:#ff8a5c;
     /* night prismatic — one identity across landing · auth · workspace */
-    --app:#050506; --paper:#050506; --sheet:#0a0a0b; --card:#131315;
+    /* --paper is the working surface (Home + canvas) — lifted off --app so the rail reads as a
+       dark frame around a lit sheet, and so long-form Thai isn't near-white on near-black.
+       --card must stay clearly above --paper: the Ø Think / Refine panel sits on it. */
+    --app:#050506; --paper:#111114; --sheet:#0a0a0b; --card:#1c1c20;
     --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
     --dim:#a8a7a1; --mute:#83827b; --soft:rgba(255,255,255,.05);
     --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
@@ -121,7 +124,10 @@
 
   /* ===== CANVAS — seamless editorial (no paper sheet) ===== */
   .cv{flex:1;overflow-y:auto;min-height:0;background:var(--paper);padding:0}
-  .doc{max-width:960px;margin:0 auto;padding:88px 40px 160px}
+  /* 700px keeps the column at ~75 Thai characters per line. Thai has no spaces between words, so a
+     long line gives the eye nothing to grab when it wraps — at the old 960px it ran to ~123. The
+     whole column narrows together (heading, tools, body) so the section toolbar stays beside the text. */
+  .doc{max-width:700px;margin:0 auto;padding:88px 40px 160px}
   @media(max-width:720px){.doc{padding:56px 26px 100px}}
   .mast-head{padding-bottom:40px;margin-bottom:4px}
   .mh-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
@@ -172,16 +178,21 @@
   .doc-idea textarea::placeholder{color:var(--mute)}
   .di-go{flex:none;font-size:12.5px;font-weight:650;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:8px;transition:.14s}
   .di-go:hover{background:rgba(255,255,255,.12);color:#fff}
-  .sec-h{font-family:var(--ui);font-size:21px;font-weight:700;letter-spacing:-.022em;line-height:1.32;margin:12px 0 18px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}
+  /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
+  .sec-h{font-family:var(--ui);font-size:22px;font-weight:700;letter-spacing:-.022em;line-height:1.45;margin:12px 0 20px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}
   .sec-h:hover,.sec-h:focus{background:var(--soft)}
   /* document body — comfortable serif */
-  .sec-c{font-family:var(--body);font-size:18px;line-height:1.98;color:#e6e4de;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;max-width:none;transition:background .14s}
+  /* #d8d5ce on --paper is 12.9:1 — still far past WCAG AAA, but off the 16:1 of near-white on
+     near-black, which halates around Thai's thin strokes and tone marks. */
+  .sec-c{font-family:var(--body);font-size:19px;line-height:2.05;color:#d8d5ce;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;max-width:none;transition:background .14s}
   .sec-c:hover{background:var(--soft)}
   .sec-c:focus{background:rgba(255,255,255,.055)}
-  .sec-c p{margin:0 0 18px}.sec-c p:last-child{margin-bottom:4px}
+  .sec-c p{margin:0 0 22px}.sec-c p:last-child{margin-bottom:4px}
   .sec-c strong{font-weight:600;color:var(--ink)}
   .sec-c em{font-style:italic}
-  .sec-c .ph{font-family:var(--ui);font-weight:650;color:var(--ink);font-size:15px;letter-spacing:-.008em;margin:26px 0 11px}
+  /* sub-heading inside a section — sans + 650 + brighter carries the hierarchy, so it only needs
+     to match the body size, not beat it. At 15px against a 19px body it read as small print. */
+  .sec-c .ph{font-family:var(--ui);font-weight:650;color:var(--ink);font-size:16.5px;line-height:1.5;letter-spacing:-.008em;margin:30px 0 12px}
   .sec-c ul{margin:13px 0 20px;padding-left:26px}
   .sec-c ul li{margin:10px 0;padding-left:6px}
   .sec-c ul li::marker{color:var(--mute)}
