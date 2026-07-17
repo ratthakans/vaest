@@ -4,8 +4,8 @@
   --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2); --soft:rgba(255,255,255,.045);
   --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
   --cy:#4fc3ff; --or:#ff5a1f;
-  --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
-  --th:"IBM Plex Sans Thai","Inter",sans-serif;
+  --ui:"Inter","IBM Plex Sans Thai Looped",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+  --th:"IBM Plex Sans Thai Looped","Inter",sans-serif;
   --serif:"Newsreader","Noto Serif Thai",Georgia,serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   --ease:cubic-bezier(.22,1,.36,1);

@@ -7,7 +7,7 @@
     --app:#050506; --paper:#111114; --sheet:#0a0a0b; --card:#1c1c20;
     --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
     --dim:#a8a7a1; --mute:#83827b; --soft:rgba(255,255,255,.05);
-    --ui:"Inter","IBM Plex Sans Thai",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    --ui:"Inter","IBM Plex Sans Thai Looped",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
     --body:"Newsreader","Noto Serif Thai",Georgia,"Times New Roman",serif;
     --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
     /* chromatic dispersion — the one accent */
@@ -204,7 +204,8 @@
   .di-go{flex:none;font-size:12.5px;font-weight:650;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:8px;transition:.14s}
   .di-go:hover{background:rgba(255,255,255,.12);color:#fff}
   /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
-  .sec-h{font-family:var(--ui);font-size:22px;font-weight:700;letter-spacing:-.022em;line-height:1.45;margin:12px 0 20px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}
+  /* gentle tracking only — Thai loops (Looped face) get cramped under tight negative tracking */
+  .sec-h{font-family:var(--ui);font-size:22px;font-weight:700;letter-spacing:-.008em;line-height:1.5;margin:12px 0 20px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}
   .sec-h:hover,.sec-h:focus{background:var(--soft)}
   /* document body — comfortable serif */
   /* #d8d5ce on --paper is 12.9:1 — still far past WCAG AAA, but off the 16:1 of near-white on
@@ -217,7 +218,7 @@
   .sec-c em{font-style:italic}
   /* sub-heading inside a section — sans + 650 + brighter carries the hierarchy, so it only needs
      to match the body size, not beat it. At 15px against a 19px body it read as small print. */
-  .sec-c .ph{font-family:var(--ui);font-weight:650;color:var(--ink);font-size:16.5px;line-height:1.5;letter-spacing:-.008em;margin:30px 0 12px}
+  .sec-c .ph{font-family:var(--ui);font-weight:650;color:var(--ink);font-size:16.5px;line-height:1.55;letter-spacing:0;margin:30px 0 12px}
   .sec-c ul{margin:13px 0 20px;padding-left:26px}
   .sec-c ul li{margin:10px 0;padding-left:6px}
   .sec-c ul li::marker{color:var(--mute)}
@@ -783,7 +784,7 @@
   .id-m.you .tx{color:#cfccc4}
   .id-m .tx p{margin:8px 0}.id-m .tx ul,.id-m .tx ol{margin:8px 0 8px 20px}.id-m .tx li{margin:5px 0}
   /* markdown headings render as .ph — give replies real heading presence (มีหัว) */
-  .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:-.005em;line-height:1.35;margin:18px 0 8px;color:#fff}
+  .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:0;line-height:1.35;margin:18px 0 8px;color:#fff}
   .id-m .tx .ph:first-child{margin-top:0}
   .id-m .tx strong,.id-m .tx b{font-weight:700;color:#fff}
   .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035);margin-top:14px;transition:border-color .2s,background .2s}
