@@ -273,7 +273,7 @@
         else{let h='';for(let n=1;n<=left;n++){h+='<button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout(\'boost\',\'individual\','+n+')">'+n+' pack'+(n>1?'s':'')+' · ฿'+(490*n).toLocaleString()+'</button>';}opts.innerHTML=h;}
       }
     }
-    renderRailUsage()}
+    renderRailUsage();renderPlanStatus()}
   // usage meter — abstract by design: a percentage + reset date, never raw counts.
   const fmtReset=iso=>{try{const d=new Date(iso+'T00:00:00Z');
     return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'})}catch(e){return ''}};
@@ -312,6 +312,22 @@
     const cx=$('planCtx');if(cx){const t=typeof msg==='string'?msg.trim():'';cx.textContent=t;cx.style.display=t?'':'none'}
     $('gateView').classList.add('show')}
   function hideGate(){$('gateView').classList.remove('show')} // free tier keeps Galdr — the gate is a picker, not a trap
+  // Settings ▸ Usage → the self-serve upgrade path (no need to hit a paywall first)
+  function openPlans(){closeSettings();showNotInvited('')}
+  function renderPlanStatus(){
+    const el=$('planStatus');if(!el)return;
+    const q=window.QUOTA;
+    if(!q||q.internal){el.style.display='none';return}
+    el.style.display='';
+    const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+    if(q.allowed&&q.plan){
+      el.innerHTML='<div class="ps-row"><div class="ps-l"><div class="ps-lbl">Current plan</div><div class="ps-name">'+esc(cap(q.plan.name))+'</div></div>'
+        +(q.canManage?'<button class="ps-btn ghost" onclick="closeSettings();openPortal()">Change plan</button>':'')+'</div>';
+    }else{
+      el.innerHTML='<div class="ps-row"><div class="ps-l"><div class="ps-lbl">Current plan</div><div class="ps-name">Free</div>'
+        +'<div class="ps-sub">Galdr chat + one Crystallize on the house</div></div>'
+        +'<button class="ps-btn" onclick="openPlans()">Upgrade</button></div>';
+    }}
   // ── billing: start Stripe Checkout / open the customer portal ──
   async function startCheckout(plan,kind,qty){
     if(!AUTH){showAuth('Sign in to continue to checkout');return}
