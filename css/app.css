@@ -281,6 +281,9 @@
   .gen-body .ph{font-family:var(--ui);font-weight:700}
   .cursor{display:inline-block;width:2px;height:1.05em;border-radius:2px;background:var(--cinnabar);margin-left:2px;vertical-align:text-bottom;animation:curfade 1.1s var(--ease) infinite}
   @keyframes curfade{0%,100%{opacity:1}50%{opacity:.28}}
+  /* time-to-first-token status — a quiet rotating line, gone the instant text lands */
+  .id-wait{color:var(--mute);font-style:italic;animation:waitfade 1.6s var(--ease) infinite}
+  @keyframes waitfade{0%,100%{opacity:.55}50%{opacity:.9}}
   @keyframes bl{0%,50%{opacity:1}51%,100%{opacity:0}}
 
   /* ===== MASTERING panel ===== */

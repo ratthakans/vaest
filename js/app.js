@@ -895,6 +895,19 @@
     formal:['Reading between the lines…','Considering the composition…','Letting the ideas settle…'],
     playful:['Ripping it apart (kindly)…','Hunting for the cultural hook…','Bending the frame a little…'],
   };
+  // shorter, lighter lines for the Galdr chat — shown only until the first token lands
+  const IDEA_WAIT={
+    standard:['Thinking…','Crafting an angle…','Pulling the thread…','Shaping a reply…'],
+    formal:['Considering…','Composing a reply…','Weighing the words…','Finding the line…'],
+    playful:['Cooking…','Chasing the spark…','Bending it a little…','Almost got it…'],
+  };
+  // rotate a status line inside `el` until stop() is called; returns the stopper
+  function waitLines(el,pool){
+    const lines=pool||IDEA_WAIT.standard;let i=0;
+    const paint=()=>{if(el)el.innerHTML='<span class="id-wait">'+lines[i%lines.length]+'</span><span class="cursor"></span>'};
+    paint();const iv=setInterval(()=>{i++;paint()},2200);
+    return ()=>clearInterval(iv);
+  }
   const LANGS={th:'Reply in Thai (ภาษาไทย) regardless of the input language.',en:'Reply in English regardless of the input language.'};
   function getLang(){try{return localStorage.getItem('vaest_lang')||''}catch(e){return ''}}
   function setLang(l){try{localStorage.setItem('vaest_lang',l)}catch(e){}
@@ -1170,16 +1183,18 @@
   async function briefTurn(s){
     _briefBusy=true;
     const th=$('briefThread');
-    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
+    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"></div>';
     th.appendChild(live);th.scrollTop=th.scrollHeight;
+    const briefWait=['Reading your brief…','Finding the gaps…','Framing the next question…','Thinking…'];
+    let stopBW=waitLines(live.querySelector('.tx'),briefWait),bwaited=true;
     try{
-      const r=raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}});
-      const out=await streamAPI('briefchat',briefMsgs(s),toneSys(),r);r.stop();
+      const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}});
+      const out=await streamAPI('briefchat',briefMsgs(s),toneSys(),r);r.stop();if(bwaited){bwaited=false;stopBW()}
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
       const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
       s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
       if(complete){const bc=$('briefCompile');if(bc)bc.style.display='';}
-    }catch(e){live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
+    }catch(e){stopBW();live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
     finally{_briefBusy=false}}
   async function compileBrief(){
     if(_briefBusy||_busy){toast('One moment…');return}
@@ -1364,18 +1379,21 @@
     _ideaBusy=true;setIdeaSendMode(true);
     const ch=curChat(s); // pin the chat — replies land here even if the user switches tabs mid-stream
     const th=$('ideaThread');
-    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
+    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"></div>';
     th.appendChild(live);th.scrollTop=th.scrollHeight;
+    // rotating status until the first token lands — masks the time-to-first-token
+    let stopWait=waitLines(live.querySelector('.tx'),IDEA_WAIT[personaKey()]),waited=true;
     try{
       const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');th.scrollTop=th.scrollHeight}});
-      const out=await streamAPI('idea',msgs,toneSys(),full=>sr.push(full));
+      const out=await streamAPI('idea',msgs,toneSys(),full=>{if(full&&waited){waited=false;stopWait()}sr.push(full)});
+      if(waited){waited=false;stopWait()} // empty/instant response — clear the status too
       if(out&&out.trim()){ch.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
       sr.push(out||'');
       await new Promise(r=>sr.finish(r)); // let the fluid reveal catch up before swapping in the final message
       save();renderIdeas()}
     catch(e){
-      live.remove();
+      stopWait();live.remove();
       // a failed send must not poison the thread: pull the question back into the input
       const last=ch.ideas[ch.ideas.length-1];
       if(restoreOnFail&&last&&last.r==='user'){ch.ideas.pop();const inp=$('ideaInput');if(inp&&!inp.value)inp.value=last.c;
