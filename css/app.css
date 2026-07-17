@@ -143,6 +143,7 @@
   .brief-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
   .brief-files:empty{display:none}
   .brief-interview .id-thread{max-height:46vh}
+  .brief-interview .id-m .tx{font-size:16.5px;line-height:1.95}
   .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
   .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
   .brief-compile .go{flex:none}
@@ -797,7 +798,7 @@
   .idea.hero{margin-top:14px;background:transparent;border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
   .idea.hero:focus-within{box-shadow:none}
   .idea.hero .id-thread{max-height:none;overflow:visible;padding:2px 2px}
-  .idea.hero .id-m .tx{font-size:16px;line-height:1.85}
+  .idea.hero .id-m .tx{font-size:16.5px;line-height:1.95}
   .idea.hero .id-in textarea{font-size:15.5px;line-height:1.65}
   .idea.hero .id-in{padding:14px 12px 14px 18px}
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
@@ -858,13 +859,14 @@
   .id-m:last-child{border-bottom:none}
   .id-m .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mute);margin-bottom:9px}
   .id-m.ai .who{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .id-m .tx{font-size:13.5px;line-height:1.7;color:var(--ink);word-break:break-word}
-  .id-m.you .tx{color:#cfccc4}
+  /* what VÆST says reads in the same serif voice as the canvas; sans is reserved for UI chrome */
+  .id-m .tx{font-family:var(--body);font-size:15.5px;line-height:1.85;color:#d8d5ce;word-break:break-word}
+  .id-m.you .tx{color:#b4b1aa}
   .id-m .tx p{margin:8px 0}.id-m .tx ul,.id-m .tx ol{margin:8px 0 8px 20px}.id-m .tx li{margin:5px 0}
   /* markdown headings render as .ph — give replies real heading presence (มีหัว) */
-  .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:0;line-height:1.35;margin:18px 0 8px;color:#fff}
+  .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:0;line-height:1.45;margin:20px 0 9px;color:#efece6}
   .id-m .tx .ph:first-child{margin-top:0}
-  .id-m .tx strong,.id-m .tx b{font-weight:700;color:#fff}
+  .id-m .tx strong,.id-m .tx b{font-weight:700;color:#efece6}
   .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035);margin-top:14px;transition:border-color .2s,background .2s}
   .id-in:focus-within{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.05)}
   .id-in textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;max-height:140px;padding:6px 4px}
