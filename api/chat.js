@@ -35,7 +35,7 @@ export const ROUTE = {
   think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
-  present:   { model: 'claude-opus-4-8', max: 8192 }, // Skadi retired — four engines; the writer lands the deck too
+  present:   { model: 'claude-fable-5', fallback: 'claude-opus-4-8', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
 };
 
 // ── Persona ~30% ORIONS ──
@@ -285,7 +285,17 @@ export default async function handler(req, res) {
   // paid engine still requires a plan. Cost is bounded: Gemini/Haiku only, per-user rate
   // limit above, and a small monthly token allowance below.
   const freeTier = !access.allowed;
-  if (freeTier && mode !== 'idea') { res.status(402).json({ error: 'Choose a plan to unlock this — the free account covers the Idea chat', paywall: true }); return; }
+  // ── One Crystallize on the house ── a single LIFETIME summing for free accounts, so signup
+  // reaches the product's actual wow (the crystallize moment) before the paywall. Bounded CAC:
+  // once ever per account (usage-row flag), output capped below, email-confirm + IP limits
+  // bound multi-accounting to ~฿5 per abuse. Deliberate acquisition spend, not a leak.
+  const freeSumming = freeTier && mode === 'summing' && !ud.freeSummed;
+  if (freeTier && mode !== 'idea' && !freeSumming) {
+    const msg = mode === 'summing'
+      ? 'Your free Crystallize is used — pick a plan for unlimited documents'
+      : 'Choose a plan to unlock this — the free account covers the Idea chat';
+    res.status(402).json({ error: msg, paywall: true }); return;
+  }
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
   // plan-scaled ceiling; capFor (env MONTHLY_CAP) remains the fallback for comp/invited
   // accounts whose plan object predates capTokens.
@@ -336,7 +346,7 @@ export default async function handler(req, res) {
   // a "document" = one full Odin generation: Crystallize (summing) or a Brief compile
   // (briefdoc). Without counting briefdoc, Brief mode is an unlimited-Opus backdoor.
   const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign';
-  if (countsDoc) {
+  if (countsDoc && !freeTier) { // the one free Crystallize has no plan to count against — its own flag gates it
     try {
       const q = await checkDocQuota(user.email, plan, ud);
       if (!q.ok) {
@@ -352,12 +362,13 @@ export default async function handler(req, res) {
   // underneath once you pay. Billed at the accurate `sonnet` rate so the 30% margin floor holds.
   if (mode === 'idea' && !freeTier) route = { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: route.max };
   const base = TASK[mode] || TASK.summing;
-  const maxTok = route.max || 8192;
+  // the free Crystallize streams a tighter document — caps its worst-case cost near ฿5
+  const maxTok = freeSumming ? 3072 : (route.max || 8192);
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'ODIN', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
@@ -410,7 +421,7 @@ export default async function handler(req, res) {
       const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
       nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
     }
-    if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
+    if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
     if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
     await writeUsageRow(user.email, nextData);
     res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`); // lets the client show per-document cost

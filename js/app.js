@@ -173,7 +173,7 @@
     // signed-in, no plan → free tier: Galdr with a monthly allowance
     if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
       el.style.display='';
-      el.innerHTML='Free account — Galdr chat included · <button onclick="showNotInvited()">Pick a plan</button> for Brief, Crystallize, Think & Refine';
+      el.innerHTML='Free account — Galdr chat + <b>one Crystallize on the house</b> · <button onclick="showNotInvited()">Pick a plan</button> for the whole studio';
       return}
     el.style.display='none'}
   function renderTierNote(){renderAnonLimit()}
