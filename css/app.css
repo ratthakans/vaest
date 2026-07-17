@@ -570,6 +570,33 @@
   .auth-go:hover{background:#fff;transform:translateY(-1px)}
   .auth-err{font-size:12.5px;color:var(--cin-d);min-height:18px;line-height:1.5}
   .auth-sw{margin-top:18px;font-size:13px;color:var(--dim)}
+  /* plan sheet — Claude-style: three cards, one clearly recommended, three bullets each */
+  .auth-in.plans{max-width:880px}
+  .pl-hd{font-family:var(--body);font-size:27px;font-weight:500;color:#efece6;text-align:center}
+  .pl-ctx{text-align:center;font-size:13.5px;color:var(--cin-d);margin:8px 0 0}
+  .pl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+  .pl-card{position:relative;display:flex;flex-direction:column;padding:22px 20px 18px;border:1px solid var(--line);
+    border-radius:16px;background:rgba(255,255,255,.025);text-align:left}
+  .pl-card.hot{border-color:rgba(226,88,44,.55);background:rgba(226,88,44,.05)}
+  .pl-badge{position:absolute;top:-10px;left:18px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+    text-transform:uppercase;background:var(--cinnabar);color:#fff;padding:3px 10px;border-radius:100px}
+  .pl-name{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .pl-price{font-size:26px;font-weight:700;color:#fff;margin:7px 0 0;letter-spacing:-.01em}
+  .pl-price i{font-style:normal;font-size:12.5px;color:var(--mute);font-weight:500;letter-spacing:0}
+  .pl-list{list-style:none;margin:16px 0 20px;padding:0;display:flex;flex-direction:column;gap:8px}
+  .pl-list li{font-size:12.5px;color:var(--dim);line-height:1.5;padding-left:19px;position:relative}
+  .pl-list li::before{content:"✓";position:absolute;left:0;top:0;color:var(--cin-d);font-size:11px}
+  .pl-cta{margin-top:auto;width:100%;text-align:center;font-size:13px;font-weight:650;padding:10px 0;
+    border-radius:9px;border:1px solid var(--line2);color:var(--ink);transition:.15s}
+  .pl-cta:hover{background:rgba(255,255,255,.08)}
+  .pl-card.hot .pl-cta{background:var(--ink);color:#0a0a0c;border-color:transparent}
+  .pl-card.hot .pl-cta:hover{background:#fff}
+  .pl-foot{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:24px;font-size:12px;color:var(--mute)}
+  .pl-foot b{color:var(--dim);font-weight:600}
+  .pl-foot button,.pl-foot a{font-size:12px;color:var(--dim);text-decoration:none;transition:color .14s}
+  .pl-foot button:hover,.pl-foot a:hover{color:var(--ink)}
+  .pl-dot{opacity:.5}
+  @media(max-width:760px){.pl-grid{grid-template-columns:1fr;gap:12px}.pl-card.hot{order:-1}.auth-in.plans{max-width:420px}}
   .plan-opt{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
     padding:14px 16px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:12px;
     background:rgba(255,255,255,.02);color:var(--ink,#f2f1ee);cursor:pointer;text-align:left;

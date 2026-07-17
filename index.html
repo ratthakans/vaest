@@ -167,7 +167,6 @@
     <div class="auth-mark">
       <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ag1" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ag1)" stroke-width="3.6" stroke-linecap="round"/></svg>
       <div class="wm">V<i>Æ</i>ST</div>
-      <div class="by">by ORIONS.Agency</div>
     </div>
     <div class="auth-h" id="authTitle">Sign in</div>
     <form class="auth-f" onsubmit="event.preventDefault();submitAuth()">
@@ -179,7 +178,6 @@
     <div class="auth-sw" id="authSw">No account yet?<button type="button" onclick="toggleAuthMode()">Create one</button></div>
     <div class="auth-sw"><button type="button" onclick="forgotPassword()">Forgot password?</button></div>
     <div class="auth-foot">
-      <div class="af-line">Sign up free — the Idea chat is included. Plans unlock the whole studio.</div>
       <div class="af-links"><a href="mailto:rakan@orions.agency">Contact the ORIONS team</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></div>
     </div>
   </div>
@@ -210,21 +208,49 @@
   </div>
 </div>
 <div class="auth" id="gateView">
-  <div class="auth-in" style="text-align:center">
-    <div class="auth-mark" style="justify-content:center">
-      <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="ag3" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#ag3)" stroke-width="3.6" stroke-linecap="round"/></svg>
-      <div class="wm">V<i>Æ</i>ST</div>
+  <div class="auth-in plans">
+    <div class="pl-hd">Choose your plan</div>
+    <div class="pl-ctx" id="planCtx" style="display:none"></div>
+    <div id="giLapsed" style="display:none;text-align:center;font-size:13px;color:var(--cin-d);margin:6px 0 0">Your subscription lapsed — renew below to continue.</div>
+    <div class="pl-grid">
+      <div class="pl-card">
+        <div class="pl-name">Basic</div>
+        <div class="pl-price">฿390 <i>/ month</i></div>
+        <ul class="pl-list">
+          <li>The whole flow — Idea · Brief · Crystallize</li>
+          <li>Think — a second mind on any section</li>
+          <li>Essential monthly usage</li>
+        </ul>
+        <button class="pl-cta" onclick="startCheckout('basic')">Get Basic</button>
+      </div>
+      <div class="pl-card hot">
+        <div class="pl-badge">Popular</div>
+        <div class="pl-name">Pro</div>
+        <div class="pl-price">฿1,490 <i>/ month</i></div>
+        <ul class="pl-list">
+          <li>Everything in Basic</li>
+          <li>Refine — the apex audit before work ships</li>
+          <li>3× usage</li>
+        </ul>
+        <button class="pl-cta" onclick="startCheckout('pro')">Get Pro</button>
+      </div>
+      <div class="pl-card">
+        <div class="pl-name">Director</div>
+        <div class="pl-price">฿3,490 <i>/ month</i></div>
+        <ul class="pl-list">
+          <li>Everything in Pro</li>
+          <li>6× usage</li>
+          <li>Priority queue</li>
+        </ul>
+        <button class="pl-cta" onclick="startCheckout('director')">Get Director</button>
+      </div>
     </div>
-    <div class="auth-h">Choose your plan</div>
-    <p style="font-size:14px;line-height:1.7;color:var(--dim);margin-bottom:20px">Signed in as <b id="giEmail" style="color:var(--ink)"></b> · pick a plan to start</p>
-    <div id="giLapsed" style="display:none;font-size:13px;color:var(--cin-d);margin:-8px 0 18px">Your subscription lapsed — renew below to continue.</div>
-    <div class="plan-pick" style="display:flex;flex-direction:column;gap:10px;text-align:left">
-      <button class="plan-opt" onclick="startCheckout('basic')"><span><b>Basic</b><small style="display:block;color:var(--mute);font-size:12px">Essential usage · Think</small></span><span class="plan-price">฿390<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
-      <button class="plan-opt" onclick="startCheckout('pro')"><span><b>Pro</b> <em style="font-style:normal;color:var(--acc);font-size:11px;letter-spacing:.04em">POPULAR</em><small style="display:block;color:var(--mute);font-size:12px">3× the usage · + Norrsken Refine</small></span><span class="plan-price">฿1,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
-      <button class="plan-opt" onclick="startCheckout('director')"><span><b>Director</b><small style="display:block;color:var(--mute);font-size:12px">6× the usage · + priority</small></span><span class="plan-price">฿3,490<i style="color:var(--mute);font-weight:400">/mo</i></span></button>
+    <div class="pl-foot">
+      <span>Signed in as <b id="giEmail"></b></span>
+      <span class="pl-dot">·</span><button type="button" onclick="hideGate()">Keep using Galdr free</button>
+      <span class="pl-dot">·</span><a href="mailto:rakan@orions.agency">Team &amp; Business</a>
+      <span class="pl-dot">·</span><button type="button" onclick="logout()">Sign out</button>
     </div>
-    <p style="font-size:12px;color:var(--mute);margin:18px 0 0">Team & Business · <a href="mailto:rakan@orions.agency" style="color:var(--dim)">talk to us →</a></p>
-    <div class="auth-sw" style="margin-top:18px"><button type="button" onclick="hideGate()">← Keep using Galdr free</button> · <button type="button" id="giReq" onclick="requestInvite()">Request an invite instead</button> · <button type="button" onclick="logout()">Sign out</button></div>
   </div>
 </div>
 <div class="stats" id="statsView" onclick="if(event.target===this)closeStats()">

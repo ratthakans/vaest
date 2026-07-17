@@ -304,10 +304,12 @@
         +(u&&u.freeCrystallize?' · 1 Crystallize free':'')+'</span>';
       return}
     el.style.display='none'}
-  function showNotInvited(){
+  function showNotInvited(msg){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';
     // if they had a subscription that lapsed, say so
     const q=window.QUOTA;const lp=$('giLapsed');if(lp)lp.style.display=(q&&q.source==='lapsed')?'':'none';
+    // contextual paywall — the sheet says WHY it opened ("Brief needs a plan…"), not just "pick one"
+    const cx=$('planCtx');if(cx){const t=typeof msg==='string'?msg.trim():'';cx.textContent=t;cx.style.display=t?'':'none'}
     $('gateView').classList.add('show')}
   function hideGate(){$('gateView').classList.remove('show')} // free tier keeps Galdr — the gate is a picker, not a trap
   // ── billing: start Stripe Checkout / open the customer portal ──
@@ -330,13 +332,7 @@
       if(r.ok&&d.url){location.href=d.url;return}
       toast(d.error||'No billing to manage yet')}
     catch(e){toast('Couldn’t open billing, try again')}}
-  async function requestInvite(){
-    if(!AUTH)return;const b=$('giReq');b.disabled=true;b.textContent='Sending…';
-    try{await fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',
-      headers:{apikey:SB.key,Authorization:'Bearer '+SB.key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
-      body:JSON.stringify({email:'wl:'+AUTH.email,data:{ts:Date.now(),source:'gate'},updated_at:new Date().toISOString()})});
-      b.textContent='Requested ✓ — the team will reach out'}
-    catch(e){b.disabled=false;b.textContent='Request an invite';toast('Failed, try again')}}
+  // (invite-request path retired — the gate is a plan picker now, self-serve only)
 
   /* ═══ usage analytics — cost per document ═══ */
   const RATE_DEF={opus:2600,fable:600,idea:150,mimir:3100,skadi:400}; // THB per 1M (in+out combined) — estimate, editable
@@ -471,7 +467,7 @@
     if(r.status===401){
       if(ANON){anonWall();throw new Error('Sign up to continue')}
       showAuth('Session expired — sign in again');throw new Error('Session expired')}
-    if(r.status===402||r.status===403){checkAccess();showNotInvited();throw new Error('Choose a plan to continue')}
+    if(r.status===402||r.status===403){let d={};try{d=await r.json()}catch(e){}checkAccess();showNotInvited(d.error||'');throw new Error(d.error||'Choose a plan to continue')}
     if(r.status===429){let d={};try{d=await r.json()}catch(e){}const msg=d.error||'Usage limit reached';
       if(ANON&&d.signup){anonWall(msg)}else toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
