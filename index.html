@@ -147,7 +147,7 @@
       </div>
       <!-- usage meter — pinned above the footer; click opens Settings ▸ Usage -->
       <div class="r-usage" id="railUsage" style="display:none" onclick="openSettings()" role="button" title="Usage — open Settings"></div>
-      <div class="r-foot"><span class="pf-av sm" id="railAv" onclick="openSettings()" title="Profile"></span> <span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 1.3</span><button class="r-gear" onclick="openSettings()" title="Settings" aria-label="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+      <div class="r-foot"><span class="pf-av sm" id="railAv" onclick="openSettings()" title="Profile"></span> <span class="sync" id="syncDot"></span> <span class="who" id="whoLbl" onclick="confirmLogout()" title="Click to sign out">VÆST 3.0</span><button class="r-gear" onclick="openSettings()" title="Settings" aria-label="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
     </div>
   </aside>
   <div class="scrim" onclick="toggleRail()"></div>
@@ -339,6 +339,7 @@
       <button class="set-tab" data-st="usage" onclick="setSetTab('usage')">Usage</button>
       <button class="set-tab" data-st="privacy" onclick="setSetTab('privacy')">Privacy</button>
       <button class="set-tab" data-st="api" onclick="setSetTab('api')">API</button>
+      <button class="set-tab" data-st="about" onclick="setSetTab('about')">About</button>
     </div>
     <div class="set-body">
       <div class="set-pane on" data-sp="profile">
@@ -407,6 +408,16 @@
         <div id="apiKeyNew" style="display:none;margin-bottom:14px"></div>
         <div id="apiKeyList"></div>
         <button class="dlg-ok" style="margin-top:14px" onclick="createNewApiKey()">Create new key</button>
+      </div>
+      <div class="set-pane" data-sp="about">
+        <div class="about-hero">
+          <svg class="ab-mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="abg" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#abg)" stroke-width="3.6" stroke-linecap="round"/></svg>
+          <div class="ab-wm">V<i>Æ</i>ST <span class="ab-ver" id="abVer">3.0</span></div>
+          <div class="ab-tag">The idea-crystallizing instrument · ORIONS.Agency</div>
+        </div>
+        <div class="set-lbl" style="margin-top:22px">The engines</div>
+        <div id="engineList" class="engine-list"></div>
+        <div class="ab-foot" id="abFoot"></div>
       </div>
     </div>
   </div>

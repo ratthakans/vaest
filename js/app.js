@@ -293,7 +293,12 @@
   function renderRailUsage(){
     const el=$('railUsage');if(!el)return;
     const q=window.QUOTA;
-    if(ANON||!q||q.internal){el.style.display='none';return}
+    if(ANON||!q){el.style.display='none';return}
+    if(q.internal){ // team account — no meter to show; a quiet status chip instead of a blank gap
+      el.style.display='';el.classList.add('is-chip');
+      el.innerHTML='<span class="qn"><span>Team · unlimited</span><em>v'+VAEST_VER+'</em></span>';
+      el.onclick=()=>{openSettings();setSetTab('about')};return}
+    el.classList.remove('is-chip');el.onclick=()=>openSettings();
     const u=q.usage;const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
     const bar=(pct,name,foot)=>{el.style.display='';
       el.innerHTML='<span class="qn"><span>'+name+'</span><em>'+pct+'%</em></span>'
@@ -1004,7 +1009,34 @@
     document.querySelectorAll('.set-tab').forEach(b=>b.classList.toggle('on',b.getAttribute('data-st')===t));
     document.querySelectorAll('.set-pane').forEach(p=>p.classList.toggle('on',p.getAttribute('data-sp')===t));
     if(t==='usage')renderUsageBreak();
-    if(t==='api')renderApiKeys()}
+    if(t==='api')renderApiKeys();
+    if(t==='about')renderAbout()}
+  /* ═══ About — version + the engine roster ═══ */
+  const VAEST_VER='3.0';
+  // white-label engines · role · version. Real model + wired status shown to internal only.
+  const ENGINES=[
+    {n:'Galdr', role:'Idea — thinks out loud with you',    ver:'2.5', model:'Gemini Flash · Sonnet 5 (members)', key:'galdr'},
+    {n:'Odin',  role:'Crystallize — writes every word on the canvas', ver:'1.8', model:'Claude Opus 4.8', key:'odin'},
+    {n:'Mimir', role:'Think — a second mind that pushes',   ver:'1.0', model:'GPT-5.6 Sol', key:'mimir'},
+    {n:'Norrsken', role:'Refine + Present — the apex audit, and the deck', ver:'3.0', model:'Claude Fable 5', key:'norrsken'},
+  ];
+  function renderAbout(){
+    const el=$('engineList');if(!el)return;
+    const q=window.QUOTA;const internal=!!(q&&q.internal);const en=(q&&q.engines)||null;
+    $('abVer').textContent=VAEST_VER;
+    el.innerHTML=ENGINES.map(e=>{
+      // internal sees the real model + a wired dot; everyone else sees the role only
+      let sub=e.role;
+      if(internal){const wired=en?(e.key==='norrsken'?en.odin:en[e.key]):null; // Norrsken rides Odin's key
+        const dot=wired===false?'<span class="eg-dot off"></span>':'<span class="eg-dot"></span>';
+        sub='<span class="eg-model">'+dot+esc(e.model)+'</span>';}
+      return '<div class="eg-row"><div class="eg-l"><b>'+e.n+'</b> <span class="eg-role">'+(internal?e.role:'')+'</span></div>'
+        +'<div class="eg-sub">'+sub+'</div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
+    // foot: build + (internal) Sol-fallback + KV status
+    const bits=['ORIONS.Agency'];
+    if(internal&&en){if(en.mimirFallback>0)bits.push('Sol→Odin ×'+en.mimirFallback+' this month');
+      bits.push('rate limit · '+(en.kv?'distributed':'in-memory'));}
+    $('abFoot').innerHTML=bits.join(' · ')+' · <a href="/privacy" style="color:var(--dim)">Privacy</a> · <a href="/terms" style="color:var(--dim)">Terms</a>'}
   /* ═══ API keys — build VÆST into your own tools ═══ */
   async function renderApiKeys(){
     const list=$('apiKeyList');if(!list)return;
