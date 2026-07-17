@@ -2,8 +2,6 @@
   "cleanUrls": true,
   "regions": ["sin1"],
   "rewrites": [
-    { "source": "/", "destination": "/app.html" },
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/home", "destination": "/index.html" }
+    { "source": "/app", "destination": "/index.html" }
   ]
 }
