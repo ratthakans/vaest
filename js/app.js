@@ -1169,10 +1169,15 @@
   function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs).then(renderBriefFiles)}
   function renderBriefQA(){
     const s=cur(),th=$('briefThread');if(!th)return;
-    const qa=(s&&s.briefQA)||[];
-    th.innerHTML=qa.map(m=>{const isAI=m.r!=='user';
+    const qa=(s&&s.briefQA)||[];const last=qa.length-1;
+    th.innerHTML=qa.map((m,i)=>{const isAI=m.r!=='user';
+      // the current question (last message, still an AI turn, brief not yet complete) pops as a focused card
+      if(i===last&&isAI&&!(s&&s.briefComplete))
+        return '<div class="q-card"><div class="q-eye"><span class="q-dot"></span> VÆST asks</div><div class="q-body">'+renderMd(m.c)+'</div></div>';
       return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')+'</div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
-    th.scrollTop=th.scrollHeight}
+    // spotlight the question rather than pinning to the very bottom
+    const card=th.querySelector('.q-card');
+    if(card)card.scrollIntoView({block:'nearest'}); else th.scrollTop=th.scrollHeight}
   async function startBrief(){
     if(_briefBusy)return;
     const s=cur();if(!s)return;
@@ -1229,7 +1234,7 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#railModes button,#mobileModes button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});

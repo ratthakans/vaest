@@ -90,20 +90,19 @@
     mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
     mask-composite:intersect;animation:adrift 14s linear infinite}
   .home>*{position:relative;z-index:1}
-  .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto} /* margin:auto centers when short, stays fully scrollable when tall */
+  .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
-  /* mode switcher — segmented, quiet, Claude-style */
-  /* rail modes — three ways of working, clearly separated; the mono tag names the engines */
-  .rail-modes{display:flex;flex-direction:column;gap:2px;margin:14px 10px 6px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-  .rail-modes button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font-size:13.5px;font-weight:600;
-    color:var(--dim);padding:9px 10px;border-radius:8px;transition:.15s var(--ease)}
-  .rail-modes button svg{opacity:.7;flex:none}
-  .rail-modes button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
-  .rail-modes button.on{color:var(--ink);background:rgba(255,255,255,.08)}
-  .rail-modes button.on svg{opacity:1;color:var(--cin-d)}
-  .rm-l{flex:1}
-  .rm-e{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--mute);opacity:0;transition:opacity .15s}
+  /* mode — one horizontal segmented control, centered above the prompt (desktop + mobile) */
+  .mode-seg{display:inline-flex;gap:2px;align-self:center;background:rgba(255,255,255,.045);border:1px solid var(--line);
+    border-radius:100px;padding:4px;margin:0 auto 30px}
+  .mode-seg button{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--mute);
+    padding:9px 18px;border-radius:100px;transition:.16s var(--ease);white-space:nowrap}
+  .mode-seg button svg{opacity:.7;transition:.16s}
+  .mode-seg button:hover{color:var(--dim)}
+  .mode-seg button.on{background:rgba(255,255,255,.09);color:var(--ink)}
+  .mode-seg button.on svg{opacity:1;color:var(--cin-d)}
+  @media(max-width:520px){.mode-seg button span{display:none}.mode-seg button{padding:10px 16px}.mode-seg button svg{opacity:1}}
   .md-scope{font-family:var(--mono);font-size:9px;color:var(--cin-d);letter-spacing:.04em;text-transform:none}
   /* first-paint entrance — list rows drift in 30ms apart, then .settled turns it off so
      re-renders (rename, select, save) never replay the animation */
@@ -114,19 +113,11 @@
   .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(5){animation-delay:120ms}
   .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(n+6){animation-delay:150ms}
   @keyframes railIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
-  /* mobile mode pills — the rail is off-canvas on phones, so modes surface here */
-  .m-modes{display:none}
-  @media(max-width:760px){
-    .m-modes{display:inline-flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:100px;padding:3px;margin-bottom:18px}
-    .m-modes button{font-size:12.5px;font-weight:600;color:var(--mute);padding:7px 14px;border-radius:100px;transition:.15s}
-    .m-modes button.on{background:rgba(255,255,255,.09);color:var(--ink)}
-  }
   /* pane switch — a quiet fade+rise so mode changes feel fluid, never abrupt */
   .mode-pane.pane-in{animation:paneIn .22s var(--ease)}
   @keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   /* keyboard focus — visible ring on controls only (contenteditable keeps its soft bg) */
   button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid rgba(79,195,255,.55);outline-offset:2px;border-radius:6px}
-  .rail-modes button:hover .rm-e,.rail-modes button.on .rm-e{opacity:.8}
   .mode-pane{animation:homeUp .4s var(--ease) both}
   /* the save-hint teaches once — hidden as soon as a conversation exists, and on phones */
   .id-note{font-size:12px;color:var(--mute);margin-top:14px;text-align:center;line-height:1.5}
@@ -144,6 +135,17 @@
   .brief-files:empty{display:none}
   .brief-interview .id-thread{max-height:46vh}
   .brief-interview .id-m .tx{font-size:16.5px;line-height:1.95}
+  /* Brief — the current question pops as a focused card, Claude-style */
+  .q-card{border:1px solid var(--line2);border-left:2px solid var(--cinnabar);border-radius:12px;
+    background:rgba(255,255,255,.04);padding:16px 18px;margin:16px 0 6px;animation:qPop .34s var(--ease) both}
+  .q-eye{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--cin-d);font-weight:600;margin-bottom:10px}
+  .q-dot{width:6px;height:6px;border-radius:50%;background:var(--grad);background-size:200% 200%;animation:liquid 4s ease infinite}
+  .q-body{font-family:var(--body);font-size:17.5px;line-height:1.7;color:#efece6}
+  .q-body strong,.q-body b{color:#fff;font-weight:600}
+  .q-body p{margin:0 0 8px}.q-body p:last-child{margin-bottom:0}
+  .q-body ul{margin:8px 0 0 18px}.q-body li{margin:4px 0}
+  @keyframes qPop{from{opacity:0;transform:translateY(10px) scale(.985)}60%{opacity:1;transform:translateY(-2px) scale(1.004)}to{transform:none}}
   .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
   .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
   .brief-compile .go{flex:none}
