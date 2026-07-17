@@ -75,37 +75,23 @@
   .home{position:relative;flex:1;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px}
   .home::before{content:"";position:fixed;inset:-24%;pointer-events:none;z-index:0;
     background:
-      radial-gradient(36% 44% at 80% 22%,rgba(64,150,255,.14),transparent 72%),
-      radial-gradient(28% 38% at 16% 86%,rgba(255,90,31,.1),transparent 72%),
-      radial-gradient(24% 32% at 68% 90%,rgba(79,195,255,.08),transparent 72%);
+      radial-gradient(36% 44% at 80% 22%,rgba(64,150,255,.05),transparent 72%),
+      radial-gradient(28% 38% at 16% 86%,rgba(255,90,31,.04),transparent 72%),
+      radial-gradient(24% 32% at 68% 90%,rgba(79,195,255,.03),transparent 72%);
     filter:blur(70px);animation:agl 24s ease-in-out infinite alternate}
-  .home::after{content:"";position:fixed;top:-6%;bottom:-6%;right:0;width:34%;pointer-events:none;z-index:0;
-    background:
-      repeating-linear-gradient(90deg,rgba(255,90,31,.12) 0 1.5px,transparent 1.5px 30px),
-      repeating-linear-gradient(90deg,rgba(240,250,255,.16) 4px 5.4px,transparent 5.4px 33px),
-      repeating-linear-gradient(90deg,rgba(79,195,255,.14) 8px 9.4px,transparent 9.4px 36px);
-    filter:blur(.9px);
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
-    -webkit-mask-composite:source-in;
-    mask-image:linear-gradient(180deg,transparent 0%,#000 34%,#000 66%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 48%);
-    mask-composite:intersect;animation:adrift 14s linear infinite}
+  .home::after{content:none}
   .home>*{position:relative;z-index:1}
   .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
-  .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
+  .h-title{font-family:var(--body);font-weight:500;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.01em;line-height:1.2;margin:6px 0 18px;color:#e9e6df;text-wrap:balance}
   /* mode — a Claude-style product switcher at the top of the rail; three ways of working */
-  .mode-switch{display:flex;flex-direction:column;gap:2px;margin:14px 0 4px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-  .ms-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 10px;border-radius:9px;
-    color:var(--dim);transition:.15s var(--ease)}
-  .ms-ic{flex:none;display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:7px;
-    background:rgba(255,255,255,.05);color:var(--mute);transition:.15s}
-  .ms-tx{display:flex;flex-direction:column;line-height:1.2;min-width:0}
-  .ms-tx b{font-size:13.5px;font-weight:600;color:inherit}
-  .ms-tx i{font-style:normal;font-size:10.5px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ms-item:hover{background:rgba(255,255,255,.045);color:var(--ink)}
-  .ms-item:hover .ms-ic{color:var(--dim)}
-  .ms-item.on{background:rgba(255,255,255,.07);color:var(--ink)}
-  .ms-item.on .ms-ic{background:rgba(226,88,44,.16);color:var(--cin-d)}
+  /* mode — segmented switch: three words, a sliding thumb, nothing else */
+  .seg{position:relative;display:inline-flex;gap:2px;margin:0 0 30px;padding:3px;border:1px solid var(--line);border-radius:100px;background:rgba(255,255,255,.03)}
+  .seg button{position:relative;z-index:1;font-size:13px;font-weight:600;color:var(--mute);padding:7px 18px;border-radius:100px;transition:color .22s var(--ease)}
+  .seg button:hover{color:var(--dim)}
+  .seg button.on{color:var(--ink)}
+  .seg-thumb{position:absolute;top:3px;left:0;height:calc(100% - 6px);border-radius:100px;background:rgba(255,255,255,.09);
+    transition:transform .3s var(--ease),width .3s var(--ease);will-change:transform}
   .md-scope{font-family:var(--mono);font-size:9px;color:var(--cin-d);letter-spacing:.04em;text-transform:none}
   /* first-paint entrance — list rows drift in 30ms apart, then .settled turns it off so
      re-renders (rename, select, save) never replay the animation */
@@ -443,9 +429,8 @@
   .p-row .more:hover{background:rgba(255,255,255,.1);color:var(--snow)}
   .p-kids{padding-left:10px}
   /* empty states — a quiet dashed card with a glyph, not a bare mumble */
-  .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#7a7871;line-height:1.5;
-    border:1px dashed rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin:2px 9px 8px}
-  .r-empty svg{flex:none;opacity:.55}
+  .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#6d6b64;line-height:1.5;padding:2px 12px 8px}
+  .r-empty svg{display:none}
   .r-empty b{font-weight:600;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .r-empty b:hover{color:var(--ink)}
   .r-empty.sm{border:none;padding:2px 9px 6px;margin:0}
@@ -850,7 +835,7 @@
   .anon-bar{position:absolute;top:10px;right:16px;z-index:30;display:flex;align-items:center;gap:10px;
     padding:6px 8px 6px 14px;border-radius:100px;background:rgba(13,13,15,.62);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06)}
-  .anon-tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+  .anon-tag{display:none}
   .anon-login{font-size:13px;font-weight:600;color:var(--dim);padding:7px 13px;border-radius:8px;transition:.14s}
   .anon-login:hover{color:var(--ink);background:rgba(255,255,255,.06)}
   .anon-signup{font-size:13px;font-weight:650;color:#0a0a0a;background:var(--ink);padding:7px 15px;border-radius:8px;transition:.14s}

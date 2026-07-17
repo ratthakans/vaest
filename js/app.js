@@ -733,7 +733,7 @@
     return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg>';
   }
   function renderRail(){
-    { const cm=cur()?inferMode(cur()):null; document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===cm)); }
+    { const cm=cur()?inferMode(cur()):null; document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===cm)); updateSegThumb(); }
     if(!window._railSettled){window._railSettled=true;setTimeout(()=>{const r=document.querySelector('.rail');if(r)r.classList.add('settled')},750)}
     if(typeof paintAvatar==='function'){paintAvatar();const w=$('whoLbl');if(w&&AUTH)w.textContent=(profile&&profile.name)||AUTH.email}
     // Projects — folders holding their items
@@ -743,11 +743,11 @@
       return '<div class="p-row"><span class="pi">/</span>'+esc(p.name)
         +'<button class="more" aria-label="Project options" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
         +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty sm"><span>Empty — move items in</span></div>')+'</div>';
-    }).join(''):'<div class="r-empty"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>No projects yet — <b onclick=\'newProject()\'>create one</b></span></div>';
+    }).join(''):'<div class="r-empty"><span>No projects yet</span></div>';
     // Recents — every item, newest first (Claude-style quick access), capped
     const rl=$('recentList');
     if(rl){const recents=[...sessions].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,20);
-      rl.innerHTML=recents.length?recents.map(sItem).join(''):'<div class="r-empty"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Nothing yet — hit <b onclick=\'newSession()\'>New</b></span></div>'}
+      rl.innerHTML=recents.length?recents.map(sItem).join(''):'<div class="r-empty"><span>Nothing yet</span></div>'}
     // MD library
     renderMDList()}
   // MD is scoped to the project you're in — each project keeps its own library; items
@@ -764,7 +764,7 @@
       +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
       +'<span class="md-t">'+esc(m.title)+'</span>'
       +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
-    ).join(''):'<div class="r-empty"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg><span>'+(pid?'Nothing saved here yet':'Save a good answer (✚) → it lands here')+'</span></div>'}
+    ).join(''):'<div class="r-empty"><span>'+(pid?'Nothing here yet':'Empty')+'</span></div>'}
   function moveMD(id,pid){const md=(library||[]).find(x=>x.id===id);if(!md)return;
     md.projectId=pid||null;save();renderMDList();
     const p=pid&&projects.find(x=>x.id===pid);toast(p?('Moved to /'+p.name):'Moved to General')}
@@ -1264,6 +1264,13 @@
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
     finally{setBusy(false)}}
+  // segmented thumb — measure the active button, slide the pill under it
+  function updateSegThumb(){
+    const seg=$('modeSeg');if(!seg)return;
+    const on=seg.querySelector('button.on'),th=$('segThumb');if(!on||!th)return;
+    requestAnimationFrame(()=>{th.style.width=on.offsetWidth+'px';th.style.transform='translateX('+on.offsetLeft+'px)'})}
+  addEventListener('resize',()=>updateSegThumb());
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>updateSegThumb());
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
@@ -1272,7 +1279,7 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));updateSegThumb();
     document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});
