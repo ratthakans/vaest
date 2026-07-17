@@ -1345,8 +1345,9 @@
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
-      return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')
+      return '<div class="id-m '+(isAI?'ai':'you')+'" data-i="'+i+'"><div class="who">'+(isAI?'VÆST':'YOU')
       +'<span class="id-acts">'
+      +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Ø Think — a sharper, braver push (Mimir)"><b style="font-family:var(--mono)">Ø</b> Think</button>':'')
       +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
       +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Regenerate this reply">↻</button>':'')
       +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Crystallize">✚ Save</button>'
@@ -1354,6 +1355,36 @@
     th.scrollTop=th.scrollHeight;
 }
   function copyIdea(i){const s=cur();const m=s&&curChat(s).ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
+  // Ø Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
+  // Ephemeral (lives in the DOM, cleared on the next render) — it provokes, it doesn't persist.
+  async function ideaThink(i){
+    if(_ideaBusy||_busy){toast('One moment…');return}
+    const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m||m.r==='user')return;
+    const row=document.querySelector('#ideaThread .id-m[data-i="'+i+'"]');if(!row)return;
+    const ex=row.nextElementSibling;if(ex&&ex.classList.contains('id-think')){ex.remove();return} // toggle off
+    const btn=row.querySelector('.id-use.think');if(btn){btn.disabled=true;btn.classList.add('busy')}
+    const box=document.createElement('div');box.className='id-think';
+    box.innerHTML='<div class="it-hd"><b style="font-family:var(--mono)">Ø</b> Think · Mimir</div><div class="it-stream"><span class="cursor"></span></div>';
+    row.after(box);const th=$('ideaThread');th.scrollTop=th.scrollHeight;
+    const prompt='Idea under discussion:\n'+m.c;
+    const r=raf(full=>{const el=box.querySelector('.it-stream');if(el)el.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    try{
+      const out=await streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      const pts=parsePoints(out);
+      box.innerHTML='<div class="it-hd"><b style="font-family:var(--mono)">Ø</b> Think · Mimir</div>'
+        +pts.map(p=>'<div class="it-p"><div class="it-t">'+mdInline(p.t)+'</div>'
+          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div>').join('')
+        +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
+      // stash each push's plain text for Explore
+      box.querySelectorAll('.it-p').forEach((el,k)=>el.dataset.push=(pts[k].t||'').replace(/\*\*/g,''));
+      tasteLog('think',{t:m.c.slice(0,90)});
+    }catch(e){box.remove();/* streamAPI already surfaces the wall/toast */}
+    finally{if(btn){btn.disabled=false;btn.classList.remove('busy')}}}
+  function exploreIdea(el){
+    const push=el.closest('.it-p')&&el.closest('.it-p').dataset.push;if(!push)return;
+    const box=el.closest('.id-think');if(box)box.remove();
+    const inp=$('ideaInput');if(inp){inp.value=push;inp.style.height='';inp.style.height=Math.min(inp.scrollHeight,140)+'px'}
+    sendIdea()} // Galdr mirrors the push's language and riffs on the angle
   function regenIdea(){
     if(_ideaBusy||_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;const ch=curChat(s);if(!ch.ideas.length)return;
