@@ -330,6 +330,32 @@
   .s-item.on{background:rgba(255,255,255,.09);color:var(--snow);font-weight:600}
   .s-item .dot{width:5px;height:5px;border-radius:50%;background:#54544f;flex:none}
   .s-item.on .dot{background:var(--cinnabar)}
+  /* mode icon per Recents/Projects item — colour-cues the three modes without shouting */
+  .s-item .s-ic{flex:none;display:flex;color:#6f6e68;transition:color .14s}
+  .s-item:hover .s-ic,.s-item.on .s-ic{color:var(--dim)}
+  .s-item.mode-crystallize .s-ic{color:#c98a5e}
+  .s-item.mode-crystallize.on .s-ic,.s-item.mode-crystallize:hover .s-ic{color:var(--cin-d)}
+  .s-item.mode-brief .s-ic{color:#7fb0d6}
+  .s-item.mode-idea .s-ic{color:#7f9c86}
+  .mi-ic{display:block}
+  /* MD library list */
+  .md-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;font-size:12.5px;color:var(--dim);cursor:pointer;transition:background .12s}
+  .md-item:hover{background:rgba(255,255,255,.05);color:var(--ink)}
+  .md-item .mi-ic{flex:none;color:#6f6e68}
+  .md-item .md-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .md-item .more{opacity:0;flex:none;color:var(--mute);font-size:14px;padding:0 2px}
+  .md-item:hover .more{opacity:1}
+  .r-lbl-n{font-family:var(--mono);font-size:9px;color:var(--mute);letter-spacing:0}
+  /* MD viewer sheet */
+  .md-sheet{max-width:640px;max-height:76vh;display:flex;flex-direction:column}
+  .md-view-hd{display:flex;align-items:flex-start;gap:14px;padding:18px 22px 14px;border-bottom:1px solid var(--line)}
+  .md-view-t{flex:1;font-size:17px;font-weight:650;color:var(--ink);line-height:1.4;outline:none;border-radius:4px}
+  .md-view-t:focus{background:rgba(255,255,255,.05)}
+  .md-view-act{display:flex;gap:8px;flex:none}
+  .md-view-act button{font-size:12px;font-weight:600;color:var(--dim);border:1px solid var(--line2);border-radius:7px;padding:6px 11px;transition:.14s}
+  .md-view-act button:hover{color:var(--ink);border-color:var(--ink)}
+  .md-view-body{padding:18px 22px 24px;overflow-y:auto;font-family:var(--body);font-size:16px;line-height:1.95;color:#d8d5ce}
+  .md-view-body h1,.md-view-body h2,.md-view-body .ph{font-family:var(--ui);color:var(--ink)}
   .s-item .sb{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
   .s-item .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .s-item .tt.editing{overflow:visible;white-space:normal;background:rgba(255,255,255,.14);color:var(--snow);

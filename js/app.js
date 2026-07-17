@@ -50,9 +50,17 @@
     flush();return html}
 
   /* ═══ state — sessions/projects · localStorage + Supabase ═══ */
-  const STORE='vaest_v2',DB_V=4,TOKEN_CAP=5e6,LEGACY_WHO='orions-workspace';
+  const STORE='vaest_v2',DB_V=5,TOKEN_CAP=5e6,LEGACY_WHO='orions-workspace';
+  // VÆST 3.0 — every item carries a mode: 'idea' (chat) · 'brief' (interview→doc) · 'crystallize' (canvas)
+  const MODES=['idea','brief','crystallize'];
+  function inferMode(s){
+    if(MODES.includes(s&&s.mode))return s.mode;
+    if(s&&s.canvas&&s.canvas.trim())return 'crystallize';
+    return 'idea';
+  }
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
   let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
+  let library=[]; // MD library — saved chat answers, kept as .md
   function setBusy(b){_busy=b;const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);const sb=$('stopBtn');if(sb)sb.classList.toggle('show',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
   /* ═══ CI dialog — promise-based confirm/prompt ═══ */
   let _dlgResolve=null;
@@ -69,6 +77,8 @@
       setTimeout(()=>{(isPrompt?inp:ok).focus();if(isPrompt)inp.select()},60);
     })}
   function dlgClose(val){$('dlgView').classList.remove('show');const r=_dlgResolve;_dlgResolve=null;if(r)r(val)}
+  function uiSheet(html){const s=$('mdSheet');if(!s)return;s.innerHTML=html;$('mdView').classList.add('show')}
+  function uiSheetClose(){const v=$('mdView');if(v)v.classList.remove('show')}
   const uiConfirm=(msg,opts)=>uiDialog({msg,...(opts||{})}).then(v=>v!==null&&v!==false);
   const uiPrompt=(msg,value,opts)=>uiDialog({msg,value:value||'',...(opts||{})});
   const cur=()=>sessions.find(s=>s.id===currentSid)||null;
@@ -137,8 +147,8 @@
     ANON=true;SB.who='anon';
     const bar=$('anonBar');if(bar)bar.style.display='';
     $('app').classList.add('anon');
-    if(!loadLocal()){projects=[];sessions=[];usage=0}
-    if(!sessions.length)sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}];
+    if(!loadLocal()){projects=[];sessions=[];usage=0;library=[]}
+    if(!sessions.length)sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'}];
     if(!currentSid||!cur())currentSid=sessions[0].id;
     renderRail();showHome();renderAnonLimit()}
   function anonLogin(){if(_authMode!=='login')toggleAuthMode();showAuth()}
@@ -327,11 +337,44 @@
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Ø Think / Refine and cost shows up here</td></tr></tbody>'}
 
-  function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile}}
+  function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile,library}}
+  // v4→v5 (idempotent): give every item a mode, split multi-chat idea sessions into separate
+  // Idea items so 1 chat = 1 Recent, and lift saved sparks into the MD library. Safe to re-run:
+  // once items carry a mode and no chats/sparks remain, it's a no-op.
+  function migrateToModes(){
+    const out=[], lifted=[];
+    (sessions||[]).forEach(s=>{
+      (s.sparks||[]).forEach(sp=>{const t=(sp.text||'').trim();if(!t)return;
+        lifted.push({id:uid('md'),title:(sp.topic&&sp.topic!=='…'?sp.topic+' — ':'')+t.replace(/\s+/g,' ').slice(0,52),
+          md:t,createdAt:sp.ts||s.updatedAt||Date.now(),fromTitle:s.title||''})});
+      delete s.sparks;
+      const mode=inferMode(s);
+      const liveChats=(s.chats||[]).filter(c=>c&&Array.isArray(c.ideas)&&c.ideas.length);
+      if(mode==='crystallize'){
+        s.mode='crystallize';
+        // research chats that fed this canvas become their own Idea items (nothing lost)
+        liveChats.forEach(c=>out.push({id:uid('s'),mode:'idea',title:c.title||('Chat — '+(s.title||'')),
+          projectId:s.projectId||null,ideas:c.ideas,updatedAt:s.updatedAt||Date.now()}));
+        delete s.chats;delete s.ideas;
+        out.push(s);
+      }else{ // idea
+        if(!liveChats.length){s.mode='idea';s.ideas=s.ideas||[];delete s.chats;out.push(s)}
+        else liveChats.forEach((c,i)=>{
+          if(i===0){s.mode='idea';s.ideas=c.ideas;if(c.title)s.title=c.title;delete s.chats;out.push(s)}
+          else out.push({id:uid('s'),mode:'idea',title:c.title||s.title||'Idea',projectId:s.projectId||null,ideas:c.ideas,updatedAt:s.updatedAt||Date.now()})});
+      }
+    });
+    sessions=out;
+    if(lifted.length)library=(library||[]).concat(lifted);
+  }
   function applyBlob(b){
     if(!b)return false;
     if(b.v>=4&&Array.isArray(b.sessions)){projects=b.projects||[];sessions=b.sessions;currentSid=b.currentSid;usage=b.usage||0;
-      trash=Array.isArray(b.trash)?b.trash:[];profile=(b.profile&&typeof b.profile==='object')?b.profile:{};return true}
+      trash=Array.isArray(b.trash)?b.trash:[];profile=(b.profile&&typeof b.profile==='object')?b.profile:{};
+      library=Array.isArray(b.library)?b.library:[];
+      // normalize to the modes schema (idempotent) — old blobs (v4) and any item missing a mode
+      if(b.v<5||sessions.some(s=>!MODES.includes(s.mode))||sessions.some(s=>s.sparks||s.chats))migrateToModes();
+      return true}
     if(Array.isArray(b.projects)&&(b.LIB||b.CANVAS)){ // migrate v1
       projects=[];sessions=[];
       b.projects.forEach(p=>{
@@ -590,7 +633,7 @@
 
   /* ═══ sessions / projects ═══ */
   function newSession(){
-    const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()};
+    const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'};
     sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile()}
   function openSession(id){
     if(_renaming)return;
@@ -636,9 +679,9 @@
     if(m<1)return 'just now';if(m<60)return m+' min ago';if(h<24)return h+' hr ago';if(day<7)return day+' days ago';
     return Math.floor(day/7)+' weeks ago'}
   let _cmtCounts={};
-  function sItem(s){const n=_cmtCounts[s.id]||0;
-    return '<div class="s-item'+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
-    +'<span class="dot"></span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
+  function sItem(s){const n=_cmtCounts[s.id]||0;const m=inferMode(s);
+    return '<div class="s-item mode-'+m+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
+    +'<span class="s-ic" title="'+m+'">'+modeIcon(m)+'</span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
     +(s.private?'<span class="lock" title="Private — on this device only">🔒</span>':'')+(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
     +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
   // sweep shared sessions for fresh client comments (badge in the rail)
@@ -649,16 +692,38 @@
       const d=await loadShare(x.shareId);
       _cmtCounts[x.id]=((d&&d.comments)||[]).length}));
     renderRail()}
+  // mode glyph for a Recents item — line icons matching the app's toolbar style
+  function modeIcon(m){
+    if(m==='crystallize')return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l3.5 5.2L12 21 8.5 8.2z"/><path d="M4.5 8.2h15" stroke-opacity=".5"/></svg>';
+    if(m==='brief')return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 11h6M9 15h4" stroke-opacity=".6"/></svg>';
+    return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg>';
+  }
   function renderRail(){
     if(typeof paintAvatar==='function'){paintAvatar();const w=$('whoLbl');if(w&&AUTH)w.textContent=(profile&&profile.name)||AUTH.email}
-    const free=sessions.filter(s=>!s.projectId);
-    $('freeList').innerHTML=free.length?free.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>';
-    $('projList').innerHTML=projects.length?projects.map(p=>{
-      const kids=sessions.filter(s=>s.projectId===p.id);
+    // Projects — folders holding their items
+    const pl=$('projList');
+    if(pl)pl.innerHTML=projects.length?projects.map(p=>{
+      const kids=sessions.filter(s=>s.projectId===p.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
       return '<div class="p-row"><span class="pi">/</span>'+esc(p.name)
         +'<button class="more" aria-label="Project options" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
-        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty">Empty — move sessions in</div>')+'</div>';
-    }).join(''):'<div class="r-empty">No projects yet</div>'}
+        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty">Empty — move items in</div>')+'</div>';
+    }).join(''):'<div class="r-empty">No projects yet</div>';
+    // Recents — every item, newest first (Claude-style quick access), capped
+    const rl=$('recentList');
+    if(rl){const recents=[...sessions].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,20);
+      rl.innerHTML=recents.length?recents.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>'}
+    // MD library
+    renderMDList()}
+  function renderMDList(){
+    const ml=$('mdList');if(!ml)return;
+    const lib=[...(library||[])].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const cn=$('mdCount');if(cn)cn.textContent=lib.length?lib.length:'';
+    ml.innerHTML=lib.length?lib.map(m=>
+      '<div class="md-item" data-mid="'+m.id+'" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
+      +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
+      +'<span class="md-t">'+esc(m.title)+'</span>'
+      +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
+    ).join(''):'<div class="r-empty">Save a good answer from any chat → it lands here</div>'}
 
   /* ctx menus */
   function openCtx(e,sid){
@@ -1268,16 +1333,35 @@
     b.textContent=busy?'■':'↑';b.title=busy?'Stop':'Send';
     b.onclick=busy?function(){stopGen()}:function(){sendIdea()}}
   /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
+  // ✚ Save on a chat reply → the MD library (a saved .md you can reuse anywhere)
   function addSpark(i){
     const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m)return;
     const text=(m.c||'').trim();if(!text)return;
-    s.sparks=s.sparks||[];
-    if(s.sparks.some(sp=>sp.text===text)){toast('Already saved');return}
-    const sp={id:uid('sp'),text:text,topic:'…',ts:Date.now()};
-    s.sparks.push(sp);s.updatedAt=Date.now();save();renderSparks();
-    toast('Saved — filing by topic…');
-    inferTopic(text).then(top=>{sp.topic=top||'General';save();renderSparks()})
-      .catch(()=>{sp.topic='General';save();renderSparks()})}
+    library=library||[];
+    if(library.some(x=>x.md===text)){toast('Already in your MD library');return}
+    const md={id:uid('md'),title:text.replace(/^#+\s*/,'').replace(/\s+/g,' ').slice(0,52),md:text,createdAt:Date.now(),fromTitle:s.title||''};
+    library.unshift(md);s.updatedAt=Date.now();save();renderRail();
+    toast('Saved to MD library');
+    // a nicer title if the answer has no heading — infer a topic label
+    if(!/^#/.test(text))inferTopic(text).then(top=>{if(top){md.title=top;save();renderMDList()}}).catch(()=>{})}
+  /* ═══ MD library — open / download / delete ═══ */
+  function openMD(id){
+    const md=(library||[]).find(x=>x.id===id);if(!md)return;
+    const body='<div class="md-view-hd"><div class="md-view-t" contenteditable="true" spellcheck="false" onblur="renameMD(\''+id+'\',this.innerText)">'+esc(md.title)+'</div>'
+      +'<div class="md-view-act"><button onclick="downloadMD2(\''+id+'\')">⤓ .md</button><button onclick="insertMDToCanvas(\''+id+'\')">Use in Crystallize</button></div></div>'
+      +'<div class="md-view-body">'+renderMd(md.md)+'</div>';
+    uiSheet(body)}
+  function renameMD(id,t){const md=(library||[]).find(x=>x.id===id);if(!md)return;const v=(t||'').replace(/\s+/g,' ').trim();if(v&&v!==md.title){md.title=v;save();renderMDList()}}
+  function downloadMD2(id){const md=(library||[]).find(x=>x.id===id);if(!md)return;
+    const name=md.title.replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'note';
+    dl(new Blob([md.md],{type:'text/markdown;charset=utf-8'}),name+'.md');toast('Downloaded .md')}
+  async function deleteMD(id){const md=(library||[]).find(x=>x.id===id);if(!md)return;
+    if(!await uiConfirm('Delete “'+esc(md.title)+'” from your MD library?',{ok:'Delete',danger:true}))return;
+    library=library.filter(x=>x.id!==id);save();renderRail();toast('Deleted')}
+  function openMDCtx(e,id){showCtx(e,'<button onclick="openMD(\''+id+'\');hideCtx()">Open</button>'
+    +'<button onclick="downloadMD2(\''+id+'\');hideCtx()">Download .md</button>'
+    +'<div class="sep"></div><button class="danger" onclick="deleteMD(\''+id+'\');hideCtx()">Delete</button>')}
+  function insertMDToCanvas(id){uiSheetClose();toast('In Crystallize, this MD is available as a source');/* wired fully in M3 */}
   async function inferTopic(text){
     try{const t=await streamAPI('tag',[{role:'user',content:text.slice(0,1200)}],'',null);
       return (t||'').replace(/["'.\n]/g,'').replace(/\s{2,}/g,' ').trim().split(/\s+/).slice(0,3).join(' ')||'General'}
@@ -1966,8 +2050,8 @@
     try{const legacy=JSON.parse(localStorage.getItem('vaest_profile:'+AUTH.email)||'null');
       if(legacy&&(legacy.name||legacy.pic)&&!(profile&&(profile.name||profile.pic))){profile=legacy;save();localStorage.removeItem('vaest_profile:'+AUTH.email)}}catch(e){}
     const _pf=getProfile();$('whoLbl').textContent=_pf.name||AUTH.email;paintAvatar();
-    if(!loadLocal()){projects=[];sessions=[];usage=0}
-    if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}]}
+    if(!loadLocal()){projects=[];sessions=[];usage=0;library=[]}
+    if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'}]}
     if(!currentSid||!cur())currentSid=sessions[0].id;
     renderRail();
     const s=cur();(s.canvas&&s.canvas.trim())?showCanvas():showHome();
@@ -1983,7 +2067,7 @@
           const cloudTime=Math.max(0,...sessions.map(x=>x.updatedAt||0));
           if(localMeaningful&&cloudTime<localTime){projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU;cloudSave()}
           else{if(!cur())currentSid=(sessions[0]||{}).id||null;
-            if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now()}];currentSid=sessions[0].id}
+            if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'}];currentSid=sessions[0].id}
             save();renderRail();const c2=cur();(c2.canvas&&c2.canvas.trim())?showCanvas():showHome()}
         }else{projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU}
         setSync('ok')}
@@ -2001,7 +2085,7 @@
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
   const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Ø Think** — Mimir, a second mind, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left), paste your own brief and drop your files — messy is fine. That first document is where VÆST earns its place.';
-  function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:''};sessions=[s];currentSid=s.id;save()}
+  function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:'',mode:'crystallize'};sessions=[s];currentSid=s.id;save()}
 
   /* share view — read-only */
   async function loadShare(id){
