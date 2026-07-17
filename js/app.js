@@ -1317,27 +1317,33 @@
     const cv=$('cvView');if(!cv||cv._spy)return;cv._spy=true;
     cv.addEventListener('scroll',raf(()=>{
       const tt=$('toTop');if(tt)tt.classList.toggle('show',cv.scrollTop>600&&cv.style.display!=='none');
-      const cvTop=cv.getBoundingClientRect().top;let curH=null;
-      document.querySelectorAll('#doc .sec').forEach(sec=>{
-        if(sec.getAttribute('data-h')!=='_intro'&&sec.getBoundingClientRect().top-cvTop<=140)curH=sec.getAttribute('data-h')});
-      document.querySelectorAll('.ol-item').forEach(it=>it.classList.toggle('cur',it.getAttribute('data-oh')===curH))}))}
+      spyOutline()}))}
 
   /* document outline in the rail — click to jump */
+  // floating outline — a column of ticks at the right edge of the canvas; hover reveals the
+  // section title, click scrolls to it, and the tick nearest the top stays lit as you scroll.
   function renderOutline(){
-    const lbl=$('olLbl'),list=$('olList');if(!lbl||!list)return;
+    const rail=$('outlineRail');if(!rail)return;
     const on=$('cvView').style.display!=='none';
     const secs=on?[...document.querySelectorAll('#doc .sec')].filter(x=>x.getAttribute('data-h')!=='_intro'):[];
-    if(!secs.length){lbl.style.display='none';list.style.display='none';list.innerHTML='';return}
+    if(secs.length<2){rail.classList.remove('on');rail.innerHTML='';return}
     const s=cur();const pins=(s&&s.pins)||{};
-    lbl.style.display='';list.style.display='';
-    list.innerHTML=secs.map((el,i)=>{const h=el.getAttribute('data-h');
-      return '<div class="ol-item" data-oh="'+esc(h)+'"><span class="on2">'+String(i+1).padStart(2,'0')+'</span>'
-        +'<span class="ot">'+(pins[h]?'<b class="op">◆</b> ':'')+esc(h)+'</span></div>'}).join('');
-    list.querySelectorAll('.ol-item').forEach(it=>it.addEventListener('click',()=>{
+    rail.classList.add('on');
+    rail.innerHTML=secs.map((el,i)=>{const h=el.getAttribute('data-h');
+      return '<div class="ot-tick" data-oh="'+esc(h)+'"><span class="ot-name">'+(pins[h]?'<b>◆</b>':'<b>'+String(i+1).padStart(2,'0')+'</b>')+esc(h)+'</span><i></i></div>'}).join('');
+    rail.querySelectorAll('.ot-tick').forEach(it=>it.addEventListener('click',()=>{
       const h=it.getAttribute('data-oh');
       const sec=[...document.querySelectorAll('#doc .sec')].find(x=>x.getAttribute('data-h')===h);if(!sec)return;
       const cv=$('cvView');smoothTo(cv,cv.scrollTop+sec.getBoundingClientRect().top-cv.getBoundingClientRect().top-28);
-      sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);closeRailMobile()}))}
+      sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200)}));
+    spyOutline()}
+  // light the tick whose section owns the top of the viewport
+  function spyOutline(){
+    const rail=$('outlineRail');if(!rail||!rail.classList.contains('on'))return;
+    const cv=$('cvView'),top=cv.getBoundingClientRect().top+90;
+    const secs=[...document.querySelectorAll('#doc .sec')].filter(x=>x.getAttribute('data-h')!=='_intro');
+    let cur=0;secs.forEach((el,i)=>{if(el.getBoundingClientRect().top<=top)cur=i});
+    rail.querySelectorAll('.ot-tick').forEach((t,i)=>t.classList.toggle('cur',i===cur))}
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');

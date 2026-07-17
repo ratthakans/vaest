@@ -56,14 +56,6 @@
       <div class="home-in">
         <h1 class="h-title" id="homeTitle">What are we making?</h1>
 
-        <!-- mode — a quiet segmented switch; the thumb slides, the pane crossfades -->
-        <div class="seg" id="modeSeg" role="tablist">
-          <span class="seg-thumb" id="segThumb"></span>
-          <button data-m="idea" onclick="setMode('idea')" role="tab">Idea</button>
-          <button data-m="brief" onclick="setMode('brief')" role="tab">Brief</button>
-          <button data-m="crystallize" onclick="setMode('crystallize')" role="tab">Crystallize</button>
-        </div>
-
         <!-- IDEA — Galdr chat, one thread per item -->
         <div class="mode-pane" data-pane="idea">
         <div class="idea hero" id="ideaBox">
@@ -116,11 +108,21 @@
         </div>
         </div>
 
+        <!-- mode — quiet segmented switch under the composer, Claude-style -->
+        <div class="seg" id="modeSeg" role="tablist">
+          <span class="seg-thumb" id="segThumb"></span>
+          <button data-m="idea" onclick="setMode('idea')" role="tab">Idea</button>
+          <button data-m="brief" onclick="setMode('brief')" role="tab">Brief</button>
+          <button data-m="crystallize" onclick="setMode('crystallize')" role="tab">Crystallize</button>
+        </div>
+
+
       </div>
     </section>
 
     <!-- CANVAS -->
     <section class="cv" id="cvView" style="display:none">
+      <div class="outline-rail" id="outlineRail"></div>
       <div class="doc" id="doc"></div>
     </section>
   </main>
