@@ -93,6 +93,28 @@
   .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
+  /* mode switcher — segmented, quiet, Claude-style */
+  .mode-switch{display:inline-flex;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:100px;padding:4px}
+  .mode-switch button{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:550;color:var(--mute);padding:8px 16px;border-radius:100px;transition:.16s var(--ease)}
+  .mode-switch button svg{opacity:.85}
+  .mode-switch button:hover{color:var(--dim)}
+  .mode-switch button.on{background:rgba(255,255,255,.08);color:var(--ink)}
+  .mode-switch button.on svg{opacity:1}
+  .mode-pane{animation:homeUp .4s var(--ease) both}
+  .id-note{font-size:12px;color:var(--mute);margin-top:14px;text-align:center;line-height:1.5}
+  .idea.hero:not(.has-chat) .id-note{display:block}.idea.hero.has-chat .id-note{display:none}
+  /* Brief start surface */
+  .brief-start{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 16px 12px}
+  .brief-start textarea{width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.7;min-height:78px}
+  .brief-start textarea::placeholder{color:var(--mute)}
+  .brief-start-foot{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .brief-start-foot .go{margin-left:auto}
+  .brief-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .brief-files:empty{display:none}
+  .brief-interview .id-thread{max-height:46vh}
+  .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
+  .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
+  .brief-compile .go{flex:none}
   .brief-box{background:rgba(255,255,255,.045);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.36),0 10px 34px rgba(0,0,0,0.42);transition:box-shadow .3s var(--ease),transform .3s var(--ease)}
   .brief-box:focus-within{box-shadow:0 2px 4px rgba(0,0,0,0.40),0 16px 46px rgba(0,0,0,0.56);transform:translateY(-1px)}
   .brief-box textarea{width:100%;border:none;outline:none;resize:none;background:none;font-family:inherit;
@@ -330,6 +352,32 @@
   .s-item.on{background:rgba(255,255,255,.09);color:var(--snow);font-weight:600}
   .s-item .dot{width:5px;height:5px;border-radius:50%;background:#54544f;flex:none}
   .s-item.on .dot{background:var(--cinnabar)}
+  /* mode icon per Recents/Projects item — colour-cues the three modes without shouting */
+  .s-item .s-ic{flex:none;display:flex;color:#6f6e68;transition:color .14s}
+  .s-item:hover .s-ic,.s-item.on .s-ic{color:var(--dim)}
+  .s-item.mode-crystallize .s-ic{color:#c98a5e}
+  .s-item.mode-crystallize.on .s-ic,.s-item.mode-crystallize:hover .s-ic{color:var(--cin-d)}
+  .s-item.mode-brief .s-ic{color:#7fb0d6}
+  .s-item.mode-idea .s-ic{color:#7f9c86}
+  .mi-ic{display:block}
+  /* MD library list */
+  .md-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;font-size:12.5px;color:var(--dim);cursor:pointer;transition:background .12s}
+  .md-item:hover{background:rgba(255,255,255,.05);color:var(--ink)}
+  .md-item .mi-ic{flex:none;color:#6f6e68}
+  .md-item .md-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .md-item .more{opacity:0;flex:none;color:var(--mute);font-size:14px;padding:0 2px}
+  .md-item:hover .more{opacity:1}
+  .r-lbl-n{font-family:var(--mono);font-size:9px;color:var(--mute);letter-spacing:0}
+  /* MD viewer sheet */
+  .md-sheet{max-width:640px;max-height:76vh;display:flex;flex-direction:column}
+  .md-view-hd{display:flex;align-items:flex-start;gap:14px;padding:18px 22px 14px;border-bottom:1px solid var(--line)}
+  .md-view-t{flex:1;font-size:17px;font-weight:650;color:var(--ink);line-height:1.4;outline:none;border-radius:4px}
+  .md-view-t:focus{background:rgba(255,255,255,.05)}
+  .md-view-act{display:flex;gap:8px;flex:none}
+  .md-view-act button{font-size:12px;font-weight:600;color:var(--dim);border:1px solid var(--line2);border-radius:7px;padding:6px 11px;transition:.14s}
+  .md-view-act button:hover{color:var(--ink);border-color:var(--ink)}
+  .md-view-body{padding:18px 22px 24px;overflow-y:auto;font-family:var(--body);font-size:16px;line-height:1.95;color:#d8d5ce}
+  .md-view-body h1,.md-view-body h2,.md-view-body .ph{font-family:var(--ui);color:var(--ink)}
   .s-item .sb{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
   .s-item .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .s-item .tt.editing{overflow:visible;white-space:normal;background:rgba(255,255,255,.14);color:var(--snow);
