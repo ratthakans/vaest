@@ -167,13 +167,13 @@
     if(ANON){
       const left=anonLeft();el.style.display='';
       el.innerHTML=left>0
-        ?'<span class="al-n">'+left+'</span> free message'+(left>1?'s':'')+' left · <button onclick="anonSignup()">Sign up free</button> to keep chatting with Galdr — plans unlock the whole studio'
-        :'You’ve used your free messages — <button onclick="anonSignup()">Sign up free</button> to keep going';
+        ?'<span class="al-n">'+left+'</span> free · <button onclick="anonSignup()">Sign up</button>'
+        :'Free messages used · <button onclick="anonSignup()">Sign up</button>';
       return}
     // signed-in, no plan → free tier: Galdr with a monthly allowance
     if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
       el.style.display='';
-      el.innerHTML='Free account — Galdr chat + <b>one Crystallize on the house</b> · <button onclick="showNotInvited()">Pick a plan</button> for the whole studio';
+      el.innerHTML='Free · Galdr + one Crystallize · <button onclick="showNotInvited()">See plans</button>';
       return}
     el.style.display='none'}
   function renderTierNote(){renderAnonLimit()}

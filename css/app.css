@@ -90,7 +90,7 @@
   .seg{position:relative;display:inline-flex;align-self:flex-start;gap:2px;margin:16px 0 0;padding:2px;border:1px solid rgba(255,255,255,.07);border-radius:100px;background:rgba(255,255,255,.02)}
   .seg button{position:relative;z-index:1;font-size:12px;font-weight:600;color:var(--mute);padding:6px 15px;border-radius:100px;transition:color .22s var(--ease)}
   /* rail variant — full width at the top of the sidebar, three equal segments */
-  .seg.rail-seg{display:flex;align-self:stretch;margin:12px 0 10px;border-radius:11px;background:rgba(255,255,255,.03)}
+  .seg.rail-seg{display:flex;align-self:stretch;margin:14px 0 16px;border-radius:11px;background:rgba(255,255,255,.03)}
   .seg.rail-seg button{flex:1;text-align:center;padding:7px 4px;font-size:11.5px;border-radius:9px}
   .seg.rail-seg .seg-thumb{border-radius:9px}
   .seg button:hover{color:var(--dim)}
@@ -372,10 +372,10 @@
   .r-mark{width:24px;height:24px;flex:none}
   .r-wm{font-family:var(--ui);font-weight:700;font-size:15.5px;letter-spacing:.12em}
   .r-wm i{font-style:normal;color:inherit}
-  .r-new{display:flex;align-items:center;gap:10px;margin:2px 12px 8px;padding:11px 13px;border-radius:6px;
+  .r-new{display:flex;align-items:center;gap:10px;margin:2px 12px 10px;padding:11px 13px;border-radius:6px;
     border:1px solid rgba(255,255,255,.16);font-size:13.5px;font-weight:650;color:var(--snow);transition:.15s}
   .r-new:hover{background:rgba(255,255,255,.1);border-color:rgba(0,0,0,0.64)}
-  .r-search{display:flex;align-items:center;gap:9px;margin:0 12px 6px;padding:9px 12px;border-radius:6px;font-size:12.5px;font-weight:500;color:#8f8c84;background:rgba(255,255,255,.045);transition:.16s var(--ease)}
+  .r-search{display:flex;align-items:center;gap:9px;margin:0 12px 10px;padding:9px 12px;border-radius:6px;font-size:12.5px;font-weight:500;color:#8f8c84;background:rgba(255,255,255,.045);transition:.16s var(--ease)}
   .r-search:hover{background:rgba(255,255,255,.09);color:#d6d3cb}
   .r-search svg{opacity:.7;flex:none}
   .r-search .rs-k{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:2px 6px}
@@ -537,22 +537,12 @@
     color:var(--ink)}
   .auth::before{content:"";position:absolute;inset:-24%;pointer-events:none;
     background:
-      radial-gradient(38% 46% at 78% 24%,rgba(64,150,255,.22),transparent 72%),
-      radial-gradient(30% 40% at 20% 84%,rgba(255,90,31,.16),transparent 72%),
-      radial-gradient(26% 34% at 66% 88%,rgba(79,195,255,.12),transparent 72%);
+      radial-gradient(38% 46% at 78% 24%,rgba(64,150,255,.07),transparent 72%),
+      radial-gradient(30% 40% at 20% 84%,rgba(255,90,31,.05),transparent 72%),
+      radial-gradient(26% 34% at 66% 88%,rgba(79,195,255,.035),transparent 72%);
     filter:blur(70px);animation:agl 20s ease-in-out infinite}
   @keyframes agl{0%,100%{transform:none}33%{transform:translate(-2.5%,1.8%) scale(1.07)}66%{transform:translate(2%,-1.5%) scale(1.04)}}
-  .auth::after{content:"";position:absolute;top:-6%;bottom:-6%;right:0;width:44%;pointer-events:none;
-    background:
-      repeating-linear-gradient(90deg,rgba(255,90,31,.2) 0 1.6px,transparent 1.6px 30px),
-      repeating-linear-gradient(90deg,rgba(240,250,255,.28) 4px 5.6px,transparent 5.6px 33px),
-      repeating-linear-gradient(90deg,rgba(79,195,255,.24) 8px 9.6px,transparent 9.6px 36px);
-    filter:blur(.8px);
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 30%,#000 70%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 42%);
-    -webkit-mask-composite:source-in;
-    mask-image:linear-gradient(180deg,transparent 0%,#000 30%,#000 70%,transparent 100%),linear-gradient(90deg,transparent 0%,#000 42%);
-    mask-composite:intersect;
-    animation:adrift 14s linear infinite}
+  .auth::after{content:none}
   @keyframes adrift{to{background-position:30px 0,33px 0,36px 0}}
   .auth.show{display:flex}
   .auth-in{position:relative;z-index:2;width:100%;max-width:404px;animation:viewIn .5s var(--ease) both;
