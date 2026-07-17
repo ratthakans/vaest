@@ -1116,9 +1116,72 @@
     return out.length>1?out:null}
 
   /* ═══ views ═══ */
-  // Brief mode — full interview loop lands in M4; these keep the surface interactive meanwhile
-  function startBrief(){const v=($('briefIn')&&$('briefIn').value.trim())||'';if(!v){toast('Paste or type a brief first');return}toast('Brief interview arrives in the next update — for now, use Crystallize');}
-  function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)toast(fs.length+' file(s) ready — Brief mode lands next update')}
+  /* ═══ BRIEF MODE — interview to a complete brief (Galdr asks · Odin compiles) ═══ */
+  let _briefBusy=false;
+  function briefMsgs(s){
+    const qa=s.briefQA||[];
+    const filesCtx=(s.files||[]).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,8000)).join('\n\n');
+    return qa.map((m,i)=>{let c=m.c;
+      if(i===0&&m.r==='user'&&filesCtx)c=m.c+'\n\n# Attached files (already provided)\n'+filesCtx;
+      return {role:m.r==='user'?'user':'assistant',content:c}});
+  }
+  function renderBriefFiles(){
+    const s=cur(),el=$('briefFiles');if(!el)return;
+    el.innerHTML=(s&&s.files&&s.files.length)?s.files.map((f,i)=>
+      '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+');renderBriefFiles()" title="Remove">✕</button></span>').join(''):''}
+  function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs).then(renderBriefFiles)}
+  function renderBriefQA(){
+    const s=cur(),th=$('briefThread');if(!th)return;
+    const qa=(s&&s.briefQA)||[];
+    th.innerHTML=qa.map(m=>{const isAI=m.r!=='user';
+      return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')+'</div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
+    th.scrollTop=th.scrollHeight}
+  async function startBrief(){
+    if(_briefBusy)return;
+    const s=cur();if(!s)return;
+    const v=($('briefIn')&&$('briefIn').value.trim())||'';
+    if(!v&&!(s.files&&s.files.length)){toast('Paste or type a rough brief, or attach a file');return}
+    s.mode='brief';s.briefQA=[{r:'user',c:v||'(see attached files)',ts:Date.now()}];s.briefSeed=v;
+    if((s.title==='New'||!s.title))s.title='Brief — '+(v.replace(/\s+/g,' ').slice(0,32)||'new');
+    $('briefStart').style.display='none';$('briefInterview').style.display='';
+    save();renderRail();renderBriefQA();
+    await briefTurn(s)}
+  async function sendBriefAnswer(){
+    if(_briefBusy){toast('One moment…');return}
+    const s=cur();if(!s)return;const inp=$('briefReply');const t=inp.value.trim();if(!t)return;
+    inp.value='';inp.style.height='';$('briefCompile').style.display='none';
+    s.briefQA=s.briefQA||[];s.briefQA.push({r:'user',c:t,ts:Date.now()});save();renderBriefQA();
+    await briefTurn(s)}
+  async function briefTurn(s){
+    _briefBusy=true;
+    const th=$('briefThread');
+    const live=document.createElement('div');live.className='id-m ai';live.innerHTML='<div class="who">VÆST</div><div class="tx"><span class="cursor"></span></div>';
+    th.appendChild(live);th.scrollTop=th.scrollHeight;
+    try{
+      const r=raf(full=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}});
+      const out=await streamAPI('briefchat',briefMsgs(s),toneSys(),r);r.stop();
+      const complete=/^BRIEF_COMPLETE/i.test(out.trim());
+      const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
+      s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
+      if(complete){const bc=$('briefCompile');if(bc)bc.style.display='';}
+    }catch(e){live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
+    finally{_briefBusy=false}}
+  async function compileBrief(){
+    if(_briefBusy||_busy){toast('One moment…');return}
+    const s=cur();if(!s)return;
+    setBusy(true);
+    const filesCtx=(s.files||[]).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,12000)).join('\n\n');
+    const qaText=(s.briefQA||[]).map(m=>(m.r==='user'?'User: ':'VÆST: ')+m.c).join('\n\n');
+    const prompt='# Initial input\n'+(s.briefSeed||'(see files)')+(filesCtx?('\n\n# Files\n'+filesCtx):'')+'\n\n# Interview (questions & answers)\n'+qaText;
+    $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Compiling the brief…</div><div class="gen-body" id="genBody"></div></div>';
+    try{
+      const r=raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}});
+      const md=await streamAPI('briefdoc',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();showCanvas();
+      toast('Brief compiled — edit any section, then Export PDF');
+    }catch(e){showHome();toast('Compile failed: '+e.message)}
+    finally{setBusy(false)}}
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
@@ -1129,6 +1192,10 @@
     document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     document.querySelectorAll('.mode-pane').forEach(p=>p.style.display=p.dataset.pane===mode?'':'none');
     const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
+    if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
+      $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
+      if(started){renderBriefFiles();renderBriefQA();const bc=$('briefCompile');if(bc)bc.style.display=s.briefComplete?'':'none'}
+      else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles()}}
     renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
@@ -1168,7 +1235,12 @@
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
+    // brief canvases have no Refine (that's a crystallize/Norrsken step) — hide the top-bar button
+    const isBrief=inferMode(s)==='brief';const mb=$('mastBtn');if(mb)mb.style.display=isBrief?'none':'';
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
+  // brief canvas → back to the interview to fill gaps
+  function reopenBrief(){const s=cur();if(!s)return;s.briefComplete=false;showHome();
+    const inp=$('briefReply');if(inp)setTimeout(()=>inp.focus(),60);toast('Answer more — then Compile brief again to update the document')}
   function backToBrief(){showHome();toast('Chat more or tweak the sources, then Crystallize again — your document stays')}
   function toggleChain(){const s=cur();if(!s)return;
     if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
@@ -1438,12 +1510,16 @@
       if(c)c.body.push(raw);else if(line){if(!secs.length||secs[0].h!=='_intro'){secs.unshift({h:'_intro',body:[raw]})}else secs[0].body.push(raw)}}
     if(!secs.length)secs=[{h:'Document',body:lines}];
     const s=cur();const docTitle=title||(s?s.title:'Document');
-    let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST</div>'
+    const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Ø Think/Refine
+    const trail=isBrief
+      ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
+      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Ø Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
+    let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
-      +(_shareId?'':'<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Ø Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>')
+      +(_shareId?'':trail)
       +'</div>';
-    if(!_shareId)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
+    if(!_shareId&&!isBrief)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -1455,8 +1531,8 @@
           +'<div class="sec-tools">'
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
-          +'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
-          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take"><b style="font-family:var(--mono)">Ø</b> Think</button>'
+          +(isBrief?'':'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
+          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take"><b style="font-family:var(--mono)">Ø</b> Think</button>')
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
         +'<div class="sec-c" contenteditable="true" spellcheck="false">'+renderMd(sec.body.join('\n'))+'</div>'

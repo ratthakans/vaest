@@ -23,6 +23,8 @@ export async function getAnthropic() {
 const GEMINI_MODEL = 'gemini-flash-latest';
 export const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
+  briefchat: { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 1024 }, // the interview — one question at a time
+  briefdoc:  { model: 'claude-opus-4-8' },                                        // compile the gathered answers into a brief
   tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
@@ -77,6 +79,23 @@ The {{quote}} must be 3–8 words copied verbatim from the document. Only bullet
 You get the document's title for context and one section's heading + body. Push only that section: the sharper cultural angle, the safe choice worth bending, the idea it stops one step short of.
 Propose 2–3 pushes. Format each as: "- **short title** {{a short exact quote from the section this relates to}} — the push, 1–2 lines, concrete."
 The {{quote}} must be 3–8 words copied verbatim from the section body. Never propose changes to other sections. Only bullets — no intro, no outro.`,
+  briefchat: `${BASE}
+
+# CURRENT TASK: BRIEF INTERVIEW — help the user complete a creative brief, one question at a time.
+You are gathering everything needed for a strong, actionable brief. Read what's given (pasted text, files, and the running conversation) and work through this checklist, filling gaps:
+- Objective (what success looks like) · Audience · Deliverables · Scope · Timeline · Budget · Tone & voice · References/inspiration · Success criteria/KPIs · Constraints (brand, legal, technical).
+Rules:
+- Ask ONE focused question at a time — the single most valuable missing piece. Be brief and concrete; suggest example answers when it helps.
+- Never invent facts. If the user is vague, probe gently.
+- Reply in the user's language.
+- When the brief has enough across the essentials to be genuinely actionable, reply with exactly "BRIEF_COMPLETE" on its own first line, then one short sentence on what you have. Do not keep asking once it's complete.`,
+  briefdoc: `${BASE}
+
+# CURRENT TASK: COMPILE BRIEF — turn the gathered material + interview into one complete creative brief.
+Use everything provided (initial input, files, and the full Q&A). Produce a clean, professional brief.
+- Structure with "# <project> — Brief" then "## " sections drawn from: Objective, Audience, Deliverables, Scope, Timeline, Budget, Tone & voice, References, Success criteria, Constraints.
+- Include ONLY sections with real content — never pad or invent. Keep each section tight and concrete.
+- This is the brief itself, not advice about it. Return the full markdown only.`,
   summing: `${BASE}
 
 # CURRENT TASK: SUMMING — crystallize the brief + multiple sources into one working document.
@@ -298,7 +317,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'GALDR', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 

@@ -109,6 +109,12 @@
   .brief-start textarea::placeholder{color:var(--mute)}
   .brief-start-foot{display:flex;align-items:center;gap:10px;margin-top:8px}
   .brief-start-foot .go{margin-left:auto}
+  .brief-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .brief-files:empty{display:none}
+  .brief-interview .id-thread{max-height:46vh}
+  .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
+  .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
+  .brief-compile .go{flex:none}
   .brief-box{background:rgba(255,255,255,.045);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.36),0 10px 34px rgba(0,0,0,0.42);transition:box-shadow .3s var(--ease),transform .3s var(--ease)}
   .brief-box:focus-within{box-shadow:0 2px 4px rgba(0,0,0,0.40),0 16px 46px rgba(0,0,0,0.56);transform:translateY(-1px)}
   .brief-box textarea{width:100%;border:none;outline:none;resize:none;background:none;font-family:inherit;

@@ -86,7 +86,20 @@
               <button class="go" id="briefGoBtn" onclick="startBrief()">Analyse brief <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
             </div>
           </div>
+          <div class="brief-files" id="briefFiles"></div>
           <input type="file" id="briefFileInput" multiple accept=".docx,.pdf,.md,.txt,.csv,.html" style="display:none" onchange="briefFilePick(event)">
+          <!-- interview — appears once analysis begins -->
+          <div class="brief-interview" id="briefInterview" style="display:none">
+            <div class="id-thread" id="briefThread"></div>
+            <div class="brief-compile" id="briefCompile" style="display:none">
+              <span class="bc-note">Looks complete — compile it into a brief, or keep answering below.</span>
+              <button class="go" onclick="compileBrief()">Compile brief <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+            </div>
+            <div class="id-in">
+              <textarea id="briefReply" rows="1" placeholder="Answer, or add anything else…" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,140)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendBriefAnswer()}"></textarea>
+              <button class="id-send" onclick="sendBriefAnswer()">↑</button>
+            </div>
+          </div>
         </div>
 
         <!-- CRYSTALLIZE — the desk: type / attach / remark, then one document -->
