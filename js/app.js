@@ -1185,6 +1185,7 @@
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
+    const ab=$('anonBar');if(ab)ab.style.display=ANON?'':'none'; // restore the anon bar on the home
     document.querySelector('.main').classList.remove('has-top');
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
@@ -1235,6 +1236,8 @@
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
+    // the anon Log-in/Sign-up bar belongs on the home only — the topbar owns the canvas view
+    const ab=$('anonBar');if(ab)ab.style.display='none';
     // brief canvases have no Refine (that's a crystallize/Norrsken step) — hide the top-bar button
     const isBrief=inferMode(s)==='brief';const mb=$('mastBtn');if(mb)mb.style.display=isBrief?'none':'';
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
