@@ -1228,8 +1228,10 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#railModes button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
-    document.querySelectorAll('.mode-pane').forEach(p=>p.style.display=p.dataset.pane===mode?'':'none');
+    document.querySelectorAll('#railModes button,#mobileModes button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
+      if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
+      else p.style.display=on?'':'none'});
     const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
