@@ -647,8 +647,9 @@
     if($('cvView').style.display!=='none')addAndMerge(fs);else addFiles(fs)});
 
   /* ═══ sessions / projects ═══ */
-  function newSession(){
-    const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'};
+  function newSession(mode){
+    const m=MODES.includes(mode)?mode:'idea';
+    const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:m};
     sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile()}
   function openSession(id){
     if(_renaming)return;
@@ -714,6 +715,7 @@
     return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg>';
   }
   function renderRail(){
+    { const cm=cur()?inferMode(cur()):null; document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===cm)); }
     if(!window._railSettled){window._railSettled=true;setTimeout(()=>{const r=document.querySelector('.rail');if(r)r.classList.add('settled')},750)}
     if(typeof paintAvatar==='function'){paintAvatar();const w=$('whoLbl');if(w&&AUTH)w.textContent=(profile&&profile.name)||AUTH.email}
     // Projects — folders holding their items
@@ -1234,7 +1236,7 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});
@@ -1247,9 +1249,11 @@
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
     if(!MODES.includes(m))return;
-    const s=cur();if(!s)return;
-    const started=(s.canvas&&s.canvas.trim())||(s.ideas&&s.ideas.length)||(s.briefDoc&&s.briefDoc.trim());
-    if(started&&inferMode(s)!==m){toast('This one’s already a '+inferMode(s)+' — hit New to start a '+m);return}
+    const s=cur();
+    const started=s&&((s.canvas&&s.canvas.trim())||(s.ideas&&s.ideas.length)||(s.briefQA&&s.briefQA.length));
+    // switching the mode on work that already has content opens a fresh item in that mode,
+    // like picking a different Claude product — never overwrites what's there
+    if(!s||(started&&inferMode(s)!==m)){newSession(m);return}
     s.mode=m;s.updatedAt=Date.now();save();renderRail();showHome();
     const inp=m==='idea'?$('ideaInput'):m==='brief'?$('briefIn'):$('brief');if(inp)setTimeout(()=>inp.focus(),40)}
 

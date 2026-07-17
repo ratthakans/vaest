@@ -54,12 +54,6 @@
     <!-- HOME -->
     <section class="home" id="home">
       <div class="home-in">
-        <!-- mode — one horizontal segmented control, centered above the prompt -->
-        <div class="mode-seg" id="modeSeg" role="tablist">
-          <button data-m="idea" onclick="setMode('idea')" title="Idea — think out loud with Galdr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg><span>Idea</span></button>
-          <button data-m="brief" onclick="setMode('brief')" title="Brief — VÆST interviews you into a complete brief"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 11h6M9 15h4" stroke-opacity=".6"/></svg><span>Brief</span></button>
-          <button data-m="crystallize" onclick="setMode('crystallize')" title="Crystallize — turn everything into one document"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l3.5 5.2L12 21 8.5 8.2z"/><path d="M4.5 8.2h15" stroke-opacity=".5"/></svg><span>Crystallize</span></button>
-        </div>
         <h1 class="h-title" id="homeTitle">What are we making?</h1>
 
         <!-- IDEA — Galdr chat, one thread per item -->
@@ -131,6 +125,12 @@
       <div class="r-top">
         <svg class="r-mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="rg" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#rg)" stroke-width="3.6" stroke-linecap="round"/></svg>
         <div class="r-wm">V<i>Æ</i>ST</div>
+      </div>
+      <!-- mode — a Claude-style product switcher: three ways of working -->
+      <div class="mode-switch" id="modeSwitch" role="tablist">
+        <button class="ms-item" data-m="idea" onclick="setMode('idea')" role="tab"><span class="ms-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg></span><span class="ms-tx"><b>Idea</b><i>think out loud</i></span></button>
+        <button class="ms-item" data-m="brief" onclick="setMode('brief')" role="tab"><span class="ms-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 11h6M9 15h4" stroke-opacity=".6"/></svg></span><span class="ms-tx"><b>Brief</b><i>VÆST asks you questions</i></span></button>
+        <button class="ms-item" data-m="crystallize" onclick="setMode('crystallize')" role="tab"><span class="ms-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l3.5 5.2L12 21 8.5 8.2z"/><path d="M4.5 8.2h15" stroke-opacity=".5"/></svg></span><span class="ms-tx"><b>Crystallize</b><i>into one document</i></span></button>
       </div>
       <button class="r-new" onclick="newSession()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New</button>
       <button class="r-search" onclick="openPalette()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search / commands <span class="rs-k">⌘K</span></button>

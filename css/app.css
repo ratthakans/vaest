@@ -93,16 +93,19 @@
   .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
-  /* mode — one horizontal segmented control, centered above the prompt (desktop + mobile) */
-  .mode-seg{display:inline-flex;gap:2px;align-self:center;background:rgba(255,255,255,.045);border:1px solid var(--line);
-    border-radius:100px;padding:4px;margin:0 auto 30px}
-  .mode-seg button{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--mute);
-    padding:9px 18px;border-radius:100px;transition:.16s var(--ease);white-space:nowrap}
-  .mode-seg button svg{opacity:.7;transition:.16s}
-  .mode-seg button:hover{color:var(--dim)}
-  .mode-seg button.on{background:rgba(255,255,255,.09);color:var(--ink)}
-  .mode-seg button.on svg{opacity:1;color:var(--cin-d)}
-  @media(max-width:520px){.mode-seg button span{display:none}.mode-seg button{padding:10px 16px}.mode-seg button svg{opacity:1}}
+  /* mode — a Claude-style product switcher at the top of the rail; three ways of working */
+  .mode-switch{display:flex;flex-direction:column;gap:2px;margin:14px 0 4px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .ms-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 10px;border-radius:9px;
+    color:var(--dim);transition:.15s var(--ease)}
+  .ms-ic{flex:none;display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:7px;
+    background:rgba(255,255,255,.05);color:var(--mute);transition:.15s}
+  .ms-tx{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+  .ms-tx b{font-size:13.5px;font-weight:600;color:inherit}
+  .ms-tx i{font-style:normal;font-size:10.5px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ms-item:hover{background:rgba(255,255,255,.045);color:var(--ink)}
+  .ms-item:hover .ms-ic{color:var(--dim)}
+  .ms-item.on{background:rgba(255,255,255,.07);color:var(--ink)}
+  .ms-item.on .ms-ic{background:rgba(226,88,44,.16);color:var(--cin-d)}
   .md-scope{font-family:var(--mono);font-size:9px;color:var(--cin-d);letter-spacing:.04em;text-transform:none}
   /* first-paint entrance — list rows drift in 30ms apart, then .settled turns it off so
      re-renders (rename, select, save) never replay the animation */
