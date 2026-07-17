@@ -1477,7 +1477,11 @@
       if(shown<target.length)schedule();
       else if(ended){render(target,false);if(doneCb){const c=doneCb;doneCb=null;c()}}
     };
-    const schedule=()=>{if(!raf)raf=requestAnimationFrame(tick)};
+    // rAF pauses in hidden tabs — fall back to a timer so a reply the user isn't watching
+    // still lands and SAVES (otherwise closing the tab mid-reveal loses the reply)
+    const schedule=()=>{if(raf)return;
+      if(document.hidden){raf=setTimeout(()=>{raf=0;tick()},60);return}
+      raf=requestAnimationFrame(tick)};
     return {push(t){target=t||'';schedule()},finish(cb){ended=true;doneCb=cb;schedule()}};
   }
   async function streamIdeaReply(s,restoreOnFail){
