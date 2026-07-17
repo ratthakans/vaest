@@ -251,6 +251,20 @@
   .doc-idea textarea::placeholder{color:var(--mute)}
   .di-go{flex:none;font-size:12.5px;font-weight:650;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:8px;transition:.14s}
   .di-go:hover{background:rgba(255,255,255,.12);color:#fff}
+  /* Brief · Match a reference — reshape the brief toward a pasted example */
+  .ref-panel{margin:10px 0 30px;padding:14px 15px;border:1px solid var(--line);border-left:2px solid var(--cinnabar);
+    border-radius:12px;background:rgba(255,255,255,.03);animation:qPop .28s var(--ease) both}
+  .rp-eye{font-size:12px;line-height:1.5;color:var(--dim);margin-bottom:10px}
+  .ref-panel textarea{width:100%;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:9px;outline:none;resize:vertical;
+    color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;padding:10px 12px;max-height:280px;transition:border-color .16s}
+  .ref-panel textarea:focus{border-color:var(--line2)}
+  .ref-panel textarea::placeholder{color:var(--mute)}
+  .rp-foot{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:11px}
+  .rp-x{font-size:12.5px;font-weight:600;color:var(--mute);padding:8px 12px;border-radius:8px;transition:.14s}
+  .rp-x:hover{color:var(--ink)}
+  .rp-go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--ink);
+    background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:8px;transition:.14s}
+  .rp-go:hover{background:rgba(255,255,255,.12);color:#fff}
   /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
   /* gentle tracking only — Thai loops (Looped face) get cramped under tight negative tracking */
   .sec-h{font-family:var(--ui);font-size:22px;font-weight:700;letter-spacing:-.008em;line-height:1.5;margin:12px 0 20px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}

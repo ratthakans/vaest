@@ -173,7 +173,7 @@
     // signed-in, no plan → free tier: Galdr with a monthly allowance
     if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
       el.style.display='';
-      el.innerHTML='Free account — Galdr chat included · <button onclick="showNotInvited()">Pick a plan</button> for Brief, Crystallize, Ø Think & Refine';
+      el.innerHTML='Free account — Galdr chat included · <button onclick="showNotInvited()">Pick a plan</button> for Brief, Crystallize, Think & Refine';
       return}
     el.style.display='none'}
   function renderTierNote(){renderAnonLimit()}
@@ -348,7 +348,7 @@
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
         +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
-      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Ø Think / Refine and cost shows up here</td></tr></tbody>'}
+      :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Think / Refine and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile,library}}
   // v4→v5 (idempotent): give every item a mode, split multi-chat idea sessions into separate
@@ -1295,6 +1295,30 @@
   function reopenBrief(){const s=cur();if(!s)return;s.briefComplete=false;showHome();
     const inp=$('briefReply');if(inp)setTimeout(()=>inp.focus(),60);toast('Answer more — then Compile brief again to update the document')}
   function backToBrief(){showHome();toast('Chat more or tweak the sources, then Crystallize again — your document stays')}
+  // Brief ref: paste a reference brief, VÆST reshapes this brief to match its structure & tone (Odin rewrites, content kept)
+  function toggleRefPanel(){
+    const p=$('refPanel');if(!p)return;
+    const open=p.style.display==='none';
+    p.style.display=open?'':'none';
+    if(open){const t=$('refIn');if(t)setTimeout(()=>t.focus(),40);p.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+  async function alignBrief(){
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s)return;
+    const ref=($('refIn')&&$('refIn').value.trim())||'';
+    if(!ref){toast('Paste a reference brief first');return}
+    const md=genMd(); // the live, possibly-edited brief
+    if(!md.replace(/[#\s]/g,'')){toast('Nothing to align yet');return}
+    pushUndo();toggleRefPanel();setBusy(true);
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Aligning the brief to your reference…</div><div class="gen-body" id="genBody"></div></div>';
+    const prompt='# REFERENCE BRIEF (match its shape, section set & order, tone, formatting, density)\n'+ref
+      +'\n\n# CURRENT BRIEF (keep every fact, name, number — reshape only)\n'+md;
+    const r=raf(full=>{const b=$('genBody');if(b)b.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    try{
+      const out=await streamAPI('briefalign',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      setCanvasMd(s,out);s.updatedAt=Date.now();save();renderDoc(out);
+      toast('Brief reshaped to match your reference — Undo if it drifted');
+    }catch(e){r.stop();renderDoc(s.canvas);/* streamAPI surfaced the wall/toast */}
+    finally{setBusy(false)}}
   function toggleChain(){const s=cur();if(!s)return;
     if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
     s.chain=!s.chain;save();renderChain();
@@ -1347,7 +1371,7 @@
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
       return '<div class="id-m '+(isAI?'ai':'you')+'" data-i="'+i+'"><div class="who">'+(isAI?'VÆST':'YOU')
       +'<span class="id-acts">'
-      +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Ø Think — a sharper, braver push (Mimir)"><b style="font-family:var(--mono)">Ø</b> Think</button>':'')
+      +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>':'')
       +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
       +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Regenerate this reply">↻</button>':'')
       +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Crystallize">✚ Save</button>'
@@ -1355,7 +1379,7 @@
     th.scrollTop=th.scrollHeight;
 }
   function copyIdea(i){const s=cur();const m=s&&curChat(s).ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
-  // Ø Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
+  // Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
   // Ephemeral (lives in the DOM, cleared on the next render) — it provokes, it doesn't persist.
   async function ideaThink(i){
     if(_ideaBusy||_busy){toast('One moment…');return}
@@ -1364,14 +1388,14 @@
     const ex=row.nextElementSibling;if(ex&&ex.classList.contains('id-think')){ex.remove();return} // toggle off
     const btn=row.querySelector('.id-use.think');if(btn){btn.disabled=true;btn.classList.add('busy')}
     const box=document.createElement('div');box.className='id-think';
-    box.innerHTML='<div class="it-hd"><b style="font-family:var(--mono)">Ø</b> Think · Mimir</div><div class="it-stream"><span class="cursor"></span></div>';
+    box.innerHTML='<div class="it-hd">Think · Mimir</div><div class="it-stream"><span class="cursor"></span></div>';
     row.after(box);const th=$('ideaThread');th.scrollTop=th.scrollHeight;
     const prompt='Idea under discussion:\n'+m.c;
     const r=raf(full=>{const el=box.querySelector('.it-stream');if(el)el.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
     try{
       const out=await streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r);r.stop();
       const pts=parsePoints(out);
-      box.innerHTML='<div class="it-hd"><b style="font-family:var(--mono)">Ø</b> Think · Mimir</div>'
+      box.innerHTML='<div class="it-hd">Think · Mimir</div>'
         +pts.map(p=>'<div class="it-p"><div class="it-t">'+mdInline(p.t)+'</div>'
           +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div>').join('')
         +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
@@ -1559,16 +1583,18 @@
       if(c)c.body.push(raw);else if(line){if(!secs.length||secs[0].h!=='_intro'){secs.unshift({h:'_intro',body:[raw]})}else secs[0].body.push(raw)}}
     if(!secs.length)secs=[{h:'Document',body:lines}];
     const s=cur();const docTitle=title||(s?s.title:'Document');
-    const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Ø Think/Refine
+    const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Think/Refine
     const trail=isBrief
-      ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
-      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Ø Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
+      ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
+      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
       +(_shareId?'':trail)
       +'</div>';
     if(!_shareId&&!isBrief)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
+    // Brief: paste a reference brief whose shape & tone you want, and VÆST reshapes this brief to match — content untouched
+    if(!_shareId&&isBrief)h+='<div class="ref-panel" id="refPanel" style="display:none"><div class="rp-eye">Reference — paste a brief whose structure &amp; tone you want to match. Your content stays; only the shape changes.</div><textarea id="refIn" rows="4" placeholder="Paste the reference brief here…"></textarea><div class="rp-foot"><button class="rp-x" onclick="toggleRefPanel()">Cancel</button><button class="rp-go" onclick="alignBrief()">Align brief to this <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -1581,7 +1607,7 @@
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
           +(isBrief?'':'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
-          +'<button class="st think" onclick="sectionThink(this)" title="Ø Think — a bolder, braver take"><b style="font-family:var(--mono)">Ø</b> Think</button>')
+          +'<button class="st think" onclick="sectionThink(this)" title="Think — a bolder, braver take">Think</button>')
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
         +'<div class="sec-c" contenteditable="true" spellcheck="false">'+renderMd(sec.body.join('\n'))+'</div>'
@@ -1813,7 +1839,7 @@
         +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
     }finally{setBusy(false);go.disabled=false;go.innerHTML='Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
-  /* ═══ SECTION IDEA (Odin writes) + Ø THINK (Mimir proposes, Odin applies) — per section ═══ */
+  /* ═══ SECTION IDEA (Odin writes) + THINK (Mimir proposes, Odin applies) — per section ═══ */
   function sectionIdea(btn){
     const sec=btn.closest('.sec');const ex=sec.querySelector('.sec-idea');
     if(ex){ex.remove();return}
@@ -1838,15 +1864,15 @@
       .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);schedulePersist();toast('Idea woven into “'+h+'”')})
       .catch(e=>{r.stop();c.innerHTML=old;toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false);sec.classList.remove('flash')})}
-  // flow-trail "Ø Think" → there is no global Think anymore; light the per-section buttons up instead
+  // flow-trail "Think" → there is no global Think anymore; light the per-section buttons up instead
   function hintSectionThink(){
     const btns=document.querySelectorAll('#doc .sec-tools .st.think');
     if(!btns.length){toast('No sections yet');return}
     btns.forEach(b=>{b.classList.add('hint');setTimeout(()=>b.classList.remove('hint'),2400)});
     const first=btns[0].closest('.sec');
     if(first){const cv=$('cvView');smoothTo(cv,cv.scrollTop+first.getBoundingClientRect().top-cv.getBoundingClientRect().top-80)}
-    toast('Ø Think lives in each section now — pick the one to push')}
-  /* Ø Think per section — Mimir proposes pushes for this one section; nothing changes until
+    toast('Think lives in each section now — pick the one to push')}
+  /* Think per section — Mimir proposes pushes for this one section; nothing changes until
      the user approves a point, and then Odin rewrites only this section. Propose and write
      stay separate models on purpose: the critique comes from outside the document's voice. */
   function sectionThink(btn){
@@ -1856,13 +1882,13 @@
     const ex=sec.querySelector('.sec-think');if(ex){ex.remove();return}
     setBusy(true);btn.disabled=true;btn.classList.add('busy');
     const box=document.createElement('div');box.className='sec-think';
-    box.innerHTML='<div class="sth-hd"><b style="font-family:var(--mono)">Ø</b> Think — pushing this section…</div><div class="sth-stream"><span class="cursor"></span></div>';
+    box.innerHTML='<div class="sth-hd">Think — pushing this section…</div><div class="sth-stream"><span class="cursor"></span></div>';
     c.after(box);
     const prompt='Document: "'+$('mhTitle').innerText.trim()+'"\n\nSection: "'+h+'"\nSection body:\n'+curTxt;
     const r=raf(full=>{const m=box.querySelector('.sth-stream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
     streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r)
       .then(text=>{r.stop();renderSectionThink(sec,box,h,parsePoints(text))})
-      .catch(e=>{box.remove();toast('Ø Think failed: '+e.message)})
+      .catch(e=>{box.remove();toast('Think failed: '+e.message)})
       .finally(()=>{setBusy(false);btn.disabled=false;btn.classList.remove('busy')})}
   function renderSectionThink(sec,box,h,points){
     box.__pts=points;box.__done={};box.__h=h;
@@ -1870,7 +1896,7 @@
   function paintSectionThink(box){
     const pts=box.__pts,done=box.__done;
     const remain=pts.filter((p,i)=>!done[i]).length;
-    let html='<div class="sth-hd"><b style="font-family:var(--mono)">Ø</b> Think · this section <span class="sth-count">'+(remain?remain+' pushes':'all done')+'</span></div>';
+    let html='<div class="sth-hd">Think · this section <span class="sth-count">'+(remain?remain+' pushes':'all done')+'</span></div>';
     pts.forEach((p,i)=>{const st=done[i];
       html+='<div class="sth-i'+(st?' done':'')+'"><div class="sth-t">'+mdInline(p.t)+'</div>'
         +(st==='fixed'?'<div class="mi-tag ok">✓ Applied</div>'
@@ -2218,7 +2244,7 @@
         toast('Your trial chat is saved to your account')}catch(e){}}}
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
-  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Ø Think** — Mimir, a second mind, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left) and pick a mode up top: **Idea** to think out loud, **Brief** to get a brief airtight, or **Crystallize** to turn notes and files into a document like this one.';
+  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Think** — Mimir, a second mind, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left) and pick a mode up top: **Idea** to think out loud, **Brief** to get a brief airtight, or **Crystallize** to turn notes and files into a document like this one.';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:'',mode:'crystallize'};sessions=[s];currentSid=s.id;save()}
 
   /* share view — read-only */

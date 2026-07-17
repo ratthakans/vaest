@@ -26,6 +26,7 @@ export const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
   briefchat: { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 1024 }, // the interview — one question at a time
   briefdoc:  { model: 'claude-opus-4-8' },                                        // compile the gathered answers into a brief
+  briefalign:{ model: 'claude-opus-4-8' },                                        // reshape the brief to match a reference the user provides
   tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
   summing:   { model: 'claude-opus-4-8' },
   improve:   { model: 'claude-opus-4-8' },
@@ -97,6 +98,15 @@ Use everything provided (initial input, files, and the full Q&A). Produce a clea
 - Structure with "# <project> — Brief" then "## " sections drawn from: Objective, Audience, Deliverables, Scope, Timeline, Budget, Tone & voice, References, Success criteria, Constraints.
 - Include ONLY sections with real content — never pad or invent. Keep each section tight and concrete.
 - This is the brief itself, not advice about it. Return the full markdown only.`,
+  briefalign: `${BASE}
+
+# CURRENT TASK: ALIGN BRIEF TO A REFERENCE — reshape an existing brief to match a reference the user admires.
+You get a REFERENCE brief and the user's CURRENT brief. Rewrite the current brief so it takes on the reference's SHAPE — its section set and order, depth of headings, tone of voice, formatting habits (tables vs prose, bullet style), and overall length/density.
+Hard rules:
+- Keep 100% of the current brief's real content — every fact, name, number, deliverable, constraint. Never invent facts to fill a section the reference has but the current brief lacks; if there's no real content for it, leave that section out.
+- The reference is a MODEL for form, not a source of content — never copy the reference's project details into this brief.
+- Keep the current brief's language (Thai stays Thai). Match the reference's register (formal/casual) but not its language if they differ.
+- Start with "# <project> — Brief" and use "## " sections. Return the full aligned markdown only — no preamble, no notes on what changed.`,
   summing: `${BASE}
 
 # CURRENT TASK: SUMMING — crystallize the brief + multiple sources into one working document.
@@ -325,7 +335,7 @@ export default async function handler(req, res) {
   // Fail-open: any counter error allows the request, so a bug never blocks Summing.
   // a "document" = one full Odin generation: Crystallize (summing) or a Brief compile
   // (briefdoc). Without counting briefdoc, Brief mode is an unlimited-Opus backdoor.
-  const countsDoc = mode === 'summing' || mode === 'briefdoc';
+  const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign';
   if (countsDoc) {
     try {
       const q = await checkDocQuota(user.email, plan, ud);
