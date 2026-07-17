@@ -44,6 +44,13 @@
 
   /* ===== topbar (canvas state) ===== */
   .top{display:flex;align-items:center;gap:7px;padding:13px 22px;border-bottom:1px solid var(--line);flex:none;background:rgba(5,5,6,.72);backdrop-filter:blur(16px) saturate(1.2);z-index:5}
+  /* narrow: collapse the secondary buttons (Home/Add files/Paste/Undo/snapshots) to icons so
+     the primary actions — Refine + Export — never overflow off the right edge */
+  @media(max-width:1040px){
+    .top{padding:13px 14px;gap:5px}
+    .top .tb:not(.dark):not(.accent){font-size:0;gap:0;padding:8px 9px}
+    .top .tb:not(.dark):not(.accent) svg{font-size:13px}
+  }
   .tb{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:6px;font-size:13px;font-weight:550;color:var(--dim);white-space:nowrap}
   .tb:hover{background:rgba(255,255,255,.05);color:var(--ink)}
   .tb.dark{background:var(--ink);color:#0a0a0a;font-weight:600}
