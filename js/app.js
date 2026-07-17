@@ -58,6 +58,10 @@
     if(s&&s.canvas&&s.canvas.trim())return 'crystallize';
     return 'idea';
   }
+  // a clean plain-text title from markdown — strips headings, **bold**, `code`, links, etc.
+  function mdTitle(t){return String(t||'')
+    .replace(/^#+\s*/,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1')
+    .replace(/[*_`>#~]/g,'').replace(/\s+/g,' ').trim().slice(0,52)||'Note'}
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
   let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
   let library=[]; // MD library — saved chat answers, kept as .md
@@ -345,7 +349,7 @@
     const out=[], lifted=[];
     (sessions||[]).forEach(s=>{
       (s.sparks||[]).forEach(sp=>{const t=(sp.text||'').trim();if(!t)return;
-        lifted.push({id:uid('md'),title:(sp.topic&&sp.topic!=='…'?sp.topic+' — ':'')+t.replace(/\s+/g,' ').slice(0,52),
+        lifted.push({id:uid('md'),title:(sp.topic&&sp.topic!=='…'?sp.topic+' — ':'')+mdTitle(t),
           md:t,createdAt:sp.ts||s.updatedAt||Date.now(),fromTitle:s.title||''})});
       delete s.sparks;
       const mode=inferMode(s);
@@ -1423,7 +1427,7 @@
     const text=(m.c||'').trim();if(!text)return;
     library=library||[];
     if(library.some(x=>x.md===text)){toast('Already in your MD library');return}
-    const md={id:uid('md'),title:text.replace(/^#+\s*/,'').replace(/\s+/g,' ').slice(0,52),md:text,createdAt:Date.now(),fromTitle:s.title||''};
+    const md={id:uid('md'),title:mdTitle(text),md:text,createdAt:Date.now(),fromTitle:s.title||''};
     library.unshift(md);s.updatedAt=Date.now();save();renderRail();
     toast('Saved to MD library');
     // a nicer title if the answer has no heading — infer a topic label
