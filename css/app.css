@@ -86,7 +86,7 @@
   .h-title{font-family:var(--body);font-weight:500;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.01em;line-height:1.2;margin:6px 0 18px;color:#e9e6df;text-wrap:balance}
   /* mode — a Claude-style product switcher at the top of the rail; three ways of working */
   /* mode — segmented switch: three words, a sliding thumb, nothing else */
-  .seg{position:relative;display:inline-flex;gap:2px;margin:0 0 30px;padding:3px;border:1px solid var(--line);border-radius:100px;background:rgba(255,255,255,.03)}
+  .seg{position:relative;display:inline-flex;align-self:flex-start;gap:2px;margin:0 0 26px;padding:3px;border:1px solid var(--line);border-radius:100px;background:rgba(255,255,255,.03)}
   .seg button{position:relative;z-index:1;font-size:13px;font-weight:600;color:var(--mute);padding:7px 18px;border-radius:100px;transition:color .22s var(--ease)}
   .seg button:hover{color:var(--dim)}
   .seg button.on{color:var(--ink)}
