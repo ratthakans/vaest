@@ -1,7 +1,7 @@
 {
   "cleanUrls": true,
   "regions": ["sin1"],
-  "rewrites": [
-    { "source": "/app", "destination": "/index.html" }
+  "redirects": [
+    { "source": "/app", "destination": "/", "permanent": false }
   ]
 }
