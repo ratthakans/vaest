@@ -1265,10 +1265,10 @@
     }catch(e){showHome();toast('Compile failed: '+e.message)}
     finally{setBusy(false)}}
   // segmented thumb — measure the active button, slide the pill under it
-  function updateSegThumb(){
+  function updateSegThumb(){ // measure synchronously — rAF stalls in hidden tabs
     const seg=$('modeSeg');if(!seg)return;
     const on=seg.querySelector('button.on'),th=$('segThumb');if(!on||!th)return;
-    requestAnimationFrame(()=>{th.style.width=on.offsetWidth+'px';th.style.transform='translateX('+on.offsetLeft+'px)'})}
+    th.style.width=on.offsetWidth+'px';th.style.transform='translateX('+on.offsetLeft+'px)'}
   addEventListener('resize',()=>updateSegThumb());
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>updateSegThumb());
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
