@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 import { readFileSync } from 'fs';
 import assert from 'node:assert/strict';
 
-const html = readFileSync(new URL('../app.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8'); // the app (was app.html before the 3.0 root swap)
 const js = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 
 const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://vaest.orions.agency/app', pretendToBeVisual: true });
