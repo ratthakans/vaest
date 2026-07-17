@@ -161,14 +161,22 @@
   function anonWall(reason){
     if(_authMode!=='signup')toggleAuthMode();
     showAuth(reason||'That’s the free trial — sign up (free) to keep going and save this chat')}
-  // small "N free messages left" hint under the Idea input
+  // small tier hint under the Idea input — anonymous trial or free (no-plan) account
   function renderAnonLimit(){
     const el=$('anonLimit');if(!el)return;
-    if(!ANON){el.style.display='none';return}
-    const left=anonLeft();el.style.display='';
-    el.innerHTML=left>0
-      ?'<span class="al-n">'+left+'</span> free message'+(left>1?'s':'')+' left · <button onclick="anonSignup()">Sign up free</button> for unlimited Galdr + the whole studio'
-      :'You’ve used your free messages — <button onclick="anonSignup()">Sign up free</button> to keep going'}
+    if(ANON){
+      const left=anonLeft();el.style.display='';
+      el.innerHTML=left>0
+        ?'<span class="al-n">'+left+'</span> free message'+(left>1?'s':'')+' left · <button onclick="anonSignup()">Sign up free</button> to keep chatting with Galdr — plans unlock the whole studio'
+        :'You’ve used your free messages — <button onclick="anonSignup()">Sign up free</button> to keep going';
+      return}
+    // signed-in, no plan → free tier: Galdr with a monthly allowance
+    if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
+      el.style.display='';
+      el.innerHTML='Free account — Galdr chat included · <button onclick="showNotInvited()">Pick a plan</button> for Brief, Crystallize, Ø Think & Refine';
+      return}
+    el.style.display='none'}
+  function renderTierNote(){renderAnonLimit()}
   // capture the trial chat so it survives the jump into a real account
   function snapshotAnonChats(){
     try{return sessions.filter(s=>chatsOf(s).some(c=>c.ideas.length))
@@ -194,7 +202,7 @@
       endAnon(); // if we were on the free trial, carry the chat into the account
       if(await checkAccess()){hideAuth();await boot()}
       else if(window._wantPlan){const p=window._wantPlan;window._wantPlan=null;hideAuth();startCheckout(p)}
-      else showNotInvited();
+      else{hideAuth();await boot();renderTierNote()} // free account — Galdr stays usable; engines wall on use
     }catch(e){$('authErr').textContent=e.message}
     finally{go.disabled=false;go.textContent=_authMode==='login'?'Sign in':'Sign up'}}
 
@@ -283,6 +291,7 @@
     // if they had a subscription that lapsed, say so
     const q=window.QUOTA;const lp=$('giLapsed');if(lp)lp.style.display=(q&&q.source==='lapsed')?'':'none';
     $('gateView').classList.add('show')}
+  function hideGate(){$('gateView').classList.remove('show')} // free tier keeps Galdr — the gate is a picker, not a trap
   // ── billing: start Stripe Checkout / open the customer portal ──
   async function startCheckout(plan,kind,qty){
     if(!AUTH){showAuth('Sign in to continue to checkout');return}
@@ -1203,7 +1212,7 @@
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
       if(started){renderBriefFiles();renderBriefQA();const bc=$('briefCompile');if(bc)bc.style.display=s.briefComplete?'':'none'}
       else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles()}}
-    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs()}
+    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
     if(!MODES.includes(m))return;
@@ -2285,7 +2294,7 @@
       if(backFromCheckout){history.replaceState(null,'',location.pathname)}
       if(ok){hideAuth();if(backFromCheckout==='success')toast(boosted?'Usage credit added — it carries over, use it anytime':'You’re in — welcome to VÆST');await boot()}
       else if(wantPlan&&['basic','pro','director'].includes(wantPlan)){history.replaceState(null,'',location.pathname);startCheckout(wantPlan)}
-      else showNotInvited();
+      else{hideAuth();await boot();renderTierNote()} // free account (or lapsed) — Galdr keeps working, engines wall on use
     }
     else{
       saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);

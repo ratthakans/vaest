@@ -266,13 +266,19 @@ export default async function handler(req, res) {
 
   // the two independent reads run in parallel — shaves a Supabase round-trip off time-to-first-token
   const [access, u] = await Promise.all([resolveAccess(user.email), readUsage(user.email)]);
-  // access = active paid subscription, comp/invite, or internal. Otherwise → paywall.
-  if (!access.allowed) { res.status(402).json({ error: 'Choose a plan to start using VÆST', paywall: true }); return; }
+  // ── Free tier ── a signed-in account with no plan keeps the Galdr idea chat (capped),
+  // so signing up is never a downgrade from the anonymous trial. Everything that spends a
+  // paid engine still requires a plan. Cost is bounded: Gemini/Haiku only, per-user rate
+  // limit above, and a small monthly token allowance below.
+  const freeTier = !access.allowed;
+  if (freeTier && mode !== 'idea') { res.status(402).json({ error: 'Choose a plan to unlock this — the free account covers the Idea chat', paywall: true }); return; }
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
-  // plan-scaled fair-use ceiling; capFor (env MONTHLY_CAP) remains the fallback for
-  // comp/invited accounts whose plan object predates capTokens.
-  const cap = (access.plan && access.plan.capTokens) || capFor(user.email);
+  // plan-scaled ceiling; capFor (env MONTHLY_CAP) remains the fallback for comp/invited
+  // accounts whose plan object predates capTokens.
+  const FREE_MONTHLY_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 400_000;
+  const cap = freeTier ? FREE_MONTHLY_CAP : (access.plan && access.plan.capTokens) || capFor(user.email);
   if (u.used >= cap) {
+    if (freeTier) { res.status(402).json({ error: 'Your free Galdr allowance is used up this month — pick a plan for the whole studio', paywall: true }); return; }
     res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
     return;
   }
