@@ -272,7 +272,8 @@
         if(left<=0){opts.innerHTML='<div class="set-note" style="color:var(--cin-d)">Monthly credit limit reached — <a onclick="closeSettings();openPortal()" style="color:var(--ink);cursor:pointer;text-decoration:underline">upgrade your plan</a> for more.</div>';}
         else{let h='';for(let n=1;n<=left;n++){h+='<button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout(\'boost\',\'individual\','+n+')">'+n+' pack'+(n>1?'s':'')+' · ฿'+(490*n).toLocaleString()+'</button>';}opts.innerHTML=h;}
       }
-    }}
+    }
+    renderRailUsage()}
   // usage meter — abstract by design: a percentage + reset date, never raw counts.
   const fmtReset=iso=>{try{const d=new Date(iso+'T00:00:00Z');
     return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'})}catch(e){return ''}};
@@ -286,6 +287,23 @@
     return '<span class="qn">'+label+'</span>'
       +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85&&!onCredit?' class="hot"':'')+'></i></span>'
       +'<span class="qv">'+val+'</span>';}
+  // rail bottom-left usage meter — paid plans show the abstract % (max of docs/spend, same as
+  // Settings); free accounts show their Galdr allowance. Internal + anon: hidden.
+  function renderRailUsage(){
+    const el=$('railUsage');if(!el)return;
+    const q=window.QUOTA;
+    if(ANON||!q||q.internal){el.style.display='none';return}
+    const u=q.usage;
+    if(q.allowed&&u&&u.pct!=null){el.style.display='';el.innerHTML=quotaBarHTML(q);return}
+    if(q.allowed===false){ // free tier — Galdr meter (server sends pct vs the free allowance)
+      el.style.display='';
+      const pct=u&&u.pct!=null?Math.min(100,u.pct):0;
+      el.innerHTML='<span class="qn">Free · Galdr</span>'
+        +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span>'
+        +'<span class="qv">'+pct+'%'+(u&&u.resetsOn?' · resets '+fmtReset(u.resetsOn):'')
+        +(u&&u.freeCrystallize?' · 1 Crystallize free':'')+'</span>';
+      return}
+    el.style.display='none'}
   function showNotInvited(){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';
     // if they had a subscription that lapsed, say so

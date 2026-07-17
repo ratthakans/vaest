@@ -17,6 +17,21 @@ export default async function handler(req, res) {
   let usage = null;
   if (!internal && access.allowed) {
     try { usage = await usageSnapshot(user.email, access.plan); } catch (e) {}
+  } else if (!internal) {
+    // free tier — expose the Galdr allowance as the same abstract % so the app's rail
+    // meter works before there's a plan (plus whether the one free Crystallize is unspent)
+    try {
+      const d = await readUsageData(user.email);
+      const month = new Date().toISOString().slice(0, 7);
+      const used = d.month === month ? (d.used || 0) : 0;
+      const FREE_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 400_000;
+      const now = new Date();
+      usage = {
+        pct: Math.min(100, Math.round(used / FREE_CAP * 100)),
+        resetsOn: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10),
+        freeCrystallize: !d.freeSummed,
+      };
+    } catch (e) {}
   }
   // internal glance: how many times this month Mimir(Sol) silently fell back to Odin(Opus)
   let mimirFallback = 0;
