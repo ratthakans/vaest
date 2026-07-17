@@ -152,6 +152,7 @@
     const bar=$('anonBar');if(bar)bar.style.display='';
     $('app').classList.add('anon');
     if(!loadLocal()){projects=[];sessions=[];usage=0;library=[]}
+    sweepGhosts();
     if(!sessions.length)sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'}];
     if(!currentSid||!cur())currentSid=sessions[0].id;
     renderRail();showHome();renderAnonLimit()}
@@ -421,6 +422,7 @@
       library.forEach(m=>{if(m&&m.title&&/(\*\*|^#|`)/.test(m.title))m.title=mdTitle(m.md||m.title)});
       // normalize to the modes schema (idempotent) — old blobs (v4) and any item missing a mode
       if(b.v<5||sessions.some(s=>!MODES.includes(s.mode))||sessions.some(s=>s.sparks||s.chats))migrateToModes();
+      sweepGhosts();
       return true}
     if(Array.isArray(b.projects)&&(b.LIB||b.CANVAS)){ // migrate v1
       projects=[];sessions=[];
@@ -679,8 +681,22 @@
     if($('cvView').style.display!=='none')addAndMerge(fs);else addFiles(fs)});
 
   /* ═══ sessions / projects ═══ */
+  // a session is a ghost if it was opened but never touched — no words, no files, no answers
+  function isGhostSession(x){
+    if(!x||(x.title&&x.title!=='New'))return false;
+    const chatEmpty=!(x.ideas&&x.ideas.length)&&!(x.chats&&x.chats.some(c=>c.ideas&&c.ideas.length));
+    return chatEmpty&&!(x.canvas&&x.canvas.trim())&&!(x.files&&x.files.length)
+      &&!(x.briefQA&&x.briefQA.length)&&!(x.brief&&x.brief.trim())}
+  // boot-time sweep: untouched "New" items must not pile up in Recents (keep the current one)
+  function sweepGhosts(){
+    const before=sessions.length;
+    sessions=sessions.filter(x=>x.id===currentSid||!isGhostSession(x));
+    return before!==sessions.length}
   function newSession(mode){
     const m=MODES.includes(mode)?mode:'idea';
+    // reuse an existing untouched "New" instead of stacking another ghost
+    const ghost=sessions.find(x=>isGhostSession(x));
+    if(ghost){ghost.mode=m;ghost.updatedAt=Date.now();currentSid=ghost.id;save();renderRail();openSession(ghost.id);closeRailMobile();return}
     const s={id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:m};
     sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile()}
   function openSession(id){
@@ -778,7 +794,11 @@
       +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
       +'<span class="md-t">'+esc(m.title)+'</span>'
       +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
-    ).join(''):'<div class="r-empty"><span>'+(pid?'Nothing here yet':'Empty')+'</span></div>'}
+    ).join(''):'';
+    // no saved MD → the whole section stays out of sight (the one-time Save hint teaches it)
+    const lbl=$('mdLbl');const show=lib.length>0;
+    if(lbl)lbl.style.display=show?'':'none';
+    ml.style.display=show?'':'none'}
   function moveMD(id,pid){const md=(library||[]).find(x=>x.id===id);if(!md)return;
     md.projectId=pid||null;save();renderMDList();
     const p=pid&&projects.find(x=>x.id===pid);toast(p?('Moved to /'+p.name):'Moved to General')}
@@ -1918,6 +1938,11 @@
       s.updatedAt=Date.now();save();renderRail();showCanvas();
       if(document.hidden)notifyDone('Crystallize');
       if(s.chain){toast('Summed — Refine starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
+      else if(window.QUOTA&&window.QUOTA.allowed===false){
+        // the one free Crystallize just landed — say so NOW, not as a surprise wall next time
+        toast('That was your free Crystallize — pick a plan for unlimited documents');
+        checkAccess(); // refresh the rail meter (freeCrystallize flag just flipped)
+      }
       else toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
