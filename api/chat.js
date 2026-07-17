@@ -1,4 +1,4 @@
-import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump } from '../lib/plans.js';
+import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
 import { streamOpenAI } from '../lib/openai.js';
@@ -286,6 +286,19 @@ export default async function handler(req, res) {
   // ── per-plan limits ── engine gating + document caps.
   // 429 is used for all of these so the client shows a toast (403 triggers the "not invited" screen).
   const plan = access.plan;
+  // ── spend ceiling — the guaranteed-margin floor ── real baht metered per call (in/out ×
+  // engine rate); ceiling = 70% of the plan price (+70% of each boost pack bought this
+  // month), so no account's worst case can push margin below 30%. Doc/token caps bound
+  // behaviour; this one bounds money. Fail-open on a read error like every other counter.
+  if (!freeTier && plan && Number.isFinite(plan.spendCap)) {
+    try {
+      const d = await readUsageData(user.email);
+      if (spendThisMonth(d) >= spendCapFor(plan, d)) {
+        res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade for more.' });
+        return;
+      }
+    } catch (e) { console.error('spend-cap check failed (allowing):', e?.message || e); }
+  }
   // Refine (mode "mastering") = the priciest engine (Fable). Allowed if the plan includes it
   // OR the user has purchased credit refines (works even on Basic). One check handles both;
   // consumes plan allowance first, then credit. Check before streaming, bump on success.
@@ -361,18 +374,19 @@ export default async function handler(req, res) {
       }
     }
     const { inTok, outTok } = usage;
-    // single read-modify-write: record token usage and, only now that the document
-    // succeeded, bump the document counter — merged so the two don't clobber each other.
-    const d0 = await readUsageData(user.email);
-    let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
-    if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
-    if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
-    await writeUsageRow(user.email, nextData);
-    // cost bucket only (galdr/mimir/norrsken/odin) — never the underlying model id.
+    // cost bucket only (galdr/mimir/norrsken/skadi/odin) — never the underlying model id.
     // Keyed off the model that actually ran, so a Mimir→Odin fallback is billed as Odin.
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
-      : /gemini|haiku|sonnet/.test(mid) ? 'galdr' : 'odin';
+      : /sonnet/.test(mid) ? 'skadi' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
+    // single read-modify-write: record token usage + real spend and, only now that the
+    // document succeeded, bump the counters — merged so the writes don't clobber each other.
+    const d0 = await readUsageData(user.email);
+    let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
+    nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
+    if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
+    if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
+    await writeUsageRow(user.email, nextData);
     res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`); // lets the client show per-document cost
     res.end();
   } catch (e) {
