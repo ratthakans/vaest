@@ -1055,4 +1055,4 @@
     border-radius:7px;padding:5px 10px;max-width:240px;overflow:hidden;text-overflow:ellipsis}
   .ot-tick:hover .ot-name{opacity:1;transform:translateY(-50%) translateX(0)}
   .ot-tick .ot-name b{color:var(--cin-d);font-weight:600;margin-right:5px}
-  @media(max-width:920px){.outline-rail{display:none!important}}
+  @media(max-width:720px){.outline-rail{display:none!important}}
