@@ -293,16 +293,18 @@
     const el=$('railUsage');if(!el)return;
     const q=window.QUOTA;
     if(ANON||!q||q.internal){el.style.display='none';return}
-    const u=q.usage;
-    if(q.allowed&&u&&u.pct!=null){el.style.display='';el.innerHTML=quotaBarHTML(q);return}
-    if(q.allowed===false){ // free tier — Galdr meter (server sends pct vs the free allowance)
-      el.style.display='';
+    const u=q.usage;const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+    const bar=(pct,name,foot)=>{el.style.display='';
+      el.innerHTML='<span class="qn"><span>'+name+'</span><em>'+pct+'%</em></span>'
+        +'<span class="qbar"><i style="width:'+Math.min(100,pct)+'%"'+(pct>85?' class="hot"':'')+'></i></span>'
+        +(foot?'<span class="qv">'+foot+'</span>':'')};
+    if(q.allowed&&q.plan&&u&&u.pct!=null){ // paid
+      const foot=(u.boosted?'+ credit · ':'')+(u.resetsOn?'resets '+fmtReset(u.resetsOn):'this month');
+      bar(Math.min(100,u.pct),cap(q.plan.name),foot);return}
+    if(q.allowed===false){ // free tier — Galdr allowance
       const pct=u&&u.pct!=null?Math.min(100,u.pct):0;
-      el.innerHTML='<span class="qn">Free · Galdr</span>'
-        +'<span class="qbar"><i style="width:'+pct+'%"'+(pct>85?' class="hot"':'')+'></i></span>'
-        +'<span class="qv">'+pct+'%'+(u&&u.resetsOn?' · resets '+fmtReset(u.resetsOn):'')
-        +(u&&u.freeCrystallize?' · 1 Crystallize free':'')+'</span>';
-      return}
+      const foot=(u&&u.freeCrystallize?'1 Crystallize free · ':'')+(u&&u.resetsOn?'resets '+fmtReset(u.resetsOn):'');
+      bar(pct,'Free · Galdr',foot);return}
     el.style.display='none'}
   function showNotInvited(msg){
     hideAuth();$('giEmail').textContent=AUTH?AUTH.email:'';

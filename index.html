@@ -108,14 +108,6 @@
         </div>
         </div>
 
-        <!-- mode — quiet segmented switch under the composer, Claude-style -->
-        <div class="seg" id="modeSeg" role="tablist">
-          <span class="seg-thumb" id="segThumb"></span>
-          <button data-m="idea" onclick="setMode('idea')" role="tab">Idea</button>
-          <button data-m="brief" onclick="setMode('brief')" role="tab">Brief</button>
-          <button data-m="crystallize" onclick="setMode('crystallize')" role="tab">Crystallize</button>
-        </div>
-
 
       </div>
     </section>
@@ -133,6 +125,13 @@
       <div class="r-top">
         <svg class="r-mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="rg" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#rg)" stroke-width="3.6" stroke-linecap="round"/></svg>
         <div class="r-wm">V<i>Æ</i>ST</div>
+      </div>
+      <!-- mode — top of the rail, above New (three ways of working) -->
+      <div class="seg rail-seg" id="modeSeg" role="tablist">
+        <span class="seg-thumb" id="segThumb"></span>
+        <button data-m="idea" onclick="setMode('idea')" role="tab">Idea</button>
+        <button data-m="brief" onclick="setMode('brief')" role="tab">Brief</button>
+        <button data-m="crystallize" onclick="setMode('crystallize')" role="tab">Crystallize</button>
       </div>
       <button class="r-new" onclick="newSession()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New</button>
       <button class="r-search" onclick="openPalette()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search / commands <span class="rs-k">⌘K</span></button>
@@ -223,6 +222,7 @@
           <li>Think — a second mind on any section</li>
           <li>Essential monthly usage</li>
         </ul>
+        <div class="pl-eng">Engines · <b>Galdr</b> chat · <b>Odin</b> writes · <b>Mimir</b> pushes</div>
         <button class="pl-cta" onclick="startCheckout('basic')">Get Basic</button>
       </div>
       <div class="pl-card hot">
@@ -234,6 +234,7 @@
           <li>Refine — the apex audit before work ships</li>
           <li>3× usage</li>
         </ul>
+        <div class="pl-eng">Adds <b>Norrsken</b> — the apex engine, the last audit before it ships</div>
         <button class="pl-cta" onclick="startCheckout('pro')">Get Pro</button>
       </div>
       <div class="pl-card">
@@ -244,6 +245,7 @@
           <li>6× usage</li>
           <li>Priority queue</li>
         </ul>
+        <div class="pl-eng">All four engines · highest volume · first in line</div>
         <button class="pl-cta" onclick="startCheckout('director')">Get Director</button>
       </div>
     </div>

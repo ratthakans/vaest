@@ -89,6 +89,10 @@
   /* mode — sits just under the composer, left-aligned, quiet (Claude's model-picker spot) */
   .seg{position:relative;display:inline-flex;align-self:flex-start;gap:2px;margin:16px 0 0;padding:2px;border:1px solid rgba(255,255,255,.07);border-radius:100px;background:rgba(255,255,255,.02)}
   .seg button{position:relative;z-index:1;font-size:12px;font-weight:600;color:var(--mute);padding:6px 15px;border-radius:100px;transition:color .22s var(--ease)}
+  /* rail variant — full width at the top of the sidebar, three equal segments */
+  .seg.rail-seg{display:flex;align-self:stretch;margin:12px 0 10px;border-radius:11px;background:rgba(255,255,255,.03)}
+  .seg.rail-seg button{flex:1;text-align:center;padding:7px 4px;font-size:11.5px;border-radius:9px}
+  .seg.rail-seg .seg-thumb{border-radius:9px}
   .seg button:hover{color:var(--dim)}
   .seg button.on{color:var(--ink)}
   .seg-thumb{position:absolute;top:3px;left:0;height:calc(100% - 6px);border-radius:100px;background:rgba(255,255,255,.09);
@@ -443,14 +447,15 @@
   .ol-item .ot{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ol-item .op{color:var(--cinnabar);font-style:normal}
   /* rail usage meter — quiet, glanceable, click-through to Settings */
-  .r-usage{flex:none;margin:0 12px;padding:10px 6px 11px;border-top:1px solid rgba(255,255,255,.07);cursor:pointer;
-    display:flex;flex-direction:column;gap:6px;transition:opacity .14s}
-  .r-usage:hover .qn{color:var(--dim)}
-  .r-usage .qn{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);transition:color .14s}
-  .r-usage .qbar{height:3px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
-  .r-usage .qbar i{display:block;height:100%;border-radius:4px;background:var(--grad)}
+  .r-usage{flex:none;margin:8px 12px 2px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(255,255,255,.025);cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+  .r-usage:hover{border-color:var(--line2);background:rgba(255,255,255,.045)}
+  .r-usage .qn{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;color:var(--ink)}
+  .r-usage .qn em{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--dim)}
+  .r-usage .qbar{height:6px;border-radius:6px;background:rgba(255,255,255,.09);overflow:hidden}
+  .r-usage .qbar i{display:block;height:100%;border-radius:6px;background:var(--grad)}
   .r-usage .qbar i.hot{background:var(--cinnabar)}
-  .r-usage .qv{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .r-usage .qv{font-size:11px;color:var(--mute)}
   .r-foot{flex:none;padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;
     font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:#7a7871}
   .sync{width:6px;height:6px;border-radius:50%;background:#7a7871;flex:none}
@@ -588,6 +593,9 @@
   .pl-list{list-style:none;margin:16px 0 20px;padding:0;display:flex;flex-direction:column;gap:8px}
   .pl-list li{font-size:12.5px;color:var(--dim);line-height:1.5;padding-left:19px;position:relative}
   .pl-list li::before{content:"✓";position:absolute;left:0;top:0;color:var(--cin-d);font-size:11px}
+  .pl-eng{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--mute);line-height:1.7}
+  .pl-eng b{color:var(--dim);font-weight:600}
   .pl-cta{margin-top:auto;width:100%;text-align:center;font-size:13px;font-weight:650;padding:10px 0;
     border-radius:9px;border:1px solid var(--line2);color:var(--ink);transition:.15s}
   .pl-cta:hover{background:rgba(255,255,255,.08)}
