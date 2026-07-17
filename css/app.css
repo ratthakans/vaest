@@ -105,6 +105,15 @@
   .rm-l{flex:1}
   .rm-e{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--mute);opacity:0;transition:opacity .15s}
   .md-scope{font-family:var(--mono);font-size:9px;color:var(--cin-d);letter-spacing:.04em;text-transform:none}
+  /* first-paint entrance — list rows drift in 30ms apart, then .settled turns it off so
+     re-renders (rename, select, save) never replay the animation */
+  .rail:not(.settled) .s-item,.rail:not(.settled) .md-item,.rail:not(.settled) .p-row{animation:railIn .26s var(--ease) both}
+  .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(2){animation-delay:30ms}
+  .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(3){animation-delay:60ms}
+  .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(4){animation-delay:90ms}
+  .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(5){animation-delay:120ms}
+  .rail:not(.settled) :is(#recentList,#mdList,#projList)>*:nth-child(n+6){animation-delay:150ms}
+  @keyframes railIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
   /* mobile mode pills — the rail is off-canvas on phones, so modes surface here */
   .m-modes{display:none}
   @media(max-width:760px){
@@ -229,7 +238,7 @@
   .si-go:hover{background:#fff}
   /* whole-document idea bar */
   /* quiet secondary input — recedes so the document itself is the focus (matches .brief-box.secondary) */
-  .doc-idea{display:flex;align-items:flex-end;gap:9px;margin:0 0 30px;padding:9px 11px;background:transparent;border:1px solid rgba(255,255,255,.06);border-radius:11px;transition:border-color .16s,opacity .2s}
+  .doc-idea{display:flex;align-items:flex-end;gap:9px;margin:10px 0 30px;padding:9px 11px;background:transparent;border:1px solid rgba(255,255,255,.06);border-radius:11px;transition:border-color .16s,opacity .2s}
   .doc-idea:focus-within{border-color:var(--line2)}
   .doc-idea.working{opacity:.5;pointer-events:none}
   .doc-idea textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.55;max-height:120px;padding:6px 5px}
@@ -408,7 +417,13 @@
   .p-row:hover .more{opacity:1}
   .p-row .more:hover{background:rgba(255,255,255,.1);color:var(--snow)}
   .p-kids{padding-left:10px}
-  .r-empty{font-size:11.5px;color:#7a7871;padding:4px 9px 8px;line-height:1.5}
+  /* empty states — a quiet dashed card with a glyph, not a bare mumble */
+  .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#7a7871;line-height:1.5;
+    border:1px dashed rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;margin:2px 9px 8px}
+  .r-empty svg{flex:none;opacity:.55}
+  .r-empty b{font-weight:600;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .r-empty b:hover{color:var(--ink)}
+  .r-empty.sm{border:none;padding:2px 9px 6px;margin:0}
   /* document outline — jump nav for the open doc */
   .ol-item{display:flex;align-items:baseline;gap:9px;padding:5px 9px;border-radius:6px;font-size:12px;color:#8f8c84;cursor:pointer;transition:.12s}
   .ol-item:hover{background:rgba(255,255,255,.06);color:var(--snow)}
