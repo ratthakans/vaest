@@ -376,6 +376,8 @@
     if(b.v>=4&&Array.isArray(b.sessions)){projects=b.projects||[];sessions=b.sessions;currentSid=b.currentSid;usage=b.usage||0;
       trash=Array.isArray(b.trash)?b.trash:[];profile=(b.profile&&typeof b.profile==='object')?b.profile:{};
       library=Array.isArray(b.library)?b.library:[];
+      // one-time cleanup: titles saved before mdTitle() still carry raw markdown (**, ##) — re-derive them
+      library.forEach(m=>{if(m&&m.title&&/(\*\*|^#|`)/.test(m.title))m.title=mdTitle(m.md||m.title)});
       // normalize to the modes schema (idempotent) — old blobs (v4) and any item missing a mode
       if(b.v<5||sessions.some(s=>!MODES.includes(s.mode))||sessions.some(s=>s.sparks||s.chats))migrateToModes();
       return true}
