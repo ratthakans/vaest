@@ -269,7 +269,9 @@ export default async function handler(req, res) {
   // access = active paid subscription, comp/invite, or internal. Otherwise → paywall.
   if (!access.allowed) { res.status(402).json({ error: 'Choose a plan to start using VÆST', paywall: true }); return; }
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
-  const cap = capFor(user.email);
+  // plan-scaled fair-use ceiling; capFor (env MONTHLY_CAP) remains the fallback for
+  // comp/invited accounts whose plan object predates capTokens.
+  const cap = (access.plan && access.plan.capTokens) || capFor(user.email);
   if (u.used >= cap) {
     res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
     return;
@@ -299,7 +301,9 @@ export default async function handler(req, res) {
   // but only bump the counter after the document actually succeeds (see the success path),
   // so a failed/aborted Summing never burns usage.
   // Fail-open: any counter error allows the request, so a bug never blocks Summing.
-  const countsDoc = mode === 'summing';
+  // a "document" = one full Odin generation: Crystallize (summing) or a Brief compile
+  // (briefdoc). Without counting briefdoc, Brief mode is an unlimited-Opus backdoor.
+  const countsDoc = mode === 'summing' || mode === 'briefdoc';
   if (countsDoc) {
     try {
       const q = await checkDocQuota(user.email, plan);

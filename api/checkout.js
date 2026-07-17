@@ -1,5 +1,5 @@
 import { verifyUser, readUsageData, packsLeft, MAX_PACKS_PER_MONTH } from '../lib/plans.js';
-import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub } from '../lib/billing.js';
+import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub, subIsActive } from '../lib/billing.js';
 
 // Create a Stripe Checkout Session (subscription mode) for the signed-in user.
 // Body: { plan: 'basic'|'pro'|'director', kind?: 'individual'|'team', seats?: number }
@@ -61,6 +61,12 @@ export default async function handler(req, res) {
   try {
     // reuse the customer we stored from a prior sub, else let Checkout create one by email
     const sub = await readSub(user.email);
+    // guard: an active subscriber starting a NEW plan checkout would end up paying twice —
+    // Stripe happily stacks subscriptions. Plan changes go through the billing portal.
+    if (subIsActive(sub)) {
+      res.status(409).json({ error: 'You already have an active plan — open Settings → Manage billing to switch plans.' });
+      return;
+    }
     const customerField = sub && sub.customerId
       ? { customer: sub.customerId }
       : { customer_email: user.email };
@@ -77,7 +83,7 @@ export default async function handler(req, res) {
       metadata: { email: user.email, plan, kind },
       subscription_data: { metadata: { email: user.email, plan, kind } },
       success_url: `${origin}/app?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/?checkout=cancel#access`,
+      cancel_url: `${origin}/home?checkout=cancel#access`, // root serves the app now — the pricing/access section lives on /home
     });
     res.status(200).json({ url: session.url });
   } catch (e) {
