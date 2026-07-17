@@ -93,6 +93,22 @@
   .home-in{width:100%;max-width:660px;padding-bottom:7vh;margin:auto} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
+  /* mode switcher — segmented, quiet, Claude-style */
+  .mode-switch{display:inline-flex;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:100px;padding:4px}
+  .mode-switch button{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:550;color:var(--mute);padding:8px 16px;border-radius:100px;transition:.16s var(--ease)}
+  .mode-switch button svg{opacity:.85}
+  .mode-switch button:hover{color:var(--dim)}
+  .mode-switch button.on{background:rgba(255,255,255,.08);color:var(--ink)}
+  .mode-switch button.on svg{opacity:1}
+  .mode-pane{animation:homeUp .4s var(--ease) both}
+  .id-note{font-size:12px;color:var(--mute);margin-top:14px;text-align:center;line-height:1.5}
+  .idea.hero:not(.has-chat) .id-note{display:block}.idea.hero.has-chat .id-note{display:none}
+  /* Brief start surface */
+  .brief-start{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 16px 12px}
+  .brief-start textarea{width:100%;background:transparent;border:none;outline:none;resize:none;color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.7;min-height:78px}
+  .brief-start textarea::placeholder{color:var(--mute)}
+  .brief-start-foot{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .brief-start-foot .go{margin-left:auto}
   .brief-box{background:rgba(255,255,255,.045);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.36),0 10px 34px rgba(0,0,0,0.42);transition:box-shadow .3s var(--ease),transform .3s var(--ease)}
   .brief-box:focus-within{box-shadow:0 2px 4px rgba(0,0,0,0.40),0 16px 46px rgba(0,0,0,0.56);transform:translateY(-1px)}
   .brief-box textarea{width:100%;border:none;outline:none;resize:none;background:none;font-family:inherit;

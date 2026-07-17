@@ -1116,13 +1116,28 @@
     return out.length>1?out:null}
 
   /* ═══ views ═══ */
+  // Brief mode — full interview loop lands in M4; these keep the surface interactive meanwhile
+  function startBrief(){const v=($('briefIn')&&$('briefIn').value.trim())||'';if(!v){toast('Paste or type a brief first');return}toast('Brief interview arrives in the next update — for now, use Crystallize');}
+  function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)toast(fs.length+' file(s) ready — Brief mode lands next update')}
+  const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     document.querySelector('.main').classList.remove('has-top');
     $('brief').value=s?s.brief:'';
-    // auto-reveal the brief panel only if this session already has a brief or files; else keep the home a clean chat
-    const bb=$('briefBox');if(bb){const has=!!(s&&(s.brief||(s.files&&s.files.length)));bb.classList.toggle('collapsed',!has);const asb=$('addSrcBtn');if(asb)asb.textContent=has?'— Hide':'＋ Brief or files'}
-    renderChips();renderTone();renderChain();renderIdeas();renderSparks();renderOutline();renderTabs()}
+    const mode=inferMode(s);
+    // switcher active state + the matching surface
+    document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('.mode-pane').forEach(p=>p.style.display=p.dataset.pane===mode?'':'none');
+    const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
+    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs()}
+  // switch the current (unstarted) item's mode — only allowed before it has real content
+  function setMode(m){
+    if(!MODES.includes(m))return;
+    const s=cur();if(!s)return;
+    const started=(s.canvas&&s.canvas.trim())||(s.ideas&&s.ideas.length)||(s.briefDoc&&s.briefDoc.trim());
+    if(started&&inferMode(s)!==m){toast('This one’s already a '+inferMode(s)+' — hit New to start a '+m);return}
+    s.mode=m;s.updatedAt=Date.now();save();renderRail();showHome();
+    const inp=m==='idea'?$('ideaInput'):m==='brief'?$('briefIn'):$('brief');if(inp)setTimeout(()=>inp.focus(),40)}
 
   /* scroll-spy — the outline follows where you are; back-to-top past 600px */
   function initScrollSpy(){
@@ -1244,14 +1259,8 @@
 
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;
-    if(s)renderChatTabs(s);
-    const ideas=(s&&curChat(s).ideas)||[];
-    const anyChat=s?chatsOf(s).some(c=>c.ideas.length):false;
-    const box=$('ideaBox');if(box)box.classList.toggle('has-chat',anyChat); // Crystallize appears once any chat has a conversation
-    // the desk premise, always visible: this button sums SOURCES, not just the open chat
-    const sb=$('idSumBtn');
-    if(sb&&s){const n=chatsOf(s).filter(c=>c.ideas.length).length+(s.files||[]).length+((s.brief||'').trim()?1:0);
-      sb.textContent=n>1?('Crystallize · '+n+' sources →'):'Crystallize →'}
+    const ideas=(s&&curChat(s).ideas)||[]; // one thread per item now — curChat mirrors s.ideas
+    const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0);
     if(!ideas.length){ th.innerHTML=''; return} // clean empty state — just the input, Claude-style
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
