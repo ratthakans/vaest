@@ -1,4 +1,5 @@
 import { verifyUser, usageSnapshot, readUsageData } from '../lib/plans.js';
+import { kvConfigured } from '../lib/ratelimit.js';
 import { resolveAccess } from '../lib/billing.js';
 
 // Access check — the client calls this after login to pick the right screen:
@@ -49,6 +50,7 @@ export default async function handler(req, res) {
       mimir: !!process.env.OPENAI_API_KEY,
       galdr: !!process.env.GEMINI_API_KEY,
       mimirFallback,   // Sol→Opus silent fallbacks this month; >0 with a key present = Sol is failing
+      kv: kvConfigured(), // rate limits distributed (true) vs per-instance in-memory (false)
     } : undefined,
   });
 }

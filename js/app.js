@@ -1032,10 +1032,13 @@
     // engine has been silently falling back — the tokens above would be landing in another bucket.
     const en=(window.QUOTA&&window.QUOTA.engines)||null;
     const mfb=(en&&en.mimirFallback)||0; // Sol→Opus silent fallbacks this month
-    $('usageBreak').innerHTML=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['Galdr · idea',idea,'galdr']]
+    let rows=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['Galdr · idea',idea,'galdr']]
       .map(r=>'<div class="ub-row"><span>'+r[0]+(en&&en[r[2]]===false?' <em class="ub-off">no key — falling back</em>':'')
         +(r[2]==='mimir'&&mfb>0?' <em class="ub-off">'+mfb+' fell back to Odin this month</em>':'')
-        +'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
+        +'</span><b>'+fmtTok(r[1])+'</b></div>').join('');
+    if(en&&typeof en.kv==='boolean') // rate limits: distributed (KV) vs per-instance
+      rows+='<div class="ub-row"><span>Rate limit '+(en.kv?'':'<em class="ub-off">in-memory — connect KV</em>')+'</span><b>'+(en.kv?'distributed':'per-instance')+'</b></div>';
+    $('usageBreak').innerHTML=rows}
   function closeSettings(){$('setView').classList.remove('show')}
   function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
