@@ -183,17 +183,6 @@
   .st:hover{background:rgba(255,255,255,.06);color:var(--ink)}
   .st.on{color:var(--cinnabar)}
   .st.busy{color:var(--cin-d);pointer-events:none}
-  /* ── chat tabs — one session, several topic chats; each one is a Summing source ── */
-  .chat-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 12px}
-  .chat-tabs:empty{display:none}
-  .ct{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--dim);
-    padding:6px 12px;border:1px solid var(--line);border-radius:16px;transition:.14s;max-width:220px;white-space:nowrap;overflow:hidden}
-  .ct:hover{color:var(--ink);border-color:var(--line2)}
-  .ct.on{color:var(--ink);background:rgba(255,255,255,.07);border-color:var(--line2)}
-  .ct.add{color:var(--mute);padding:6px 11px;font-size:13px}
-  .ct.add:hover{color:var(--ink)}
-  .ct-x{display:inline-flex;font-size:10.5px;color:var(--mute);padding:1px 2px;border-radius:4px}
-  .ct-x:hover{color:var(--ink);background:rgba(255,255,255,.1)}
   .st.think b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
   .st.think:hover b{-webkit-text-fill-color:var(--ink)}
   /* flow-trail hint — light the per-section Think buttons so people find the moved control */

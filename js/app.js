@@ -1257,10 +1257,6 @@
     toast(s.chain?'Refine will run automatically after Crystallize':'Chain off — Refine stays manual')}
   function renderChain(){const s=cur();const b=$('chainBtn');if(b)b.classList.toggle('on',!!(s&&s.chain))}
   function briefChanged(){const s=cur();if(!s)return;s.brief=$('brief').value;clearTimeout(window._bt);window._bt=setTimeout(()=>{s.updatedAt=Date.now();save()},600)}
-  // reveal the optional brief/files panel on demand — keeps the home a clean Idea chat by default
-  function toggleBrief(){const bb=$('briefBox');if(!bb)return;bb.classList.toggle('collapsed');
-    const open=!bb.classList.contains('collapsed');const btn=$('addSrcBtn');if(btn)btn.textContent=open?'— Hide':'＋ Brief or files';
-    if(open){const t=$('brief');if(t)setTimeout(()=>t.focus(),40)}}
 
   /* brief templates — a scaffold that teaches a good brief */
   const TPL={
@@ -1296,47 +1292,6 @@
     s.ideas=(s.chats.find(c=>c.id===s.chatId)||s.chats[0]).ideas; // legacy mirror
     return s.chats}
   function curChat(s){const cs=chatsOf(s);return cs.find(c=>c.id===s.chatId)||cs[0]}
-  function newChat(){
-    if(_ideaBusy){toast('Galdr is replying — one moment');return}
-    const s=cur();if(!s)return;
-    const cs=chatsOf(s);
-    const empty=cs.find(c=>!c.ideas.length);
-    if(empty){s.chatId=empty.id} // never stack empty chats
-    else{const c={id:uid('ch'),title:'',ideas:[]};cs.push(c);s.chatId=c.id}
-    save();renderIdeas();const inp=$('ideaInput');if(inp)inp.focus()}
-  function switchChat(id){
-    if(_ideaBusy){toast('Galdr is replying — one moment');return}
-    const s=cur();if(!s)return;s.chatId=id;save();renderIdeas()}
-  async function deleteChat(ev,id){
-    ev.stopPropagation();
-    const s=cur();if(!s)return;const cs=chatsOf(s);
-    const c=cs.find(x=>x.id===id);if(!c)return;
-    if(c.ideas.length&&!await uiConfirm('Delete “'+(c.title||'this chat')+'”? Its messages are gone (saved sparks stay).',{ok:'Delete',danger:true}))return;
-    s.chats=cs.filter(x=>x.id!==id);
-    if(!s.chats.length)s.chats=[{id:uid('ch'),title:'',ideas:[]}];
-    if(s.chatId===id)s.chatId=s.chats[0].id;
-    save();renderIdeas()}
-  function chatMd(c){
-    return '# '+(c.title||'Idea chat')+'\n\n'
-      +c.ideas.map(m=>(m.r==='user'?'**You**':'**VÆST**')+'\n\n'+m.c).join('\n\n---\n\n')+'\n'}
-  function downloadChatMd(ev,id){
-    ev.stopPropagation();
-    const s=cur();if(!s)return;const c=chatsOf(s).find(x=>x.id===id);if(!c||!c.ideas.length){toast('Nothing to save yet');return}
-    const name=(c.title||'idea-chat').replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'idea-chat';
-    const blob=new Blob([chatMd(c)],{type:'text/markdown'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name+'.md';a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Saved “'+(c.title||'chat')+'.md”')}
-  function renderChatTabs(s){
-    const el=$('chatTabs');if(!el)return;
-    const cs=chatsOf(s);
-    // a single fresh chat needs no tab bar — the surface stays clean until topics multiply
-    if(cs.length===1&&!cs[0].ideas.length){el.innerHTML='';return}
-    el.innerHTML=cs.map(c=>{const on=c.id===s.chatId;
-      return '<button class="ct'+(on?' on':'')+'" onclick="switchChat(\''+c.id+'\')" title="'+esc(c.title||'New chat')+'">'
-        +esc((c.title||'New chat').slice(0,22))
-        +(on?'<span class="ct-x" onclick="downloadChatMd(event,\''+c.id+'\')" title="Save as .md">⤓</span><span class="ct-x" onclick="deleteChat(event,\''+c.id+'\')" title="Delete chat">✕</span>':'')
-        +'</button>'}).join('')
-      +'<button class="ct add" onclick="newChat()" title="New topic — a separate chat, all of them feed Crystallize">＋</button>'}
 
   function renderIdeas(){
     const s=cur();const th=$('ideaThread');if(!th)return;

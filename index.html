@@ -65,7 +65,6 @@
         <!-- IDEA — Galdr chat, one thread per item -->
         <div class="mode-pane" data-pane="idea">
         <div class="idea hero" id="ideaBox">
-          <div class="chat-tabs" id="chatTabs" style="display:none"></div>
           <div class="id-thread" id="ideaThread"></div>
           <div class="id-in">
             <textarea id="ideaInput" rows="1" placeholder="Talk it through with Galdr — brainstorm, paste notes, argue an angle…" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,140)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
