@@ -32,7 +32,9 @@
   ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.26);background-clip:padding-box}
 
   /* ===== layout — rail left · main right ===== */
-  .app{display:grid;grid-template-columns:268px 1fr;height:100vh;transition:grid-template-columns .5s var(--ease)}
+  /* rail column MUST equal .rail-in width (284px) — a 268px column clipped the rail's right
+     16px under the content pane, cutting off New/Search/Crystallize/⌘K on the right */
+  .app{display:grid;grid-template-columns:284px 1fr;height:100vh;transition:grid-template-columns .5s var(--ease)}
   .app.rail-off{grid-template-columns:0 1fr}
   .main{grid-column:2;grid-row:1;min-width:0;height:100vh;display:flex;flex-direction:column;background:var(--paper);position:relative}
 
