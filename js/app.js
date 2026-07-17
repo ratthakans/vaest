@@ -1030,7 +1030,8 @@
       if(internal){const wired=en?(e.key==='norrsken'?en.odin:en[e.key]):null; // Norrsken rides Odin's key
         const dot=wired===false?'<span class="eg-dot off"></span>':'<span class="eg-dot"></span>';
         sub='<span class="eg-model">'+dot+esc(e.model)+'</span>';}
-      return '<div class="eg-row"><div class="eg-l"><b>'+e.n+'</b> <span class="eg-role">'+(internal?e.role:'')+'</span></div>'
+      // one descriptor per row: regular users read the role, the team reads the real model
+      return '<div class="eg-row"><div class="eg-l"><b>'+e.n+'</b></div>'
         +'<div class="eg-sub">'+sub+'</div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
     // foot: build + (internal) Sol-fallback + KV status
     const bits=['ORIONS.Agency'];
