@@ -368,8 +368,9 @@
   .md-item .more{opacity:0;flex:none;color:var(--mute);font-size:14px;padding:0 2px}
   .md-item:hover .more{opacity:1}
   .r-lbl-n{font-family:var(--mono);font-size:9px;color:var(--mute);letter-spacing:0}
-  /* MD viewer sheet */
-  .md-sheet{max-width:640px;max-height:76vh;display:flex;flex-direction:column}
+  /* MD viewer sheet — solid surface so the bright home behind never bleeds through */
+  .md-sheet{max-width:640px;max-height:76vh;display:flex;flex-direction:column;background:#141417;border:1px solid var(--line2)}
+  #mdView{background:rgba(0,0,0,.72)}
   .md-view-hd{display:flex;align-items:flex-start;gap:14px;padding:18px 22px 14px;border-bottom:1px solid var(--line)}
   .md-view-t{flex:1;font-size:17px;font-weight:650;color:var(--ink);line-height:1.4;outline:none;border-radius:4px}
   .md-view-t:focus{background:rgba(255,255,255,.05)}
