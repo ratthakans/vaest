@@ -152,6 +152,9 @@
   .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
   .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
   .brief-compile .go{flex:none}
+  /* early escape hatch — offered before VÆST calls it complete, so keep it quieter than the green "done" state */
+  .brief-compile.early{background:transparent;border-color:var(--line);border-style:dashed}
+  .brief-compile.early .go{background:rgba(255,255,255,.06);border:1px solid var(--line2);color:var(--ink)}
   .brief-box{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.12);border-radius:16px;transition:border-color .2s,background .2s}
   .brief-box:focus-within{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.05)}
   .brief-box textarea{width:100%;border:none;outline:none;resize:none;background:none;font-family:inherit;
@@ -265,6 +268,8 @@
   .rp-go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--ink);
     background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:8px;transition:.14s}
   .rp-go:hover{background:rgba(255,255,255,.12);color:#fff}
+  .rp-attach{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--dim);padding:7px 11px;border-radius:7px;border:1px solid var(--line);transition:.14s}
+  .rp-attach:hover{color:var(--ink);border-color:var(--line2)}
   /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
   /* gentle tracking only — Thai loops (Looped face) get cramped under tight negative tracking */
   .sec-h{font-family:var(--ui);font-size:22px;font-weight:700;letter-spacing:-.008em;line-height:1.5;margin:12px 0 20px;outline:none;border-radius:4px;padding:2px 5px;margin-left:-5px;transition:background .14s}
@@ -749,6 +754,8 @@
   .set-note{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
   /* Summing source picker */
   .sum-src{margin-top:16px;display:flex;flex-direction:column;gap:2px;max-height:46vh;overflow-y:auto}
+  .sum-warn{margin-bottom:10px;padding:10px 12px;border:1px solid var(--line);border-left:2px solid var(--cinnabar);border-radius:9px;background:rgba(255,255,255,.03);font-size:12.5px;line-height:1.5;color:var(--dim)}
+  .sum-warn b{color:var(--ink);font-weight:650}
   .sum-r{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .14s var(--ease)}
   .sum-r:hover{background:rgba(255,255,255,.05)}
   .sum-r input{flex:none;width:16px;height:16px;accent-color:#cfd6ff;cursor:pointer}

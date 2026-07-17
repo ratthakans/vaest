@@ -1182,6 +1182,19 @@
     // spotlight the question rather than pinning to the very bottom
     const card=th.querySelector('.q-card');
     if(card)card.scrollIntoView({block:'nearest'}); else th.scrollTop=th.scrollHeight}
+  // Compile is offered two ways: once VÆST declares BRIEF_COMPLETE (primary), or as an
+  // escape hatch after a few answers so a user in a hurry is never trapped in the interview.
+  function updateBriefCompile(s){
+    const bc=$('briefCompile');if(!bc)return;
+    const complete=!!(s&&s.briefComplete);
+    const answers=((s&&s.briefQA)||[]).filter(m=>m.r==='user').length; // includes the seed
+    const early=!complete&&answers>=3;
+    bc.style.display=(complete||early)?'':'none';
+    bc.classList.toggle('early',early);
+    const note=bc.querySelector('.bc-note');
+    if(note)note.textContent=complete
+      ? 'Looks complete — compile it into a brief, or keep answering below.'
+      : 'Enough to start? Compile the brief now — you can reopen and add more anytime.'}
   async function startBrief(){
     if(_briefBusy)return;
     const s=cur();if(!s)return;
@@ -1211,7 +1224,7 @@
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
       const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
       s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
-      if(complete){const bc=$('briefCompile');if(bc)bc.style.display='';}
+      updateBriefCompile(s);
     }catch(e){stopBW();live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
     finally{_briefBusy=false}}
   async function compileBrief(){
@@ -1245,7 +1258,7 @@
     const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
-      if(started){renderBriefFiles();renderBriefQA();const bc=$('briefCompile');if(bc)bc.style.display=s.briefComplete?'':'none'}
+      if(started){renderBriefFiles();renderBriefQA();updateBriefCompile(s)}
       else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles()}}
     renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
@@ -1303,6 +1316,15 @@
     const open=p.style.display==='none';
     p.style.display=open?'':'none';
     if(open){const t=$('refIn');if(t)setTimeout(()=>t.focus(),40);p.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+  // attach a reference file → drop its text into the ref box (doesn't touch the project's own files)
+  async function refFilePick(e){
+    const f=(e.target.files||[])[0];e.target.value='';if(!f)return;
+    const t=$('refIn');if(!t)return;
+    toast('Reading '+f.name+'…');
+    try{const c=await extractFile(f);
+      if(c&&c.trim()){t.value=(t.value.trim()?t.value.trim()+'\n\n':'')+c.trim();toast('Reference loaded from '+f.name)}
+      else toast('Couldn’t read '+f.name)}
+    catch(err){toast('Couldn’t read '+f.name)}}
   async function alignBrief(){
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
@@ -1379,6 +1401,12 @@
       +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Crystallize">✚ Save</button>'
       +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
+    // one-time nudge: teach ✚ Save while the thread's building, before early replies drift past
+    // the memory horizon. Fires once per user (localStorage), never nags.
+    if(!ANON&&ideas.length>=6&&ideas.length<IDEA_CTX){
+      try{if(!localStorage.getItem('vaest_save_hint')){localStorage.setItem('vaest_save_hint','1');
+        toast('Tip — hit ✚ Save on a reply worth keeping. Saved answers feed Crystallize and never fall off the chat.')}}catch(e){}
+    }
 }
   function copyIdea(i){const s=cur();const m=s&&curChat(s).ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
   // Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
@@ -1596,7 +1624,7 @@
       +'</div>';
     if(!_shareId&&!isBrief)h+='<div class="doc-idea"><textarea id="docIdeaIn" rows="1" placeholder="Idea for the whole document — a direction or thread to weave in…" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();canvasIdea()}"></textarea><button class="di-go" onclick="canvasIdea()">Add idea</button></div>';
     // Brief: paste a reference brief whose shape & tone you want, and VÆST reshapes this brief to match — content untouched
-    if(!_shareId&&isBrief)h+='<div class="ref-panel" id="refPanel" style="display:none"><div class="rp-eye">Reference — paste a brief whose structure &amp; tone you want to match. Your content stays; only the shape changes.</div><textarea id="refIn" rows="4" placeholder="Paste the reference brief here…"></textarea><div class="rp-foot"><button class="rp-x" onclick="toggleRefPanel()">Cancel</button><button class="rp-go" onclick="alignBrief()">Align brief to this <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>';
+    if(!_shareId&&isBrief)h+='<div class="ref-panel" id="refPanel" style="display:none"><div class="rp-eye">Reference — paste a brief whose structure &amp; tone you want to match, or attach one. Your content stays; only the shape changes.</div><textarea id="refIn" rows="4" placeholder="Paste the reference brief here…"></textarea><input type="file" id="refFileInput" accept=".docx,.pdf,.md,.txt,.html" style="display:none" onchange="refFilePick(event)"><div class="rp-foot"><button class="rp-attach" onclick="$(\'refFileInput\').click()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach a file</button><span style="flex:1"></span><button class="rp-x" onclick="toggleRefPanel()">Cancel</button><button class="rp-go" onclick="alignBrief()">Align brief to this <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>';
     const secFiles=(s&&s.secFiles)||{},pins=(s&&s.pins)||{};
     let n=0;
     secs.forEach((sec,i)=>{
@@ -1776,7 +1804,9 @@
     const liveChats=chatsOf(s).filter(c=>c.ideas.length);
     const srcs=[!!s.brief,s.files.length>0,(s.sparks||[]).length>0,liveChats.length>0].filter(Boolean).length;
     if(!srcs){toast('Chat with Galdr, paste a brief, or attach a file first');return}
-    if(srcs>1||s.files.length||(s.sparks||[]).length||liveChats.length>1){openSummingPicker();return} // 2+ sources or itemized ones → curate
+    // 2+ sources, itemized ones, OR a re-crystallize over an existing document → show the picker
+    // (the picker is also where the "this replaces your document · counts as one" note lives)
+    if(srcs>1||s.files.length||(s.sparks||[]).length||liveChats.length>1||(s.canvas&&s.canvas.trim())){openSummingPicker();return}
     doSumming({brief:!!s.brief,files:[],topics:[],chats:liveChats.map(c=>c.id)})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
@@ -1784,7 +1814,9 @@
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
     s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
     const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
-    $('sumSrc').innerHTML=rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>';
+    const warn=(s.canvas&&s.canvas.trim())
+      ? '<div class="sum-warn">You already have a document — crystallizing again <b>replaces it</b> and counts as one document. (Undo brings the old one back.)</div>' : '';
+    $('sumSrc').innerHTML=warn+(rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>');
     $('sumView').classList.add('show')}
   function closeSummingPicker(){$('sumView').classList.remove('show')}
   function doSummingFromPicker(){
