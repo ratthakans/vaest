@@ -2,13 +2,13 @@ import { runApiEngine } from '../../lib/apiengine.js';
 
 // POST /api/v1/present   Authorization: Bearer vsk_live_...
 // Body: { document: string }  →  { slides, usage }
-// Present (Skadi) — reshapes the document into a tight deck. `slides` is a parsed array
+// Present (Odin) — reshapes the document into a tight deck. `slides` is a parsed array
 // of slide objects (cover / content / quote / close); on the rare parse miss, `raw` holds
 // the model text so the caller can recover.
 export default async function handler(req, res) {
   const out = await runApiEngine(req, res, {
     taskKey: 'present',
-    model: 'claude-sonnet-5',
+    model: 'claude-opus-4-8',
     maxTokens: 8192,
     buildContent: (b) => (b.document || '').trim() || null,
   });

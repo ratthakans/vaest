@@ -359,7 +359,7 @@
     (sessions||[]).forEach(s=>{
       (s.sparks||[]).forEach(sp=>{const t=(sp.text||'').trim();if(!t)return;
         lifted.push({id:uid('md'),title:(sp.topic&&sp.topic!=='…'?sp.topic+' — ':'')+mdTitle(t),
-          md:t,createdAt:sp.ts||s.updatedAt||Date.now(),fromTitle:s.title||''})});
+          md:t,createdAt:sp.ts||s.updatedAt||Date.now(),fromTitle:s.title||'',projectId:s.projectId||null})});
       delete s.sparks;
       const mode=inferMode(s);
       const liveChats=(s.chats||[]).filter(c=>c&&Array.isArray(c.ideas)&&c.ideas.length);
@@ -466,7 +466,7 @@
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=um[3]==='norrsken'?'fable':um[3]==='galdr'?'idea':um[3]==='mimir'?'mimir':um[3]==='skadi'?'skadi':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=um[3]==='norrsken'?'fable':um[3]==='galdr'?'idea':um[3]==='mimir'?'mimir':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
@@ -729,16 +729,24 @@
       rl.innerHTML=recents.length?recents.map(sItem).join(''):'<div class="r-empty">Nothing yet — hit “New”</div>'}
     // MD library
     renderMDList()}
+  // MD is scoped to the project you're in — each project keeps its own library; items
+  // saved outside any project live in the General pool. The section label names the scope.
+  function mdScopeId(){const s=cur();return (s&&s.projectId)||null}
   function renderMDList(){
     const ml=$('mdList');if(!ml)return;
-    const lib=[...(library||[])].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const pid=mdScopeId();
+    const lib=(library||[]).filter(m=>(m.projectId||null)===pid).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     const cn=$('mdCount');if(cn)cn.textContent=lib.length?lib.length:'';
+    const sc=$('mdScope');if(sc){const p=pid&&projects.find(x=>x.id===pid);sc.textContent=p?('/ '+p.name):''}
     ml.innerHTML=lib.length?lib.map(m=>
       '<div class="md-item" data-mid="'+m.id+'" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
       +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
       +'<span class="md-t">'+esc(m.title)+'</span>'
       +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
-    ).join(''):'<div class="r-empty">Save a good answer from any chat → it lands here</div>'}
+    ).join(''):'<div class="r-empty">'+(pid?'Nothing saved in this project yet':'Save a good answer from any chat → it lands here')+'</div>'}
+  function moveMD(id,pid){const md=(library||[]).find(x=>x.id===id);if(!md)return;
+    md.projectId=pid||null;save();renderMDList();
+    const p=pid&&projects.find(x=>x.id===pid);toast(p?('Moved to /'+p.name):'Moved to General')}
 
   /* ctx menus */
   function openCtx(e,sid){
@@ -1014,13 +1022,13 @@
       else{toast('Couldn’t delete — nothing was removed')}}
     catch(e){toast('Couldn’t delete, try again')}}
   function renderUsageBreak(){
-    const rt=getRates();let o=0,f=0,idea=0,mi=0,sk=0;sessions.forEach(x=>{const t=x.tok||{};o+=t.opus||0;f+=t.fable||0;idea+=t.idea||0;mi+=t.mimir||0;sk+=t.skadi||0});
+    const rt=getRates();let o=0,f=0,idea=0,mi=0;sessions.forEach(x=>{const t=x.tok||{};o+=(t.opus||0)+(t.skadi||0);f+=t.fable||0;idea+=t.idea||0;mi+=t.mimir||0});
     const q=window.QUOTA;const qe=$('quotaRow2');
     if(qe){const h=quotaBarHTML(q);if(h){qe.style.display='';qe.innerHTML=h}else qe.style.display='none'}
     // Norrsken rides the same Anthropic key as Odin. `false` here means the key is absent, so that
     // engine has been silently falling back — the tokens above would be landing in another bucket.
     const en=(window.QUOTA&&window.QUOTA.engines)||null;
-    $('usageBreak').innerHTML=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['SKADI · present',sk,'odin'],['Galdr · idea',idea,'galdr']]
+    $('usageBreak').innerHTML=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['Galdr · idea',idea,'galdr']]
       .map(r=>'<div class="ub-row"><span>'+r[0]+(en&&en[r[2]]===false?' <em class="ub-off">no key — falling back</em>':'')
         +'</span><b>'+fmtTok(r[1])+'</b></div>').join('')}
   function closeSettings(){$('setView').classList.remove('show')}
@@ -1220,7 +1228,7 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#modeSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
+    document.querySelectorAll('#railModes button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     document.querySelectorAll('.mode-pane').forEach(p=>p.style.display=p.dataset.pane===mode?'':'none');
     const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
@@ -1411,9 +1419,10 @@
     const text=(m.c||'').trim();if(!text)return;
     library=library||[];
     if(library.some(x=>x.md===text)){toast('Already in your MD library');return}
-    const md={id:uid('md'),title:mdTitle(text),md:text,createdAt:Date.now(),fromTitle:s.title||''};
+    const md={id:uid('md'),title:mdTitle(text),md:text,createdAt:Date.now(),fromTitle:s.title||'',projectId:s.projectId||null};
     library.unshift(md);s.updatedAt=Date.now();save();renderRail();
-    toast('Saved to MD library');
+    const p=s.projectId&&projects.find(x=>x.id===s.projectId);
+    toast(p?('Saved to MD · /'+p.name):'Saved to MD library');
     // a nicer title if the answer has no heading — infer a topic label
     if(!/^#/.test(text))inferTopic(text).then(top=>{if(top){md.title=top;save();renderMDList()}}).catch(()=>{})}
   /* ═══ MD library — open / download / delete ═══ */
@@ -1430,9 +1439,15 @@
   async function deleteMD(id){const md=(library||[]).find(x=>x.id===id);if(!md)return;
     if(!await uiConfirm('Delete “'+esc(md.title)+'” from your MD library?',{ok:'Delete',danger:true}))return;
     library=library.filter(x=>x.id!==id);save();renderRail();toast('Deleted')}
-  function openMDCtx(e,id){showCtx(e,'<button onclick="openMD(\''+id+'\');hideCtx()">Open</button>'
-    +'<button onclick="downloadMD2(\''+id+'\');hideCtx()">Download .md</button>'
-    +'<div class="sep"></div><button class="danger" onclick="deleteMD(\''+id+'\');hideCtx()">Delete</button>')}
+  function openMDCtx(e,id){
+    const md=(library||[]).find(x=>x.id===id);
+    let h='<button onclick="openMD(\''+id+'\');hideCtx()">Open</button>'
+      +'<button onclick="downloadMD2(\''+id+'\');hideCtx()">Download .md</button>';
+    if(projects.length||((md&&md.projectId)||null)){h+='<div class="sep"></div><div class="cap">Move to</div>';
+      projects.forEach(p=>{if(p.id!==((md&&md.projectId)||null))h+='<button onclick="moveMD(\''+id+'\',\''+p.id+'\');hideCtx()">/'+esc(p.name)+'</button>'});
+      if(md&&md.projectId)h+='<button onclick="moveMD(\''+id+'\',null);hideCtx()">General</button>'}
+    h+='<div class="sep"></div><button class="danger" onclick="deleteMD(\''+id+'\');hideCtx()">Delete</button>';
+    showCtx(e,h)}
   function insertMDToCanvas(id){uiSheetClose();toast('In Crystallize, this MD is available as a source');/* wired fully in M3 */}
   async function inferTopic(text){
     try{const t=await streamAPI('tag',[{role:'user',content:text.slice(0,1200)}],'',null);

@@ -94,12 +94,18 @@
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .h-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(42px,5.8vw,64px);letter-spacing:-.01em;line-height:1;margin:20px 0 38px;text-wrap:balance}
   /* mode switcher — segmented, quiet, Claude-style */
-  .mode-switch{display:inline-flex;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:100px;padding:4px}
-  .mode-switch button{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:550;color:var(--mute);padding:8px 16px;border-radius:100px;transition:.16s var(--ease)}
-  .mode-switch button svg{opacity:.85}
-  .mode-switch button:hover{color:var(--dim)}
-  .mode-switch button.on{background:rgba(255,255,255,.08);color:var(--ink)}
-  .mode-switch button.on svg{opacity:1}
+  /* rail modes — three ways of working, clearly separated; the mono tag names the engines */
+  .rail-modes{display:flex;flex-direction:column;gap:2px;margin:14px 10px 6px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .rail-modes button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font-size:13.5px;font-weight:600;
+    color:var(--dim);padding:9px 10px;border-radius:8px;transition:.15s var(--ease)}
+  .rail-modes button svg{opacity:.7;flex:none}
+  .rail-modes button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .rail-modes button.on{color:var(--ink);background:rgba(255,255,255,.08)}
+  .rail-modes button.on svg{opacity:1;color:var(--cin-d)}
+  .rm-l{flex:1}
+  .rm-e{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--mute);opacity:0;transition:opacity .15s}
+  .md-scope{font-family:var(--mono);font-size:9px;color:var(--cin-d);letter-spacing:.04em;text-transform:none}
+  .rail-modes button:hover .rm-e,.rail-modes button.on .rm-e{opacity:.8}
   .mode-pane{animation:homeUp .4s var(--ease) both}
   .id-note{font-size:12px;color:var(--mute);margin-top:14px;text-align:center;line-height:1.5}
   .idea.hero:not(.has-chat) .id-note{display:block}.idea.hero.has-chat .id-note{display:none}

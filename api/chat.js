@@ -13,8 +13,9 @@ export async function getAnthropic() {
   return _anthropic;
 }
 
-// VÆST 1.4 — Galdr (Idea/sandbox) = Gemini Flash · Odin (write) = Opus 4.8 · Mimir (Ø Think) = GPT-5.6 Sol
-// · Norrsken (Refine) = Fable 5 · Skadi (Present) = Sonnet 5
+// VÆST — four engines. Galdr (Idea/Brief interview) = Gemini Flash · Odin (every word that
+// lands: Crystallize/Brief compile/edits/Present) = Opus 4.8 · Mimir (Ø Think) = GPT-5.6 Sol
+// · Norrsken (Refine) = Fable 5
 //
 // Critic vs writer: Mimir and Norrsken only ever *propose* (Think pushes / Refine points) — they never
 // write into the canvas. Every mode that puts words in the document (summing, apply, improve, edit) stays
@@ -33,7 +34,7 @@ export const ROUTE = {
   think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
-  present:   { model: 'claude-sonnet-5', max: 8192, fallback: 'claude-opus-4-8' },
+  present:   { model: 'claude-opus-4-8', max: 8192 }, // Skadi retired — four engines; the writer lands the deck too
 };
 
 // ── Persona ~30% ORIONS ──
@@ -342,7 +343,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'GALDR', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'SKADI', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'GALDR', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'ODIN', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
@@ -376,11 +377,11 @@ export default async function handler(req, res) {
       }
     }
     const { inTok, outTok } = usage;
-    // cost bucket only (galdr/mimir/norrsken/skadi/odin) — never the underlying model id.
+    // cost bucket only (galdr/mimir/norrsken/odin) — never the underlying model id.
     // Keyed off the model that actually ran, so a Mimir→Odin fallback is billed as Odin.
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
-      : /sonnet/.test(mid) ? 'skadi' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
+      : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
     // single read-modify-write: record token usage + real spend and, only now that the
     // document succeeded, bump the counters — merged so the writes don't clobber each other.
     // Known + accepted: two calls finishing in the same instant can race this RMW and drop
