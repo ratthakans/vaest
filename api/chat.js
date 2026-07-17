@@ -1,4 +1,4 @@
-import { capFor, readUsage, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
+import { capFor, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
 import { streamOpenAI } from '../lib/openai.js';
@@ -264,8 +264,11 @@ export default async function handler(req, res) {
   // burst guard — 12 calls/min/user (distributed when KV is connected, else per-instance)
   if (await rateLimit('chat:' + user.email, 12, 60)) { res.status(429).json({ error: 'Too fast — give it a few seconds and try again' }); return; }
 
-  // the two independent reads run in parallel — shaves a Supabase round-trip off time-to-first-token
-  const [access, u] = await Promise.all([resolveAccess(user.email), readUsage(user.email)]);
+  // the two independent reads run in parallel — and the usage row is read ONCE here, then
+  // handed to every gate below (spend/refine/doc), instead of each gate re-fetching it.
+  const [access, ud] = await Promise.all([resolveAccess(user.email), readUsageData(user.email)]);
+  const _month = new Date().toISOString().slice(0, 7);
+  const u = { month: _month, used: ud.month === _month ? (ud.used || 0) : 0 };
   // ── Free tier ── a signed-in account with no plan keeps the Galdr idea chat (capped),
   // so signing up is never a downgrade from the anonymous trial. Everything that spends a
   // paid engine still requires a plan. Cost is bounded: Gemini/Haiku only, per-user rate
@@ -292,8 +295,7 @@ export default async function handler(req, res) {
   // behaviour; this one bounds money. Fail-open on a read error like every other counter.
   if (!freeTier && plan && Number.isFinite(plan.spendCap)) {
     try {
-      const d = await readUsageData(user.email);
-      if (spendThisMonth(d) >= spendCapFor(plan, d)) {
+      if (spendThisMonth(ud) >= spendCapFor(plan, ud)) {
         res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade for more.' });
         return;
       }
@@ -306,7 +308,7 @@ export default async function handler(req, res) {
   const countsRefine = mode === 'mastering';
   if (countsRefine) {
     try {
-      const q = await checkRefineQuota(user.email, plan);
+      const q = await checkRefineQuota(user.email, plan, ud);
       if (!q.ok) {
         const msg = q.planHasRefine
           ? 'This month’s Refine allowance is used up — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade.'
@@ -325,7 +327,7 @@ export default async function handler(req, res) {
   const countsDoc = mode === 'summing' || mode === 'briefdoc';
   if (countsDoc) {
     try {
-      const q = await checkDocQuota(user.email, plan);
+      const q = await checkDocQuota(user.email, plan, ud);
       if (!q.ok) {
         res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade for more.' });
         return;
@@ -381,6 +383,9 @@ export default async function handler(req, res) {
       : /sonnet/.test(mid) ? 'skadi' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
     // single read-modify-write: record token usage + real spend and, only now that the
     // document succeeded, bump the counters — merged so the writes don't clobber each other.
+    // Known + accepted: two calls finishing in the same instant can race this RMW and drop
+    // one call's metering (no row-level atomicity via REST). Loss is bounded by one call's
+    // cost, favors the customer, and every gate re-checks on the next call.
     const d0 = await readUsageData(user.email);
     let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
     nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
