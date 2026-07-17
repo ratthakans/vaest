@@ -1,4 +1,4 @@
-import { verifyUser, usageSnapshot } from '../lib/plans.js';
+import { verifyUser, usageSnapshot, readUsageData } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 
 // Access check — the client calls this after login to pick the right screen:
@@ -16,6 +16,15 @@ export default async function handler(req, res) {
   let usage = null;
   if (!internal && access.allowed) {
     try { usage = await usageSnapshot(user.email, access.plan); } catch (e) {}
+  }
+  // internal glance: how many times this month Mimir(Sol) silently fell back to Odin(Opus)
+  let mimirFallback = 0;
+  if (internal) {
+    try {
+      const d = await readUsageData(user.email);
+      const month = new Date().toISOString().slice(0, 7);
+      mimirFallback = d.solFbMonth === month ? (d.solFb || 0) : 0;
+    } catch (e) {}
   }
 
   const p = access.plan;
@@ -39,6 +48,7 @@ export default async function handler(req, res) {
       odin: !!process.env.ANTHROPIC_API_KEY,
       mimir: !!process.env.OPENAI_API_KEY,
       galdr: !!process.env.GEMINI_API_KEY,
+      mimirFallback,   // Sol→Opus silent fallbacks this month; >0 with a key present = Sol is failing
     } : undefined,
   });
 }

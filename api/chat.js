@@ -24,7 +24,7 @@ export async function getAnthropic() {
 const GEMINI_MODEL = 'gemini-flash-latest';
 export const ROUTE = {
   idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
-  briefchat: { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 1024 }, // the interview — one question at a time
+  briefchat: { model: 'claude-opus-4-8', fallback: 'claude-haiku-4-5-20251001', max: 1536 }, // the interview — same brain that compiles the brief asks the questions
   briefdoc:  { model: 'claude-opus-4-8' },                                        // compile the gathered answers into a brief
   briefalign:{ model: 'claude-opus-4-8' },                                        // reshape the brief to match a reference the user provides
   tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
@@ -346,14 +346,18 @@ export default async function handler(req, res) {
     } catch (e) { console.error('doc-cap check failed (allowing):', e?.message || e); }
   }
 
-  const route = ROUTE[mode] || ROUTE.summing;
+  let route = ROUTE[mode] || ROUTE.summing;
+  // Idea chat: paid members get Sonnet 5 (a deeper sparring partner); anonymous + free-tier
+  // stay on Galdr/Gemini Flash. Same engine identity to the user (GALDR) — just a bigger mind
+  // underneath once you pay. Billed at the accurate `sonnet` rate so the 30% margin floor holds.
+  if (mode === 'idea' && !freeTier) route = { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: route.max };
   const base = TASK[mode] || TASK.summing;
   const maxTok = route.max || 8192;
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'GALDR', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'ODIN', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'ODIN', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
@@ -391,7 +395,7 @@ export default async function handler(req, res) {
     // Keyed off the model that actually ran, so a Mimir→Odin fallback is billed as Odin.
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
-      : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
+      : /sonnet/.test(mid) ? 'sonnet' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
     // single read-modify-write: record token usage + real spend and, only now that the
     // document succeeded, bump the counters — merged so the writes don't clobber each other.
     // Known + accepted: two calls finishing in the same instant can race this RMW and drop
@@ -400,6 +404,12 @@ export default async function handler(req, res) {
     const d0 = await readUsageData(user.email);
     let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
     nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
+    // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
+    // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
+    if (route.openai && /opus/.test(mid)) {
+      const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
+      nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
+    }
     if (countsDoc) nextData = applyDocBump(nextData, plan.docs);
     if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
     await writeUsageRow(user.email, nextData);
