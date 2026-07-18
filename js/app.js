@@ -785,6 +785,14 @@
     const i=sessions.indexOf(s);sessions.splice(i+1,0,c);currentSid=c.id;save();renderRail();openSession(c.id);toast('Duplicated')}
   function moveSession(id,pid){const s=sessions.find(x=>x.id===id);if(!s)return;s.projectId=pid;s.updatedAt=Date.now();save();renderRail();
     toast(pid?'Moved into the project — the next Crystallize will see this project’s context':'Removed from the project')}
+  // drag a Recent (s) or an MD (md) onto a project to file it there
+  function onRailDrag(e,kind,id){if(e.dataTransfer){e.dataTransfer.setData('text/plain',kind+':'+id);e.dataTransfer.effectAllowed='move'}}
+  function onProjOver(e){e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='move';const b=e.currentTarget;if(b)b.classList.add('drop-on')}
+  function onProjLeave(e){const b=e.currentTarget;if(b&&!b.contains(e.relatedTarget))b.classList.remove('drop-on')}
+  function onProjDrop(e,pid){e.preventDefault();const b=e.currentTarget;if(b)b.classList.remove('drop-on');
+    const raw=(e.dataTransfer&&e.dataTransfer.getData('text/plain'))||'';const i=raw.indexOf(':');if(i<0)return;
+    const kind=raw.slice(0,i),id=raw.slice(i+1);
+    if(kind==='s')moveSession(id,pid);else if(kind==='md')moveMD(id,pid)}
   async function newProject(){const n=((await uiPrompt('Name the project','',{ok:'Create',placeholder:'Project name'}))||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
   async function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
@@ -799,7 +807,7 @@
     return Math.floor(day/7)+' weeks ago'}
   let _cmtCounts={};
   function sItem(s){const n=_cmtCounts[s.id]||0;const m=inferMode(s);
-    return '<div class="s-item mode-'+m+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
+    return '<div class="s-item mode-'+m+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" draggable="true" ondragstart="onRailDrag(event,\'s\',\''+s.id+'\')" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
     +'<span class="s-ic" title="'+m+'">'+modeIcon(m)+'</span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
     +(s.private?'<span class="lock" title="Private — on this device only">🔒</span>':'')+(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
     +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
@@ -825,9 +833,11 @@
     const pl=$('projList');
     if(pl)pl.innerHTML=projects.length?projects.map(p=>{
       const kids=sessions.filter(s=>s.projectId===p.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-      return '<div class="p-row"><span class="pi">/</span>'+esc(p.name)
+      // a project is a drop target — drag a Recent or an MD onto it to file it here
+      return '<div class="p-block" ondragover="onProjOver(event)" ondragleave="onProjLeave(event)" ondrop="onProjDrop(event,\''+p.id+'\')">'
+        +'<div class="p-row"><span class="pi">/</span>'+esc(p.name)
         +'<button class="more" aria-label="Project options" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
-        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty sm"><span>Empty — move items in</span></div>')+'</div>';
+        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty sm"><span>Empty — drag items in</span></div>')+'</div></div>';
     }).join(''):'<div class="r-empty"><span>No projects yet</span></div>';
     // Recents — every item, newest first (Claude-style quick access), capped
     const rl=$('recentList');
@@ -845,7 +855,7 @@
     const cn=$('mdCount');if(cn)cn.textContent=lib.length?lib.length:'';
     const sc=$('mdScope');if(sc){const p=pid&&projects.find(x=>x.id===pid);sc.textContent=p?('/ '+p.name):''}
     ml.innerHTML=lib.length?lib.map(m=>
-      '<div class="md-item" data-mid="'+m.id+'" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
+      '<div class="md-item" data-mid="'+m.id+'" draggable="true" ondragstart="onRailDrag(event,\'md\',\''+m.id+'\')" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
       +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
       +'<span class="md-t">'+esc(m.title)+'</span>'
       +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
@@ -1145,7 +1155,7 @@
         '<div class="tr-row"><span class="tr-v '+(x.v==='approved'?'ok':'no')+'">'+(x.v==='approved'?'✓':'—')+'</span><span class="tr-t">'+esc((x.t||'').slice(0,80))+'</span></div>').join('')+'</div>'
       +'<div class="set-note" style="margin-top:10px">Every decision biases the next suggestion — remembered per project, carried on every call.</div>'}
   /* ═══ About — version + the engine roster ═══ */
-  const VAEST_VER='3.0';
+  const VAEST_VER='3.1';
   // white-label engines · role · version. Real model + wired status shown to internal only.
   // white-label engines · role · version. The underlying model/provider is NEVER shown —
   // to anyone, internal included. Engines are the product; the model behind them is ours.
@@ -1486,6 +1496,7 @@
   function showHome(){const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     const ab=$('anonBar');if(ab)ab.style.display=ANON?'':'none'; // restore the anon bar on the home
+    const afb=$('aboutFab');if(afb)afb.style.display=ANON?'':'none'; // "Meet VÆST" invite — new visitors only
     document.querySelector('.main').classList.remove('has-top');
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);

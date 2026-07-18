@@ -453,6 +453,11 @@
   .p-row:hover .more{opacity:1}
   .p-row .more:hover{background:rgba(255,255,255,.1);color:var(--snow)}
   .p-kids{padding-left:10px}
+  /* drag a Recent / MD onto a project to file it there */
+  .p-block{border-radius:var(--r-md);transition:background .12s,box-shadow .12s}
+  .p-block.drop-on{background:rgba(226,88,44,.1);box-shadow:inset 0 0 0 1px var(--cinnabar)}
+  .s-item[draggable],.md-item[draggable]{cursor:grab}
+  .s-item[draggable]:active,.md-item[draggable]:active{cursor:grabbing}
   /* empty states — a quiet dashed card with a glyph, not a bare mumble */
   .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#6d6b64;line-height:1.5;padding:2px 12px 8px}
   .r-empty svg{display:none}
@@ -732,6 +737,16 @@
     opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s var(--ease);box-shadow:0 10px 30px rgba(0,0,0,.4)}
   .to-top.show{opacity:1;visibility:visible;transform:none}
   .to-top:hover{background:rgba(34,34,38,.95);border-color:rgba(255,255,255,.3)}
+  /* a quiet invitation to the story — bottom-right, only on the home (never over the canvas) */
+  .about-fab{position:fixed;right:24px;bottom:24px;z-index:55;display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--ui);font-size:12.5px;color:var(--dim);text-decoration:none;opacity:.9;
+    background:rgba(22,22,25,.72);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);
+    border:1px solid var(--line);border-radius:var(--r-pill);padding:8px 14px;box-shadow:0 6px 24px rgba(0,0,0,.4);
+    transition:color .15s,border-color .15s,transform .15s,opacity .15s}
+  .about-fab b{color:var(--ink);font-weight:600}
+  .about-fab .af-ar{color:var(--cinnabar);font-size:11px}
+  .about-fab:hover{opacity:1;border-color:var(--line2);transform:translateY(-1px)}
+  .main.has-top .about-fab{display:none}
 
   .exp-sep{height:1px;background:var(--line);margin:5px 8px}
   .exp-item.present .mo{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
@@ -743,7 +758,7 @@
   .set-tab{font-size:12.5px;font-weight:600;color:var(--mute);padding:12px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
   .set-tab:hover{color:var(--dim)}
   .set-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
-  .set-body{padding:20px 20px 24px}
+  .set-body{padding:20px 20px 24px;max-height:calc(84vh - 116px);overflow-y:auto;-webkit-overflow-scrolling:touch}
   .set-pane{display:none}.set-pane.on{display:block;animation:homeUp var(--slow) var(--ease)}
   .pf-row{display:flex;gap:16px;align-items:flex-start;margin-bottom:6px}
   .pf-av{width:60px;height:60px;border-radius:50%;flex:none;background:var(--card) center/cover no-repeat;border:1px solid var(--line2);
