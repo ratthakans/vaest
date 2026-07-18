@@ -924,6 +924,10 @@
   .id-m:hover .id-use.ghost{opacity:1}
   /* memory-horizon notice when the chat runs past what Galdr sees */
   .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
+  /* R1 — quiet serif starters on the empty Idea state (a vertical list, never a card strip) */
+  .id-starts{display:flex;flex-direction:column;gap:1px;padding:6px 2px 2px}
+  .id-start{text-align:left;font-family:var(--body);font-size:15px;color:var(--mute);padding:9px 12px;border-radius:10px;line-height:1.4;transition:color .15s,background .15s}
+  .id-start:hover{color:var(--ink);background:rgba(255,255,255,.035)}
   .id-m{padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)}
   .id-m:last-child{border-bottom:none}
   .id-m .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mute);margin-bottom:9px}
@@ -979,6 +983,9 @@
   .it-t strong{color:#fff;font-weight:600}
   .it-go{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);border:1px solid var(--line2);border-radius:100px;padding:5px 12px;transition:.14s;white-space:nowrap}
   .it-go:hover{background:rgba(255,255,255,.08);border-color:var(--ink)}
+  .it-acts{flex:none;display:flex;align-items:center;gap:6px}
+  .it-save{font-size:13px;line-height:1;color:var(--mute);width:26px;height:26px;border-radius:100px;border:1px solid var(--line);transition:.14s}
+  .it-save:hover{color:var(--ink);border-color:var(--ink);background:rgba(255,255,255,.06)}
   .it-x{margin-top:6px;font-size:11.5px;color:var(--mute);font-weight:600}
   .it-x:hover{color:var(--ink)}
   .id-in{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035);margin-top:14px;transition:border-color .2s,background .2s}

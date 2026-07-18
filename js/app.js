@@ -1541,11 +1541,15 @@
   const IDEA_MAX=40;   // messages kept per session
   const IDEA_CTX=14;   // messages Galdr sees each reply (the memory horizon)
   const IDEA_SUGGEST=[
-    'เริ่มระดมไอเดียแคมเปญกับฉันหน่อย',
-    'ช่วยหา angle ที่คนอื่นยังไม่เคยเล่น',
-    'ถกไอเดียนี้แบบ Creative Director',
+    'Brainstorm a campaign with me',
+    'Find an angle no one’s played yet',
+    'Pressure-test this idea',
   ];
-  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text;sendIdea()}
+  // fill the input with a starter (+ a space) and focus at the end — the user adds their specifics,
+  // so the empty state invites without dictating. Not auto-sent.
+  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text+' ';inp.focus();
+    inp.style.height='';inp.style.height=Math.min(inp.scrollHeight,140)+'px';
+    try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(e){}}
   /* ═══ MULTI-CHAT — one session holds several topic chats (beans / location / trend / …) ═══
      Every chat is a Summing source. s.ideas stays as a mirror of the ACTIVE chat so an
      old client that hasn't reloaded yet still reads a sane thread from the cloud blob. */
@@ -1562,16 +1566,18 @@
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&curChat(s).ideas)||[]; // one thread per item now — curChat mirrors s.ideas
     const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0);
-    if(!ideas.length){ th.innerHTML=''; return} // clean empty state — just the input, Claude-style
+    if(!ideas.length){ // R1 — a quiet, inviting empty state: a few serif starters lower the blank-page cost
+      th.innerHTML='<div class="id-starts">'+IDEA_SUGGEST.map(t=>'<button class="id-start" onclick="startIdea(this.textContent)">'+esc(t)+'</button>').join('')+'</div>';
+      return}
     const overHorizon=ideas.length>IDEA_CTX;
-    th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr replies from the last '+IDEA_CTX+' messages — ✚ Save anything earlier you want kept for Crystallize</div>':'')
+    th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr’s working from the recent thread · ✚ Save an earlier reply to keep it</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
       return '<div class="id-m '+(isAI?'ai':'you')+'" data-i="'+i+'"><div class="who">'+(isAI?'VÆST':'YOU')
       +'<span class="id-acts">'
       +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>':'')
       +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
-      +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Regenerate this reply">↻</button>':'')
-      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this — auto-filed by topic, feeds Crystallize">✚ Save</button>'
+      +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Another angle — a fresh take on the same question">↻</button>':'')
+      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>'
       +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
     // one-time nudge: teach ✚ Save while the thread's building, before early replies drift past
@@ -1600,7 +1606,8 @@
       const pts=parsePoints(out);
       box.innerHTML='<div class="it-hd">Think · Mimir</div>'
         +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
-          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div>').join('')
+          +'<div class="it-acts"><button class="it-save" onclick="saveProvocation(this)" title="Keep this — becomes a Crystallize source">✚</button>'
+          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div></div>').join('')
         +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
       // stash each push's plain text for Explore
       box.querySelectorAll('.it-p').forEach((el,k)=>el.dataset.push=(pts[k].t||'').replace(/\*\*/g,''));
@@ -1616,7 +1623,8 @@
     if(_ideaBusy||_busy){toast('Working — one moment');return}
     const s=cur();if(!s)return;const ch=curChat(s);if(!ch.ideas.length)return;
     if(ch.ideas[ch.ideas.length-1].r!=='user')ch.ideas.pop(); // drop the reply, keep the question
-    save();renderIdeas();streamIdeaReply(s,false)}
+    // R4 — regen is a *different angle*, not an identical retry (Galdr as a CD who pushes variations)
+    save();renderIdeas();streamIdeaReply(s,false,'Take a genuinely different angle from your previous reply — a fresh attack. Don’t repeat the same structure, examples, or opening.')}
   async function sendIdea(){
     if(_ideaBusy){toast('Galdr is replying — one moment');return}
     if(_busy){toast('Working — one moment');return}
@@ -1665,7 +1673,7 @@
   function mdReveal(el,opts){opts=opts||{};
     const sr=smoothStreamer((txt,streaming)=>{el.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');if(opts.scroll)opts.scroll()});
     return {on:t=>sr.push(t),done:t=>{sr.push(t||'');return new Promise(r=>sr.finish(r))}};}
-  async function streamIdeaReply(s,restoreOnFail){
+  async function streamIdeaReply(s,restoreOnFail,nudge){
     _ideaBusy=true;setIdeaSendMode(true);
     const ch=curChat(s); // pin the chat — replies land here even if the user switches tabs mid-stream
     const th=$('ideaThread');
@@ -1682,7 +1690,7 @@
       const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');softScroll(th)}});
       armStall();
-      const out=await streamAPI('idea',msgs,toneSys(),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
+      const out=await streamAPI('idea',msgs,toneSys()+(nudge?'\n\n'+nudge:''),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
       clearStall();
       if(waited){waited=false;stopWait()} // empty/instant response — clear the status too
       if(out&&out.trim()){ch.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
@@ -1702,18 +1710,23 @@
     b.textContent=busy?'■':'↑';b.title=busy?'Stop':'Send';
     b.onclick=busy?function(){stopGen()}:function(){sendIdea()}}
   /* ═══ SPARKS — saved idea replies, auto-filed by topic ═══ */
-  // ✚ Save on a chat reply → the MD library (a saved .md you can reuse anywhere)
-  function addSpark(i){
-    const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m)return;
-    const text=(m.c||'').trim();if(!text)return;
+  // ✚ Save any idea-mode text → the MD library. Saved items are real Crystallize sources
+  // (see openSummingPicker), so this is how thinking becomes document material.
+  function saveToLibrary(text){
+    const s=cur();if(!s)return false;
+    text=(text||'').trim();if(!text)return false;
     library=library||[];
-    if(library.some(x=>x.md===text)){toast('Already in your MD library');return}
+    if(library.some(x=>x.md===text)){toast('Already in your MD library');return false}
     const md={id:uid('md'),title:mdTitle(text),md:text,createdAt:Date.now(),fromTitle:s.title||'',projectId:s.projectId||null};
     library.unshift(md);s.updatedAt=Date.now();save();renderRail();
     const p=s.projectId&&projects.find(x=>x.id===s.projectId);
-    toast(p?('Saved to MD · /'+p.name):'Saved to MD library');
+    toast(p?('Saved to MD · /'+p.name+' — pick it into Crystallize'):'Saved — pick it into any Crystallize');
     // a nicer title if the answer has no heading — infer a topic label
-    if(!/^#/.test(text))inferTopic(text).then(top=>{if(top){md.title=top;save();renderMDList()}}).catch(()=>{})}
+    if(!/^#/.test(text))inferTopic(text).then(top=>{if(top){md.title=top;save();renderMDList()}}).catch(()=>{});
+    return true}
+  function addSpark(i){const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(m)saveToLibrary(m.c)}
+  // R5 — keep a Think provocation too (the sharper mind), not just Galdr's replies
+  function saveProvocation(btn){const p=btn&&btn.closest('.it-p');if(p&&saveToLibrary(p.dataset.push||''))btn.textContent='✓'}
   /* ═══ MD library — open / download / delete ═══ */
   function openMD(id){
     const md=(library||[]).find(x=>x.id===id);if(!md)return;
@@ -1961,6 +1974,19 @@
     return [{type:'text',text:prompt},
       ...imgs.map(f=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.img.split(',')[1]}}))]}
   // Crystallize entry — open the source picker when there's a choice to make, else sum the brief directly
+  // Saved ideas (✚ Save → MD library) that belong with this work: general notes + this
+  // project's. This is what makes ✚ Save a real Crystallize source — thinking → material.
+  function mdSources(s){
+    const pid=(s&&s.projectId)||null;
+    return (library||[]).filter(m=>m&&m.md&&(!m.projectId||m.projectId===pid)).slice(0,12);
+  }
+  function mdContext(ids){
+    if(!ids||!ids.length)return '';
+    const picked=(library||[]).filter(m=>ids.includes(m.id));
+    if(!picked.length)return '';
+    return '\n\n# Saved ideas (kept from earlier thinking — build from these)\n'
+      +capTxt(picked.map(m=>'## '+(m.title||'Note')+'\n'+m.md).join('\n\n'),9000);
+  }
   function runSumming(){
     if(ANON){anonWall('Sign up (free) to crystallize your chats into a document');return}
     if(_busy){toast('Working — one moment');return}
@@ -1968,34 +1994,38 @@
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
     const liveChats=chatsOf(s).filter(c=>c.ideas.length);
-    const srcs=[!!s.brief,s.files.length>0,liveChats.length>0].filter(Boolean).length;
-    if(!srcs){toast('Chat with Galdr, paste a brief, or attach a file first');return}
-    // 2+ sources, itemized ones, OR a re-crystallize over an existing document → show the picker
-    // (the picker is also where the "this replaces your document · counts as one" note lives)
-    if(srcs>1||s.files.length||liveChats.length>1||(s.canvas&&s.canvas.trim())){openSummingPicker();return}
-    doSumming({brief:!!s.brief,files:[],chats:liveChats.map(c=>c.id)})}
+    const mds=mdSources(s);
+    const srcs=[!!s.brief,s.files.length>0,liveChats.length>0,mds.length>0].filter(Boolean).length;
+    if(!srcs){toast('Chat with Galdr, save an idea, paste a brief, or attach a file first');return}
+    // 2+ sources, itemized ones, saved ideas (which default OFF in the picker), OR a re-crystallize
+    // over an existing document → show the picker (also where the "replaces · counts as one" note lives)
+    if(srcs>1||s.files.length||liveChats.length>1||mds.length||(s.canvas&&s.canvas.trim())){openSummingPicker();return}
+    doSumming({brief:!!s.brief,files:[],chats:liveChats.map(c=>c.id),md:[]})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
     chatsOf(s).filter(c=>c.ideas.length).forEach(c=>rows.push('<label class="sum-r"><input type="checkbox" data-k="chat" data-id="'+c.id+'" checked><span class="sum-nm">'+esc(c.title||'Idea chat')+'</span><span class="sum-sub">'+c.ideas.length+' message'+(c.ideas.length>1?'s':'')+' · chat</span></label>'));
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
     s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
+    // saved ideas — default OFF (you Saved them to keep, not necessarily for every document)
+    mdSources(s).forEach(m=>rows.push('<label class="sum-r"><input type="checkbox" data-k="md" data-id="'+m.id+'"><span class="sum-nm">✚ '+esc(m.title||'Saved idea')+'</span><span class="sum-sub">saved idea</span></label>'));
     const warn=(s.canvas&&s.canvas.trim())
       ? '<div class="sum-warn">You already have a document — crystallizing again <b>replaces it</b> and counts as one document. (Undo brings the old one back.)</div>' : '';
     $('sumSrc').innerHTML=warn+(rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>');
     $('sumView').classList.add('show')}
   function closeSummingPicker(){$('sumView').classList.remove('show')}
   function doSummingFromPicker(){
-    const sel={brief:false,files:[],chats:[]};
+    const sel={brief:false,files:[],chats:[],md:[]};
     document.querySelectorAll('#sumSrc input:checked').forEach(cb=>{const k=cb.dataset.k;
-      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='chat')sel.chats.push(cb.dataset.id)});
-    if(!sel.brief&&!sel.files.length&&!sel.chats.length){toast('Pick at least one source');return}
+      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='chat')sel.chats.push(cb.dataset.id);else if(k==='md')sel.md.push(cb.dataset.id)});
+    if(!sel.brief&&!sel.files.length&&!sel.chats.length&&!sel.md.length){toast('Pick at least one source');return}
     closeSummingPicker();doSumming(sel)}
-  // readable source names for the crystallize moment — chat titles, brief, files
+  // readable source names for the crystallize moment — chat titles, brief, files, saved ideas
   function crystallizeSources(sel){
     const s=cur();if(!s)return [];const out=[];
     (sel.chats||[]).forEach(id=>{const c=chatsOf(s).find(x=>x.id===id);if(c)out.push(c.title||'Idea chat')});
     if(sel.brief&&s.brief)out.push('Brief');
     (sel.files||[]).forEach(i=>{const f=s.files[i];if(f)out.push((f.img?'▦ ':'')+f.n)});
+    (sel.md||[]).forEach(id=>{const m=(library||[]).find(x=>x.id===id);if(m)out.push(m.title||'Saved idea')});
     return out.map(x=>String(x).slice(0,24))}
   async function doSumming(sel){
     if(_busy){toast('Working — one moment');return}
@@ -2008,6 +2038,7 @@
     const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
       +chatsContext(sel.chats)
+      +mdContext(sel.md)
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
