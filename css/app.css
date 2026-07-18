@@ -959,6 +959,19 @@
   .id-m .tx .ph{font-family:var(--ui);font-size:17px;font-weight:600;letter-spacing:0;line-height:1.5;margin:22px 0 10px;color:#e8e2d6}
   .id-m .tx .ph:first-child{margin-top:0}
   .id-m .tx strong,.id-m .tx b{font-weight:600;color:#eae4d8}
+  /* A1 — a stalled reply speaks instead of blinking dead */
+  .id-m.ai.stalled .cursor{animation:none;background:transparent}
+  .id-m.ai.stalled .cursor::after{content:" still thinking…";font-family:var(--ui);font-size:12.5px;font-style:italic;color:var(--mute);white-space:nowrap}
+  /* A2 — taste memory box in Settings ▸ Persona */
+  .taste-box{margin-top:8px}
+  .taste-stat{font-size:13px;color:var(--dim)}
+  .taste-stat b{font-size:15px;color:var(--ink);font-weight:700}
+  .taste-stat span{color:var(--mute)}
+  .taste-recent{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .tr-row{display:flex;align-items:baseline;gap:9px;font-size:12.5px;line-height:1.5}
+  .tr-v{flex:none;font-family:var(--mono);font-size:11px;width:12px}
+  .tr-v.ok{color:var(--cin-d)}.tr-v.no{color:var(--mute)}
+  .tr-t{color:var(--dim)}
   /* Think on an Idea reply — Mimir's pushes, each a one-tap follow-up */
   .id-use.think{gap:3px}.id-use.think b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .id-use.think:hover b{-webkit-text-fill-color:var(--ink)}

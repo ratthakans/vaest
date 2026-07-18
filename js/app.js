@@ -1010,7 +1010,21 @@
     document.querySelectorAll('.set-pane').forEach(p=>p.classList.toggle('on',p.getAttribute('data-sp')===t));
     if(t==='usage')renderUsageBreak();
     if(t==='api')renderApiKeys();
-    if(t==='about')renderAbout()}
+    if(t==='about')renderAbout();
+    if(t==='persona')renderTasteBox()}
+  // A2 — the taste memory made visible: how many decisions VÆST has learned + the latest few.
+  // The strongest moat is the one users can't see; this shows it's real and getting personal.
+  function renderTasteBox(){
+    const el=$('tasteBox');if(!el)return;
+    const all=[]; (projects||[]).forEach(p=>(p.taste||[]).forEach(x=>all.push(x)));
+    (sessions||[]).forEach(sx=>(sx.taste||[]).forEach(x=>all.push(x)));
+    all.sort((a,b)=>(b.ts||0)-(a.ts||0));
+    if(!all.length){el.innerHTML='<div class="set-note" style="margin-top:6px">Nothing yet — every push you <b>Approve</b> or <b>Skip</b> quietly teaches VÆST what your studio likes. It carries into every reply.</div>';return}
+    const ap=all.filter(x=>x.v==='approved').length,sk=all.filter(x=>x.v==='skipped').length;
+    el.innerHTML='<div class="taste-stat"><b>'+all.length+'</b> decisions learned <span>· '+ap+' kept · '+sk+' skipped</span></div>'
+      +'<div class="taste-recent">'+all.slice(0,3).map(x=>
+        '<div class="tr-row"><span class="tr-v '+(x.v==='approved'?'ok':'no')+'">'+(x.v==='approved'?'✓':'—')+'</span><span class="tr-t">'+esc((x.t||'').slice(0,80))+'</span></div>').join('')+'</div>'
+      +'<div class="set-note" style="margin-top:10px">Every decision biases the next suggestion — remembered per project, carried on every call.</div>'}
   /* ═══ About — version + the engine roster ═══ */
   const VAEST_VER='3.0';
   // white-label engines · role · version. Real model + wired status shown to internal only.
@@ -1593,17 +1607,24 @@
     th.appendChild(live);th.scrollTop=th.scrollHeight;
     // rotating status until the first token lands — masks the time-to-first-token
     let stopWait=waitLines(live.querySelector('.tx'),IDEA_WAIT[personaKey()]),waited=true;
+    // A1 — if the model pauses mid-stream (Gemini does), don't leave a dead blinking cursor:
+    // after 4s of silence, mark the reply "stalled" so the cursor reads "still thinking…"
+    let stallT=0;const armStall=()=>{clearTimeout(stallT);live.classList.remove('stalled');
+      stallT=setTimeout(()=>live.classList.add('stalled'),4000)};
+    const clearStall=()=>{clearTimeout(stallT);live.classList.remove('stalled')};
     try{
       const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
       const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');th.scrollTop=th.scrollHeight}});
-      const out=await streamAPI('idea',msgs,toneSys(),full=>{if(full&&waited){waited=false;stopWait()}sr.push(full)});
+      armStall();
+      const out=await streamAPI('idea',msgs,toneSys(),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
+      clearStall();
       if(waited){waited=false;stopWait()} // empty/instant response — clear the status too
       if(out&&out.trim()){ch.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
       sr.push(out||'');
       await new Promise(r=>sr.finish(r)); // let the fluid reveal catch up before swapping in the final message
       save();renderIdeas()}
     catch(e){
-      stopWait();live.remove();
+      stopWait();clearStall();live.remove();
       // a failed send must not poison the thread: pull the question back into the input
       const last=ch.ideas[ch.ideas.length-1];
       if(restoreOnFail&&last&&last.r==='user'){ch.ideas.pop();const inp=$('ideaInput');if(inp&&!inp.value)inp.value=last.c;
@@ -1721,7 +1742,7 @@
     const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Think/Refine
     const trail=isBrief
       ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
-      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
+      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
@@ -1976,7 +1997,7 @@
         toast('That was your free Crystallize — pick a plan for unlimited documents');
         checkAccess(); // refresh the rail meter (freeCrystallize flag just flipped)
       }
-      else toast('Done — edit anything, or hit “Refine” and let VÆST polish it');
+      else toast('Done — edit any section, then Share a link your client can comment on');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
         +'<div style="display:flex;gap:10px;margin-top:14px"><button class="tb dark" onclick="backToBrief();setTimeout(runSumming,150)">Retry Crystallize</button>'
