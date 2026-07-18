@@ -357,7 +357,20 @@
         <button class="dlg-ok" style="margin-top:16px" onclick="saveProfile()">Save profile</button>
       </div>
       <div class="set-pane" data-sp="persona">
-        <div class="set-lbl">Persona — rides on top of every call</div>
+        <!-- Studio DNA — the studio's own taste, curated once, honored on every call -->
+        <div class="dna">
+          <div class="dna-hd"><span class="dna-eye">Studio DNA</span><span class="dna-note">Your taste, made explicit — every engine works within it.</span></div>
+          <label class="dna-f"><span>How your studio sounds</span>
+            <textarea id="dnaVoice" rows="2" placeholder="e.g. Confident but never loud. Editorial, warm, considered. We write like a trusted creative director, not a marketer."></textarea></label>
+          <div class="dna-row">
+            <label class="dna-f"><span class="ok">Always</span>
+              <textarea id="dnaAlways" rows="3" placeholder="One per line — e.g.&#10;Lead with the idea, not the adjective&#10;Concrete over clever"></textarea></label>
+            <label class="dna-f"><span class="no">Never</span>
+              <textarea id="dnaNever" rows="3" placeholder="One per line — e.g.&#10;Marketing clichés (“game-changer”, “elevate”)&#10;Emoji in client work"></textarea></label>
+          </div>
+          <button class="dlg-ok" onclick="saveDna()">Save Studio DNA</button>
+        </div>
+        <div class="set-lbl" style="margin-top:28px">Persona — rides on top of every call</div>
         <div class="tone" id="toneBar">
           <button data-tone="" onclick="setTone('')">Standard</button>
           <button data-tone="formal" onclick="setTone('formal')">Formal</button>

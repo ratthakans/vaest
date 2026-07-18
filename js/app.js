@@ -988,8 +988,26 @@
   function setLang(l){try{localStorage.setItem('vaest_lang',l)}catch(e){}
     document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===l));
     toast(l==='th'?'ทุกคำตอบเป็นภาษาไทย':l==='en'?'Replies locked to English':'Auto — mirrors your language')}
+  // Studio DNA — the studio's curated taste, account-level, honored before anything else.
+  // The deepest expression of the concept: taste as curation, carried on every call.
+  function dnaSys(){
+    const d=(getProfile().dna)||{};const lines=[];
+    if(d.voice&&d.voice.trim())lines.push('Voice: '+d.voice.trim());
+    const al=(d.always||'').split('\n').map(x=>x.trim()).filter(Boolean);
+    const nv=(d.never||'').split('\n').map(x=>x.trim()).filter(Boolean);
+    if(al.length)lines.push('Always: '+al.join(' · '));
+    if(nv.length)lines.push('Never: '+nv.join(' · '));
+    if(!lines.length)return '';
+    return 'STUDIO DNA — this studio\'s house taste. Honor it above all else in everything you write:\n'+lines.join('\n');}
+  function loadDna(){const d=(getProfile().dna)||{};
+    const v=$('dnaVoice'),a=$('dnaAlways'),n=$('dnaNever');
+    if(v)v.value=d.voice||'';if(a)a.value=d.always||'';if(n)n.value=d.never||''}
+  function saveDna(){const p=getProfile();
+    p.dna={voice:($('dnaVoice').value||'').slice(0,600),always:($('dnaAlways').value||'').slice(0,600),never:($('dnaNever').value||'').slice(0,600)};
+    saveProfileObj(p);toast('Studio DNA saved — it rides every call now')}
   function toneSys(){
     const s=cur(),parts=[];
+    const dna=dnaSys();if(dna)parts.push(dna);
     parts.push(PERSONA[personaKey()]+' This persona governs word choice, tone and mood of everything you write here.');
     if(LANGS[getLang()])parts.push(LANGS[getLang()]);
     const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
@@ -1018,7 +1036,7 @@
     if(t==='usage')renderUsageBreak();
     if(t==='api')renderApiKeys();
     if(t==='about')renderAbout();
-    if(t==='persona')renderTasteBox()}
+    if(t==='persona'){loadDna();renderTasteBox()}}
   // A2 — the taste memory made visible: how many decisions VÆST has learned + the latest few.
   // The strongest moat is the one users can't see; this shows it's real and getting personal.
   function renderTasteBox(){
