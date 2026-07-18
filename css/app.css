@@ -91,7 +91,7 @@
     animation:agl 24s ease-in-out infinite alternate}
   .home::after{content:none}
   .home>*{position:relative;z-index:1}
-  .home-in{width:100%;max-width:740px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
+  .home-in{width:100%;max-width:800px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   /* E1 — time-aware greeting eyebrow above the home title */
   @keyframes titleMorph{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -195,7 +195,7 @@
   /* 700px keeps the column at ~75 Thai characters per line. Thai has no spaces between words, so a
      long line gives the eye nothing to grab when it wraps — at the old 960px it ran to ~123. The
      whole column narrows together (heading, tools, body) so the section toolbar stays beside the text. */
-  .doc{max-width:800px;margin:0 auto;padding:88px 56px 160px}
+  .doc{max-width:860px;margin:0 auto;padding:88px 56px 160px}
   @media(max-width:720px){.doc{padding:56px 26px 100px}}
   .mast-head{padding-bottom:40px;margin-bottom:4px}
   .mh-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
@@ -319,7 +319,7 @@
 
   /* streaming state */
   /* 700px matches .doc so the crystallizing text doesn't reflow when the final document swaps in */
-  .gen{max-width:800px;margin:0 auto;padding:88px 56px 120px}
+  .gen{max-width:860px;margin:0 auto;padding:88px 56px 120px}
   @media(max-width:720px){.gen{padding:56px 26px}}
   .gen-eye{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--cin-d);font-weight:500;margin-bottom:24px}
@@ -925,12 +925,13 @@
   .id-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
   .id-use.ghost{opacity:.55;font-size:11px;padding:2px 7px}
   .id-m:hover .id-use.ghost{opacity:1}
+  /* the decision on a fresh idea — Approve leans the taste, Rewrite tries another angle */
+  .id-use.approve{color:#0a0a0a;background:var(--ink);border-color:var(--ink);opacity:1;font-size:10px;font-weight:600}
+  .id-use.approve:hover{background:#fff;color:#0a0a0a}
+  .id-approved{float:right;margin-left:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--cin-d);padding:2px 0}
   /* memory-horizon notice when the chat runs past what Galdr sees */
   .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
   /* R1 — quiet serif starters on the empty Idea state (a vertical list, never a card strip) */
-  .id-starts{display:flex;flex-direction:column;gap:1px;padding:6px 2px 2px}
-  .id-start{text-align:left;font-family:var(--body);font-size:15px;color:var(--mute);padding:9px 12px;border-radius:10px;line-height:1.4;transition:color .15s,background .15s}
-  .id-start:hover{color:var(--ink);background:rgba(255,255,255,.035)}
   .id-m{padding:16px 0;border-bottom:1px solid rgba(255,255,255,.07)}
   .id-m:last-child{border-bottom:none}
   .id-m .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mute);margin-bottom:9px}

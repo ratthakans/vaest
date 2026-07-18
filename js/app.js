@@ -13,6 +13,12 @@
     const step=ts=>{if(t0===null)t0=ts;const p=Math.min(1,(ts-t0)/dur);el.scrollTop=from+d*(1-Math.pow(1-p,3));if(p<1)requestAnimationFrame(step)};
     requestAnimationFrame(step)}
   function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+  // gently cycle an input's placeholder through a few suggestions while it's empty (the field
+  // carries the invitation instead of a separate starter list). Frozen under reduced-motion.
+  function rotatePlaceholder(el,lines){
+    if(!el||!lines||!lines.length)return;el.placeholder=lines[0];
+    try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(e){}
+    let i=0;setInterval(()=>{if(el.value)return;i=(i+1)%lines.length;el.placeholder=lines[i]},4200)}
 
   /* ═══ markdown ═══ */
   function safeHref(u){u=(u||'').trim();return /^(https?:\/\/|mailto:)/i.test(u)?u:''}
@@ -1349,9 +1355,6 @@
     el.innerHTML=(s&&s.files&&s.files.length)?s.files.map((f,i)=>
       '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+');renderBriefFiles()" title="Remove">✕</button></span>').join(''):''}
   function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs).then(renderBriefFiles)}
-  // B5 — a starter fills the seed (+ a space) and focuses at the end; the user adds specifics
-  function briefFill(t){const inp=$('briefIn');if(!inp)return;inp.value=(t||'').trim()+' ';inp.focus();
-    try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(e){}}
   function renderBriefQA(){
     const s=cur(),th=$('briefThread');if(!th)return;
     const qa=(s&&s.briefQA)||[];const last=qa.length-1;
@@ -1581,16 +1584,12 @@
   let _ideaBusy=false,_trimWarned=false;
   const IDEA_MAX=40;   // messages kept per session
   const IDEA_CTX=14;   // messages Galdr sees each reply (the memory horizon)
+  // rotated as the Idea input's placeholder (see rotatePlaceholder) — the empty state stays clean
   const IDEA_SUGGEST=[
     'Brainstorm a campaign with me',
     'Find an angle no one’s played yet',
     'Pressure-test this idea',
   ];
-  // fill the input with a starter (+ a space) and focus at the end — the user adds their specifics,
-  // so the empty state invites without dictating. Not auto-sent.
-  function startIdea(text){const inp=$('ideaInput');if(!inp)return;inp.value=text+' ';inp.focus();
-    inp.style.height='';inp.style.height=Math.min(inp.scrollHeight,140)+'px';
-    try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(e){}}
   /* ═══ MULTI-CHAT — one session holds several topic chats (beans / location / trend / …) ═══
      Every chat is a Summing source. s.ideas stays as a mirror of the ACTIVE chat so an
      old client that hasn't reloaded yet still reads a sane thread from the cloud blob. */
@@ -1607,9 +1606,7 @@
     const s=cur();const th=$('ideaThread');if(!th)return;
     const ideas=(s&&curChat(s).ideas)||[]; // one thread per item now — curChat mirrors s.ideas
     const box=$('ideaBox');if(box)box.classList.toggle('has-chat',ideas.length>0);
-    if(!ideas.length){ // R1 — a quiet, inviting empty state: a few serif starters lower the blank-page cost
-      th.innerHTML='<div class="id-starts">'+IDEA_SUGGEST.map(t=>'<button class="id-start" onclick="startIdea(this.textContent)">'+esc(t)+'</button>').join('')+'</div>';
-      return}
+    if(!ideas.length){th.innerHTML='';return} // clean empty state — the input placeholder carries the suggestions
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr’s working from the recent thread · ✚ Save an earlier reply to keep it</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
@@ -1617,8 +1614,11 @@
       +'<span class="id-acts">'
       +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>':'')
       +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
-      +(isLastAI?'<button class="id-use ghost" onclick="regenIdea()" title="Another angle — a fresh take on the same question">↻</button>':'')
-      +'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>'
+      +(isAI?'<button class="id-use'+(isLastAI?' ghost':'')+'" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
+      // once you have an idea, the decision: Rewrite (another angle) or Approve (keep it — teaches VÆST's taste)
+      +(isLastAI&&!m.approved?'<button class="id-use ghost" onclick="regenIdea()" title="Try a different angle">Rewrite</button>':'')
+      +(isLastAI&&!m.approved?'<button class="id-use approve" onclick="approveIdea('+i+')" title="Keep this direction — VÆST leans this way">Approve</button>':'')
+      +(isAI&&m.approved?'<span class="id-approved">Approved ✓</span>':'')
       +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
     th.scrollTop=th.scrollHeight;
     // one-time nudge: teach ✚ Save while the thread's building, before early replies drift past
@@ -1629,6 +1629,10 @@
     }
 }
   function copyIdea(i){const s=cur();const m=s&&curChat(s).ideas[i];if(!m)return;copyToClip(m.c);toast('Copied')}
+  // Approve a reply — the decision that teaches VÆST's taste (feeds toneSys, like Refine's approve/skip)
+  function approveIdea(i){const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m||m.r==='user'||m.approved)return;
+    m.approved=true;tasteLog('approved',{t:(m.c||'').slice(0,90)});s.updatedAt=Date.now();save();renderIdeas();
+    toast('Approved — VÆST will lean this way')}
   // Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
   // Ephemeral (lives in the DOM, cleared on the next render) — it provokes, it doesn't persist.
   async function ideaThink(i){
@@ -2697,6 +2701,9 @@
   (async function init(){
     $('doc').addEventListener('input',schedulePersist);initScrollSpy();
     $('doc').addEventListener('paste',handleDocPaste);
+    // suggestions live in the input placeholders now, not as starter buttons
+    rotatePlaceholder($('ideaInput'),IDEA_SUGGEST);
+    rotatePlaceholder($('briefIn'),['A launch campaign for…','A brand identity for…','A social content brief for…','Or attach references — docs, images, even a video']);
     // 1) set a new password from the email link (recovery / invite)
     const rec=await detectRecovery();
     if(rec){window._recToken=rec;history.replaceState(null,'',location.pathname);$('npView').classList.add('show');setTimeout(()=>$('npPass').focus(),60);return}
