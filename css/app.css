@@ -92,6 +92,8 @@
   .home>*{position:relative;z-index:1}
   .home-in{width:100%;max-width:740px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
+  /* E1 — time-aware greeting eyebrow above the home title */
+  .h-greet{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:12px;animation:paneIn .5s var(--ease) both}
   .h-title{font-family:var(--body);font-weight:500;font-size:clamp(25px,2.7vw,35px);letter-spacing:-.012em;line-height:1.22;margin:4px 0 22px;color:#ded8cb;text-wrap:balance}
   /* mode — a Claude-style product switcher at the top of the rail; three ways of working */
   /* mode — segmented switch: three words, a sliding thumb, nothing else */
@@ -235,7 +237,7 @@
   .sth-hd b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .sth-count{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute)}
   .sth-stream{font-size:13.5px;line-height:1.75;color:var(--dim);padding:6px 0 8px}
-  .sth-i{padding:10px 0;border-top:1px solid var(--line)}
+  .sth-i{padding:10px 0;border-top:1px solid var(--line);animation:pushIn .34s var(--ease) both}
   .sth-i .sth-t{font-size:13.5px;line-height:1.7;color:var(--ink)}
   .sth-i.done .sth-t{color:var(--mute)}
   .sth-i .mi-act{display:flex;gap:8px;margin-top:9px}
@@ -980,7 +982,8 @@
   .it-hd{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cin-d);font-weight:600;margin-bottom:8px}
   .it-hd b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .it-stream{font-family:var(--body);font-size:14.5px;line-height:1.7;color:var(--dim)}
-  .it-p{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+  @keyframes pushIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .it-p{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-top:1px solid var(--line);animation:pushIn .34s var(--ease) both}
   .it-p:first-of-type{border-top:none}
   .it-t{flex:1;font-family:var(--body);font-size:14.5px;line-height:1.65;color:#e6e3dc}
   .it-t strong{color:#fff;font-weight:600}
@@ -1098,3 +1101,11 @@
   .ot-tick:hover .ot-name{opacity:1;transform:translateY(-50%) translateX(0)}
   .ot-tick .ot-name b{color:var(--cin-d);font-weight:600;margin-right:5px}
   @media(max-width:720px){.outline-rail{display:none!important}}
+
+  /* E5 — Norrsken's last light sweeps the finished document once */
+  .norr-sweep{position:fixed;inset:0;pointer-events:none;z-index:150;overflow:hidden}
+  .norr-sweep::before{content:"";position:absolute;top:-20%;left:-40%;width:40%;height:140%;
+    background:linear-gradient(100deg,transparent,rgba(120,200,255,.12),rgba(255,180,120,.10),transparent);
+    filter:blur(14px);transform:skewX(-14deg);animation:norrSweep 1.5s var(--ease) forwards}
+  @keyframes norrSweep{from{left:-45%}to{left:125%}}
+  @media(prefers-reduced-motion:reduce){.norr-sweep{display:none}}

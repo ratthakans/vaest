@@ -1365,6 +1365,13 @@
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});
     const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
+    // E1 — a quiet, time-aware greeting for signed-in users (the app knows you)
+    const gr=$('homeGreet');
+    if(gr){const nm=(getProfile().name||'').trim().split(' ')[0]||'';
+      if(!ANON&&AUTH&&nm){const h=new Date().getHours();
+        const part=h<5?'Still up':h<12?'Good morning':h<17?'Good afternoon':h<22?'Good evening':'Late night';
+        gr.textContent=part+', '+nm;gr.style.display=''}
+      else gr.style.display='none'}
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
       if(started){renderBriefFiles();renderBriefQA();updateBriefCompile(s)}
@@ -1541,7 +1548,7 @@
       const out=await streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r);r.stop();
       const pts=parsePoints(out);
       box.innerHTML='<div class="it-hd">Think · Mimir</div>'
-        +pts.map(p=>'<div class="it-p"><div class="it-t">'+mdInline(p.t)+'</div>'
+        +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
           +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div>').join('')
         +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
       // stash each push's plain text for Explore
@@ -1980,9 +1987,14 @@
     const conv=labels.length>1
       ? '<div class="gen-conv">'+labels.map((l,i)=>'<span class="gc-src" style="animation-delay:'+(i*90)+'ms">'+esc(l)+'</span>').join('<span class="gc-plus">+</span>')+'</div>'
       : '';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Crystallizing'+(labels.length>1?' '+labels.length+' sources':'')+'…</div>'+conv+'<div class="gen-body" id="genBody"></div></div>';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> <span id="genStatus">Reading your sources…</span></div>'+conv+'<div class="gen-body" id="genBody"></div></div>';
+    // E2 — the crystallize moment reads like a ritual: rotate through what it's actually doing,
+    // naming the real sources, until the first token of the document lands
+    const theatre=['Reading your sources…'].concat(labels.slice(0,3).map(l=>'Weaving in '+l+'…'),['Finding the through-line…','Shaping the sections…','Choosing the words…']);
+    let stopTheatre=waitLines($('genStatus'),theatre),theatreOn=true;
     try{
-      const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{if(full&&theatreOn){theatreOn=false;stopTheatre()}const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      if(theatreOn){theatreOn=false;stopTheatre()}
       const split=splitCanvases(md);
       if(split){s.canvases=split.map(p=>({id:uid('cv'),t:p.t,md:p.md}));s.cvId=s.canvases[0].id;s.canvas=s.canvases[0].md;
         toast('Split into '+split.length+' canvases — switch with the tabs up top')}
@@ -2063,7 +2075,7 @@
     const remain=pts.filter((p,i)=>!done[i]).length;
     let html='<div class="sth-hd">Think · this section <span class="sth-count">'+(remain?remain+' pushes':'all done')+'</span></div>';
     pts.forEach((p,i)=>{const st=done[i];
-      html+='<div class="sth-i'+(st?' done':'')+'"><div class="sth-t">'+mdInline(p.t)+'</div>'
+      html+='<div class="sth-i'+(st?' done':'')+'" style="animation-delay:'+(i*70)+'ms"><div class="sth-t">'+mdInline(p.t)+'</div>'
         +(st==='fixed'?'<div class="mi-tag ok">✓ Applied</div>'
           :st==='skip'?'<div class="mi-tag skip">— Skipped</div>'
           :'<div class="mi-act"><button class="mi-ap" onclick="applySectionPush(this,'+i+')">Approve</button><button class="mi-sk" onclick="skipSectionPush(this,'+i+')">Skip</button></div>')
@@ -2147,9 +2159,15 @@
     const sys=[toneSys(),(LENS[lens]||''),sourcesDigest()].filter(Boolean).join('\n\n');
     streamAPI('mastering',[{role:'user',content:prompt}],sys,
         raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
-      .then(text=>{_mast={points:parsePoints(text),done:{},lens:lens,kind:'mastering'};renderMast();if(document.hidden)notifyDone('Refine')})
+      .then(text=>{const pts=parsePoints(text);_mast={points:pts,done:{},lens:lens,kind:'mastering'};renderMast();
+        if(!pts.length)norrskenSweep(); // E5 — a clean pass: the apex light sweeps the document once
+        if(document.hidden)notifyDone('Refine')})
       .catch(e=>{box.remove();toast('Refine failed: '+e.message)})
       .finally(()=>{clearInterval(wt);setBusy(false);if(btn)btn.disabled=false})}
+  // E5 — the northern lights pass over the finished work once (Norrsken's "last light")
+  function norrskenSweep(){
+    const sw=document.createElement('div');sw.className='norr-sweep';document.body.appendChild(sw);
+    setTimeout(()=>sw.remove(),1600)}
   function parsePoints(t){
     const pts=String(t).split('\n').map(l=>l.trim()).filter(l=>/^[-*•]\s+/.test(l)).map(l=>l.replace(/^[-*•]\s+/,''));
     const raw=pts.length?pts:[String(t).trim()];
