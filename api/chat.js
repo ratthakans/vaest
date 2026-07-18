@@ -159,6 +159,8 @@ async function streamGemini(res, base, dynamic, messages, maxTokens) {
       contents,
       generationConfig: { maxOutputTokens: maxTokens, temperature: 1.0 },
     }),
+    // generous cap: covers a slow generation but stops a hung connection pinning the function
+    signal: AbortSignal.timeout(60_000),
   });
   if (!r.ok || !r.body) throw new Error('gemini-http-' + r.status);
   const reader = r.body.getReader(), dec = new TextDecoder();
@@ -248,19 +250,22 @@ export default async function handler(req, res) {
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: String(typeof m.content === 'string' ? m.content : (m.content || []).map(c => c.text || '').join('\n')).slice(0, 4000),
     }));
+    // clip the client-supplied persona/tone on the anon path — an unauthenticated caller
+    // shouldn't be able to ship an arbitrarily large (or injection-laden) system prompt
+    const anonSys = String(system || '').slice(0, 2000);
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('X-Engine', 'GALDR');
     if (typeof res.flushHeaders === 'function') res.flushHeaders();
     try {
-      try { await streamGemini(res, TASK.idea, system || '', trimmed, 2048); }
+      try { await streamGemini(res, TASK.idea, anonSys, trimmed, 2048); }
       catch (ge) {
         // a brand-new visitor's very first message must not dead-end on a Gemini blip (503s happen).
         // Fall back to Haiku — the cheapest engine — only if nothing streamed yet. Cost stays tiny:
         // anon is capped at the client's free-message limit plus the per-IP hourly limit above.
         if (res.__wrote) throw ge;
         console.error('anon gemini failed, falling back to haiku:', ge?.message || ge);
-        await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, system || '', trimmed, 1024);
+        await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, anonSys, trimmed, 1024);
       }
       res.write('\n[[USAGE]]0,0,galdr');
       res.end();

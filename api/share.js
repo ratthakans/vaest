@@ -1,4 +1,5 @@
-import { SB, svcHeaders, verifyUser } from '../lib/plans.js';
+import { readRow, writeRow, deleteRow, verifyUser } from '../lib/plans.js';
+import { rateLimit } from '../lib/ratelimit.js';
 
 // ── Server-side share broker ──────────────────────────────────────────────
 // Share rows (email 'share:<id>') hold what an owner chose to publish. They used
@@ -16,32 +17,9 @@ const ID_RE = /^sh[a-z0-9]{4,40}$/i;
 const MAX_CANVAS = 400_000;   // chars — a generous cap on a single shared document
 const MAX_COMMENTS = 80;
 
-// per-instance rate limit so a known share id can't be comment-spammed
-const HITS = new Map();
-function rateLimited(key, perMin) {
-  const min = Math.floor(Date.now() / 60000);
-  const h = HITS.get(key);
-  if (!h || h.min !== min) { HITS.set(key, { n: 1, min }); return false; }
-  h.n++;
-  return h.n > perMin;
-}
-
 const rowKey = id => 'share:' + id;
-
-async function readShare(id) {
-  const r = await fetch(`${SB.url}/rest/v1/vaest_state?email=eq.${encodeURIComponent(rowKey(id))}&select=data`, { headers: svcHeaders });
-  if (!r.ok) return null;
-  const rows = await r.json();
-  return (rows[0] && rows[0].data) || null;
-}
-async function writeShare(id, data) {
-  const r = await fetch(`${SB.url}/rest/v1/vaest_state`, {
-    method: 'POST',
-    headers: { ...svcHeaders, Prefer: 'resolution=merge-duplicates' },
-    body: JSON.stringify({ email: rowKey(id), data, updated_at: new Date().toISOString() }),
-  });
-  return r.ok;
-}
+const readShare = id => readRow(rowKey(id));
+const writeShare = (id, data) => writeRow(rowKey(id), data);
 
 const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
 
@@ -64,8 +42,8 @@ export default async function handler(req, res) {
     const data = await readShare(id);
     if (!data) { res.status(204).end(); return; }
     if ((data.by || '').toLowerCase() !== user.email) { res.status(403).json({ error: 'not your share' }); return; }
-    const r = await fetch(`${SB.url}/rest/v1/vaest_state?email=eq.${encodeURIComponent(rowKey(id))}`, { method: 'DELETE', headers: svcHeaders });
-    res.status(r.ok ? 204 : 500).end();
+    const ok = await deleteRow(rowKey(id));
+    res.status(ok ? 204 : 500).end();
     return;
   }
 
@@ -114,12 +92,16 @@ export default async function handler(req, res) {
   // ── public: append one comment (append-only — never rewrites the canvas) ──
   if (action === 'comment') {
     if (!ID_RE.test(id)) { res.status(400).json({ error: 'bad id' }); return; }
-    if (rateLimited('c:' + id, 12)) { res.status(429).json({ error: 'slow down' }); return; }
+    // distributed limit (KV, per-share) so a known id can't be comment-spammed across instances
+    if (await rateLimit('share:' + id, 12, 60)) { res.status(429).json({ error: 'slow down' }); return; }
     const c = body.comment || {};
     const text = clip(c.text, 1200).trim();
     if (!text) { res.status(400).json({ error: 'empty comment' }); return; }
     const data = await readShare(id);
     if (!data) { res.status(404).json({ error: 'not found' }); return; }
+    // NOTE: read-modify-write, so two comments landing within the same round-trip can drop one
+    // (last write wins). Acceptable for a low-volume public comment stream; if shares get busy,
+    // move this append behind a Postgres jsonb-append RPC for atomicity.
     data.comments = Array.isArray(data.comments) ? data.comments : [];
     data.comments.push({
       id: 'c' + Math.random().toString(36).slice(2, 10),

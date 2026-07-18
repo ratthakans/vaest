@@ -9,6 +9,7 @@ export default async function handler(req, res) {
     taskKey: 'mastering',
     model: 'claude-fable-5',
     maxTokens: 4096,
+    countsRefine: true,
     buildContent: (b) => (b.document || '').trim() || null,
   });
   if (out) res.status(200).json({ notes: out.text, usage: out.usage });

@@ -65,7 +65,7 @@
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
   let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
   let library=[]; // MD library — saved chat answers, kept as .md
-  function setBusy(b){_busy=b;const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);const sb=$('stopBtn');if(sb)sb.classList.toggle('show',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
+  function setBusy(b){_busy=b;if(b)clearTimeout(_pt);const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);const sb=$('stopBtn');if(sb)sb.classList.toggle('show',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
   /* ═══ CI dialog — promise-based confirm/prompt ═══ */
   let _dlgResolve=null;
   function uiDialog(opts){
@@ -270,8 +270,9 @@
     if(bo){const on=(q&&q.source==='stripe');bo.style.display=on?'':'none';
       const opts=$('creditOpts');
       if(on&&opts){const left=(q.usage&&q.usage.packsLeft!=null)?q.usage.packsLeft:3;
+        const pp=(q.usage&&q.usage.packPrice)||490; // ฿/pack — server-sourced, never a UI-owned price
         if(left<=0){opts.innerHTML='<div class="set-note" style="color:var(--cin-d)">Monthly credit limit reached — <a onclick="closeSettings();openPortal()" style="color:var(--ink);cursor:pointer;text-decoration:underline">upgrade your plan</a> for more.</div>';}
-        else{let h='';for(let n=1;n<=left;n++){h+='<button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout(\'boost\',\'individual\','+n+')">'+n+' pack'+(n>1?'s':'')+' · ฿'+(490*n).toLocaleString()+'</button>';}opts.innerHTML=h;}
+        else{let h='';for(let n=1;n<=left;n++){h+='<button class="plan-opt" style="justify-content:center" onclick="closeSettings();startCheckout(\'boost\',\'individual\','+n+')">'+n+' pack'+(n>1?'s':'')+' · ฿'+(pp*n).toLocaleString()+'</button>';}opts.innerHTML=h;}
       }
     }
     renderRailUsage();renderPlanStatus()}
@@ -698,6 +699,7 @@
     sessions=sessions.filter(x=>x.id===currentSid||!isGhostSession(x));
     return before!==sessions.length}
   function newSession(mode){
+    if(_busy){toast('Working…');return}
     const m=MODES.includes(mode)?mode:'idea';
     // reuse an existing untouched "New" instead of stacking another ghost
     const ghost=sessions.find(x=>isGhostSession(x));
@@ -706,10 +708,12 @@
     sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile()}
   function openSession(id){
     if(_renaming)return;
+    if(_busy){toast('Working…');return}
     const s=sessions.find(x=>x.id===id);if(!s)return;currentSid=id;save();renderRail();
     if(s.canvas&&s.canvas.trim())showCanvas();else showHome();closeRailMobile()}
   let trash=[];
   async function deleteSession(id){
+    if(_busy){toast('Working…');return}
     const s=sessions.find(x=>x.id===id);if(!s)return;
     if(!await uiConfirm('Delete “'+s.title+'”? It goes to the trash for 30 days.',{ok:'Delete',danger:true}))return;
     trash=(trash||[]).filter(t=>Date.now()-t.at<30*864e5);
@@ -717,7 +721,7 @@
     sessions=sessions.filter(x=>x.id!==id);
     if(currentSid===id){currentSid=(sessions[0]||{}).id||null;if(!currentSid){newSession();return}openSession(currentSid)}
     save();renderRail();toast('Moved to trash — restore in Settings › Privacy')}
-  function restoreTrash(at){const t=(trash||[]).find(x=>x.at===at);if(!t)return;
+  function restoreTrash(at){if(_busy){toast('Working…');return}const t=(trash||[]).find(x=>x.at===at);if(!t)return;
     t.s.id=uid('s');t.s.updatedAt=Date.now();sessions.unshift(t.s);trash=trash.filter(x=>x.at!==at);
     currentSid=t.s.id;save();renderRail();openSession(t.s.id);renderTrash();toast('Restored')}
   async function emptyTrash(){if(!(trash&&trash.length))return;
@@ -727,6 +731,7 @@
     trash=(trash||[]).filter(t=>Date.now()-t.at<30*864e5);
     el.innerHTML=trash.length?trash.map(t=>'<div class="ub-row"><span>'+esc((t.s.title||'Untitled').slice(0,32))+'</span><button class="set-link" style="font-size:12px" onclick="restoreTrash('+t.at+')">Restore</button></div>').join(''):'<div class="set-note" style="margin-top:8px">Trash is empty</div>'}
   function duplicateSession(id){
+    if(_busy){toast('Working…');return}
     const s=sessions.find(x=>x.id===id);if(!s)return;
     const c=JSON.parse(JSON.stringify(s));c.id=uid('s');c.title=(s.title||'Untitled')+' copy';c.updatedAt=Date.now();
     c.shareId=null;c.snaps=[];c.ideas=s.ideas?JSON.parse(JSON.stringify(s.ideas)):[];
@@ -1853,7 +1858,7 @@
         md+='\n'});
     });
     return md.replace(/\n{3,}/g,'\n\n').trim()+'\n'}
-  let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&$('cvView').style.display!=='none'){setCanvasMd(s,genMd());s.updatedAt=Date.now();save();savedTick()}},700)}
+  let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&!_busy&&$('cvView').style.display!=='none'&&$('doc').querySelector('.sec')){setCanvasMd(s,genMd());s.updatedAt=Date.now();save();savedTick()}},700)}
   let _si;function savedTick(){const el=$('saveInd');if(!el)return;el.textContent='Saved ✓';el.classList.add('show');clearTimeout(_si);_si=setTimeout(()=>el.classList.remove('show'),1600)}
 
   /* ═══ version snapshots ═══ */
@@ -2318,7 +2323,7 @@
       +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet">'
       +'<style>'+CSS+'</style></head><body><div class="page">'
       +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">Summed &amp; refined by VÆST — Aesthetic Intelligence</div></div>'
-      +body+'<div class="foot">Generated by VÆST 1.3 · ORIONS.Agency</div></div></body></html>'}
+      +body+'<div class="foot">Generated by VÆST '+VAEST_VER+' · ORIONS.Agency</div></div></body></html>'}
   function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
   function downloadMD(){$('expMenu').classList.remove('show');dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md')}
   function downloadDOC(){$('expMenu').classList.remove('show');

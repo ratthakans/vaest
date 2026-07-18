@@ -25,8 +25,13 @@ export default async function handler(req, res) {
     const name = (req.body && req.body.name) || '';
     const existing = await listApiKeys(user.email);
     if (existing.filter(k => !k.revokedAt).length >= 5) { res.status(429).json({ error: 'Maximum 5 active keys — revoke one first' }); return; }
-    const made = await createApiKey(user.email, name);
-    res.status(201).json(made); // { id, key, name, createdAt } — key shown once
+    try {
+      const made = await createApiKey(user.email, name);
+      res.status(201).json(made); // { id, key, name, createdAt } — key shown once
+    } catch (e) {
+      console.error('createApiKey failed:', e?.message || e);
+      res.status(500).json({ error: 'Couldn’t create the key just now — please try again' });
+    }
     return;
   }
 

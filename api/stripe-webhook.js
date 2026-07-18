@@ -38,7 +38,7 @@ async function upsertFromSubscription(stripe, sub, evCreated) {
     priceId: priceId || null,
     quantity: (item && item.quantity) || 1,
     kind: (sub.metadata && sub.metadata.kind) || 'individual',
-    currentPeriodEnd: sub.current_period_end || null,
+    currentPeriodEnd: sub.current_period_end || (item && item.current_period_end) || null, // moved onto the item in Stripe's 2025+ API versions
     cancelAtPeriodEnd: !!sub.cancel_at_period_end,
     evAt: evCreated || null,
   });

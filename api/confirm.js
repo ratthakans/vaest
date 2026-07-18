@@ -21,11 +21,13 @@ export default async function handler(req, res) {
     // the session must belong to this signed-in account
     const owner = ((s.metadata && s.metadata.email) || s.client_reference_id || '').toLowerCase();
     if (owner !== user.email) { res.status(403).json({ error: 'not your session' }); return; }
-    // must actually be paid/complete. PromptPay can settle a moment after redirect, so flag
-    // an unpaid boost as `pending` — the client retries confirm until it clears.
-    if (s.payment_status !== 'paid' && s.status !== 'complete') {
-      const pending = s.payment_status === 'processing' || !!(s.metadata && s.metadata.boost);
-      res.status(200).json({ activated: false, pending });
+    // money must actually have moved. A session can be status:'complete' while payment_status
+    // is still 'unpaid' (PromptPay / delayed settlement) — activating then would grant access
+    // before payment clears. Require a paid (or no-payment-required, e.g. 100%-off / trial)
+    // status; anything else is `pending` and the client retries confirm until it clears.
+    const paid = s.payment_status === 'paid' || s.payment_status === 'no_payment_required';
+    if (!paid) {
+      res.status(200).json({ activated: false, pending: true });
       return;
     }
 
@@ -54,7 +56,7 @@ export default async function handler(req, res) {
       priceId: priceId || null,
       quantity: (item && item.quantity) || 1,
       kind: (s.metadata && s.metadata.kind) || 'individual',
-      currentPeriodEnd: sub.current_period_end || null,
+      currentPeriodEnd: sub.current_period_end || (item && item.current_period_end) || null, // moved onto the item in Stripe's 2025+ API versions
       cancelAtPeriodEnd: !!sub.cancel_at_period_end,
       evAt: Math.floor(Date.now() / 1000),
     });

@@ -1,5 +1,9 @@
-import { SB, SERVICE_KEY } from '../lib/plans.js';
+import { SB, SERVICE_KEY, sbFetch } from '../lib/plans.js';
 import { rateLimit } from '../lib/ratelimit.js';
+
+// basic shape check — also rejects a ':' so an email can never collide with the vaest_state
+// keyspace prefixes (usage:/sub:/share:/apikey:/errlog:) that key privileged rows
+const EMAIL_RE = /^[^\s@:]+@[^\s@:]+\.[^\s@:]+$/;
 
 // Server-side sign-up that skips the email-confirmation round-trip. Payment is the real
 // gate (you can't use VÆST without an active plan), so we create a pre-confirmed user via
@@ -14,12 +18,16 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Enter an email and a password of at least 6 characters' });
     return;
   }
+  if (!EMAIL_RE.test(e) || e.length > 254) {
+    res.status(400).json({ error: 'Enter a valid email address' });
+    return;
+  }
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
   if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
 
   try {
     // create a confirmed user (admin API, service key)
-    const cr = await fetch(`${SB.url}/auth/v1/admin/users`, {
+    const cr = await sbFetch(`/auth/v1/admin/users`, {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: e, password, email_confirm: true }),
@@ -35,7 +43,7 @@ export default async function handler(req, res) {
       return;
     }
     // sign them in → hand back a session
-    const tk = await fetch(`${SB.url}/auth/v1/token?grant_type=password`, {
+    const tk = await sbFetch(`/auth/v1/token?grant_type=password`, {
       method: 'POST',
       headers: { apikey: SB.key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: e, password }),
