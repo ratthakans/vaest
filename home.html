@@ -11,11 +11,11 @@
 </script>
 <title>VÆST — Aesthetic Intelligence · by ORIONS.Agency</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="VÆST — Aesthetic Intelligence. Crystallize briefs and piles of files into one sharp, tasteful document. A studio instrument by ORIONS.Agency — try it free, no sign-up to start.">
+<meta name="description" content="VÆST — a studio instrument for creative teams. Turn a brief, files and notes into one client-ready document with taste, a second opinion, and a share link. By ORIONS.Agency.">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="VÆST — Aesthetic Intelligence">
-<meta property="og:description" content="Crystallize briefs and piles of files into one sharp, tasteful document. A studio instrument by ORIONS.Agency.">
+<meta property="og:description" content="VÆST — a studio instrument for creative teams. Turn a brief, files and notes into one client-ready document with taste, a second opinion, and a share link. By ORIONS.Agency.">
 <meta property="og:image" content="https://vaest.orions.agency/og.jpg">
 <meta property="og:url" content="https://vaest.orions.agency/home">
 <meta property="og:image:width" content="1200">
@@ -141,7 +141,12 @@
   .hero .sub{font-family:var(--th);font-size:clamp(16px,1.65vw,20px);line-height:1.75;color:var(--dim);max-width:47ch;margin:48px 0 46px}
   .hero .sub b{color:var(--ink);font-weight:600}
   .hero .row{display:flex;flex-wrap:wrap;gap:14px 34px;align-items:center}
+  .hero-vs{font-family:var(--th);font-size:clamp(14px,1.3vw,16px);line-height:1.7;color:var(--dim);max-width:46ch;margin:-24px 0 30px;padding-left:16px;border-left:2px solid var(--line2)}
   .hero-free{margin-top:20px;font-size:13.5px;color:var(--dim)}
+  /* why — three defensible edges, same calm card pattern as the engines grid */
+  .why{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:56px}
+  @media(max-width:820px){.why{grid-template-columns:1fr;gap:34px}}
+  .why .e-card .em{letter-spacing:.14em}
   .btn{display:inline-flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;
     padding:17px 32px;border-radius:100px;background:var(--ink);color:#050506;transition:.25s var(--ease)}
   .btn:hover{background:#fff;transform:translateY(-1px)}
@@ -394,6 +399,7 @@
       <a class="btn" href="/" id="heroCta">Try it free →</a>
       <a class="lnk" href="#how">See how it works ↓</a>
     </div>
+    <p class="hero-vs th">ChatGPT gives you an answer. VÆST gives you a document you can send a client — with taste, a second opinion, and a link they can comment on.</p>
     <div class="hero-free th">No sign-up to start — chat with Galdr free. A free account keeps the chat and adds one Crystallize on the house.</div>
   </div>
 </header>
@@ -407,6 +413,29 @@
 </div></div>
 
 <!-- PRODUCT -->
+<!-- WHY — the three edges no one else holds -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">Why VÆST</div>
+  <h2>What the others can’t do</h2>
+  <div class="why reveal">
+    <div class="e-card">
+      <div class="em">Brief · VÆST asks</div>
+      <h3 class="th">It interviews you</h3>
+      <p class="th">Flip the chat around — VÆST asks the questions, one at a time, until the brief has no holes. No other tool turns the brief into a conversation you can hand a team.</p>
+    </div>
+    <div class="e-card">
+      <div class="em">Critic ≠ Writer</div>
+      <h3 class="th">A real second opinion</h3>
+      <p class="th">The mind that pushes your work is a different model from the one that writes it. You approve; it rewrites. That separation is why the critique is honest — not the same brain nodding at itself.</p>
+    </div>
+    <div class="e-card">
+      <div class="em">One voice</div>
+      <h3 class="th">Client-ready, not a chat log</h3>
+      <p class="th">Every word lands on one editable canvas in a single voice — then a share link your client comments on, and a deck to close. A synthesis tool gives you notes; VÆST gives you the deliverable.</p>
+    </div>
+  </div>
+</div></section>
+
 <section id="how"><div class="wrap sec-pad">
   <div class="lbl">The Instrument</div>
   <h2>Brief in. Refined document out.</h2>
