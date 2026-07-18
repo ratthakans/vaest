@@ -549,6 +549,13 @@
         if(stateBytes()>3.2e6){s.files.push({n:f.name,c:'[image: '+f.name+' — too large to attach]'});ok++;continue}
         const url=await imgToDataURL(f,1200,.78);
         s.files.push({n:f.name,c:'[image: '+f.name+']',img:url});ok++;continue}
+      if(isVideo(f)){ // B2 — a video becomes a few frame stills the model can read for style
+        if(stateBytes()>3.0e6){s.files.push({n:f.name,c:'[video: '+f.name+' — too large to attach frames]'});ok++;continue}
+        toast('Reading frames from '+f.name+'…');
+        const frames=await videoFrames(f,4,1200,.68);
+        if(frames.length){frames.forEach((url,k)=>s.files.push({n:f.name+' · frame '+(k+1),c:'[video frame: '+f.name+']',img:url}));ok++}
+        else fail++;
+        continue}
       const c=await extractFile(f);
       if(c&&c.trim()){if(c.length>20000)cut++;s.files.push({n:f.name,c:c.trim()});ok++}else fail++}catch(e){fail++}}
     s.updatedAt=Date.now();save();renderChips();
@@ -632,6 +639,27 @@
         try{res(cv.toDataURL('image/jpeg',q||.72))}catch(e){rej(e)}};
       im.src=fr.result};
     fr.readAsDataURL(file)})}
+  const VID_EXT=['mp4','mov','webm','m4v'];
+  const isVideo=f=>VID_EXT.includes((f.name.split('.').pop()||'').toLowerCase())||/^video\//.test(f.type||'');
+  // B2 — grab a few evenly-spaced frames from a video so its style (mood, palette, pacing) reads
+  // as visual references. Frames are downscaled JPEGs, the same shape as an attached image.
+  function videoFrames(file,n,maxDim,q){return new Promise((res)=>{
+    const url=URL.createObjectURL(file),v=document.createElement('video');
+    v.muted=true;v.playsInline=true;v.preload='auto';v.src=url;
+    const out=[],times=[];let i=0,finished=false;
+    const done=()=>{if(finished)return;finished=true;try{URL.revokeObjectURL(url)}catch(e){}res(out)};
+    const grab=()=>{if(i>=times.length){done();return}try{v.currentTime=times[i]}catch(e){done()}};
+    v.onloadedmetadata=()=>{const d=v.duration||0;if(!isFinite(d)||d<=0){done();return}
+      const k=Math.max(1,Math.min(n||4,6));
+      for(let j=0;j<k;j++)times.push(Math.min(Math.max(0,d-0.05),d*(j+0.5)/k));
+      grab()};
+    v.onseeked=()=>{try{let w=v.videoWidth,hh=v.videoHeight;const sc=Math.min(1,(maxDim||1200)/Math.max(w,hh));
+      w=Math.round(w*sc);hh=Math.round(hh*sc);
+      const cv=document.createElement('canvas');cv.width=w;cv.height=hh;
+      cv.getContext('2d').drawImage(v,0,0,w,hh);out.push(cv.toDataURL('image/jpeg',q||.7))}catch(e){}
+      i++;grab()};
+    v.onerror=()=>done();
+    setTimeout(done,15000)})} // safety: never hang the attach on a stuck decode
   function stateBytes(){try{return JSON.stringify(stateBlob()).length}catch(e){return 0}}
   async function embedImages(secEl,imgs){
     const s=cur();if(!s)return;const c=secEl.querySelector('.sec-c');
@@ -1305,16 +1333,25 @@
   let _briefBusy=false;
   function briefMsgs(s){
     const qa=s.briefQA||[];
-    const filesCtx=(s.files||[]).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,8000)).join('\n\n');
-    return qa.map((m,i)=>{let c=m.c;
-      if(i===0&&m.r==='user'&&filesCtx)c=m.c+'\n\n# Attached files (already provided)\n'+filesCtx;
-      return {role:m.r==='user'?'user':'assistant',content:c}});
+    const files=s.files||[];
+    const imgs=files.filter(f=>f.img); // B1 — visual references the interviewer actually SEES
+    const textCtx=files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,8000)).join('\n\n');
+    const visNote=imgs.length?('\n\n# Visual references attached ('+imgs.map(f=>f.n).join(', ')+') — read them as real references for the work’s style: mood, palette, typography, composition, pacing. Ask about that direction and let it shape the brief.'):'';
+    return qa.map((m,i)=>{
+      if(i===0&&m.r==='user'){
+        const c=m.c+(textCtx?('\n\n# Attached files (already provided)\n'+textCtx):'')+visNote;
+        return {role:'user',content:imgs.length?msgContent(c,imgs):c};
+      }
+      return {role:m.r==='user'?'user':'assistant',content:m.c}});
   }
   function renderBriefFiles(){
     const s=cur(),el=$('briefFiles');if(!el)return;
     el.innerHTML=(s&&s.files&&s.files.length)?s.files.map((f,i)=>
       '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+');renderBriefFiles()" title="Remove">✕</button></span>').join(''):''}
   function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs).then(renderBriefFiles)}
+  // B5 — a starter fills the seed (+ a space) and focuses at the end; the user adds specifics
+  function briefFill(t){const inp=$('briefIn');if(!inp)return;inp.value=(t||'').trim()+' ';inp.focus();
+    try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(e){}}
   function renderBriefQA(){
     const s=cur(),th=$('briefThread');if(!th)return;
     const qa=(s&&s.briefQA)||[];const last=qa.length-1;
@@ -1375,14 +1412,18 @@
     if(_briefBusy||_busy){toast('One moment…');return}
     const s=cur();if(!s)return;
     setBusy(true);
-    const filesCtx=(s.files||[]).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,12000)).join('\n\n');
+    const files=s.files||[];
+    const imgs=files.filter(f=>f.img); // B1 — visual refs fold their style into the compiled brief
+    const filesCtx=files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,12000)).join('\n\n');
     const qaText=(s.briefQA||[]).map(m=>(m.r==='user'?'User: ':'VÆST: ')+m.c).join('\n\n');
-    const prompt='# Initial input\n'+(s.briefSeed||'(see files)')+(filesCtx?('\n\n# Files\n'+filesCtx):'')+'\n\n# Interview (questions & answers)\n'+qaText;
+    const prompt='# Initial input\n'+(s.briefSeed||'(see files)')+(filesCtx?('\n\n# Files\n'+filesCtx):'')
+      +(imgs.length?('\n\n# Visual references (shown below): '+imgs.map(f=>f.n).join(', ')+' — read the style (mood, palette, typography, composition, pacing) and let the brief reflect that direction where it fits (e.g. a look-and-feel / art-direction note).'):'')
+      +'\n\n# Interview (questions & answers)\n'+qaText;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Compiling the brief…</div><div class="gen-body" id="genBody"></div></div>';
     try{
       const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
-      const md=await streamAPI('briefdoc',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md);
+      const md=await streamAPI('briefdoc',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),rev.on);await rev.done(md);
       setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();showCanvas();
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
