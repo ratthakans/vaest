@@ -1469,7 +1469,7 @@
     // switching the mode on work that already has content opens a fresh item in that mode,
     // like picking a different Claude product — never overwrites what's there
     if(!s||(started&&inferMode(s)!==m)){newSession(m);return}
-    s.mode=m;s.updatedAt=Date.now();save();renderRail();showHome();
+    s.mode=m;s.updatedAt=Date.now();save();renderRail();showHome();closeRailMobile(); // mobile: reveal the mode's home, don't leave the rail overlay open
     const inp=m==='idea'?$('ideaInput'):m==='brief'?$('briefIn'):$('brief');if(inp)setTimeout(()=>inp.focus(),40)}
 
   /* scroll-spy — the outline follows where you are; back-to-top past 600px */
