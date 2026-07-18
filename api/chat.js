@@ -35,6 +35,7 @@ export const ROUTE = {
   recast:    { model: 'claude-opus-4-8' },                                        // rewrite the whole doc into a different register/length (Odin — same voice, new shape)
   think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
+  distill:      { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
   present:   { model: 'claude-fable-5', fallback: 'claude-opus-4-8', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
 };
@@ -82,6 +83,10 @@ The {{quote}} must be 3–8 words copied verbatim from the document. Only bullet
 You get the document's title for context and one section's heading + body. Push only that section: the sharper cultural angle, the safe choice worth bending, the idea it stops one step short of.
 Propose 2–3 pushes. Format each as: "- **short title** {{a short exact quote from the section this relates to}} — the push, 1–2 lines, concrete."
 The {{quote}} must be 3–8 words copied verbatim from the section body. Never propose changes to other sections. Only bullets — no intro, no outro.`,
+  distill: `${BASE}
+
+# CURRENT TASK: DISTILL TASTE — read a studio's judgments (what they KEPT vs PASSED ON) and name the pattern.
+Return 2–4 short taste rules the studio seems to hold — imperative, human-readable, one line each (e.g. "Open with a provocation, not a definition"). Only clear, repeated patterns; if the signal is thin, return fewer. Format each as "- rule". No intro, no outro, no hedging.`,
   briefchat: `${BASE}
 
 # CURRENT TASK: BRIEF INTERVIEW — help the user complete a creative brief, one question at a time.
@@ -382,7 +387,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR', distill: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 

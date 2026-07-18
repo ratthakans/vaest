@@ -366,6 +366,13 @@
           </div>
           <button class="dlg-ok" onclick="saveDna()">Save Studio DNA</button>
         </div>
+        <div class="set-lbl" style="margin-top:28px">Taste memories</div>
+        <div class="set-note" style="margin-bottom:9px">Rules your studio holds — typed by you, or distilled from what VÆST learns. Pinned ones weigh most. They ride every call.</div>
+        <div class="tm-add">
+          <input id="tmInput" placeholder="Add a rule — e.g. Open with a provocation, never a definition" onkeydown="if(event.key==='Enter'){event.preventDefault();tasteMemAdd()}else if(event.key!=='Escape')event.stopPropagation()">
+          <button class="tm-addbtn" onclick="tasteMemAdd()">Add</button>
+        </div>
+        <div id="tmList"></div>
         <div class="set-lbl" style="margin-top:28px">Persona — rides on top of every call</div>
         <div class="tone" id="toneBar">
           <button data-tone="" onclick="setTone('')">Standard</button>
@@ -380,8 +387,10 @@
           <button data-lang="en" onclick="setLang('en')">English</button>
         </div>
         <div class="set-note">Auto mirrors you — Thai in, Thai out. Or lock every reply to one language.</div>
-        <div class="set-lbl" style="margin-top:24px">Taste memory</div>
+        <div class="set-lbl" style="margin-top:24px">What VÆST has learned</div>
         <div id="tasteBox" class="taste-box"></div>
+        <button class="set-link" onclick="distillTaste()" style="margin-top:9px">✧ Distill into taste memories →</button>
+        <div id="tmDistill" style="display:none;margin-top:10px"></div>
       </div>
       <div class="set-pane" data-sp="usage">
         <!-- plan status + upgrade — the self-serve way in, no need to hit a paywall first -->

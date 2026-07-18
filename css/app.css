@@ -972,6 +972,27 @@
   .tr-v{flex:none;font-family:var(--mono);font-size:11px;width:12px}
   .tr-v.ok{color:var(--cin-d)}.tr-v.no{color:var(--mute)}
   .tr-t{color:var(--dim)}
+  /* Taste memories — the curatable list (add · pin · remove) + distilled proposals */
+  .tm-add{display:flex;gap:8px;margin-bottom:10px}
+  .tm-add input{flex:1;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:9px;outline:none;color:var(--ink);font-family:var(--ui);font-size:13px;padding:9px 12px}
+  .tm-add input:focus{border-color:var(--line2)}
+  .tm-add input::placeholder{color:var(--mute)}
+  .tm-addbtn{flex:none;font-family:var(--ui);font-size:13px;font-weight:600;color:#0a0a0a;background:var(--ink);border-radius:8px;padding:0 16px}
+  .tm-addbtn:hover{background:#fff}
+  .tm-row{display:flex;align-items:center;gap:9px;padding:8px 4px 8px 8px;border-bottom:1px solid var(--line)}
+  .tm-row:last-child{border-bottom:none}
+  .tm-row.pinned{background:rgba(255,255,255,.02);border-radius:8px}
+  .tm-pin{flex:none;font-size:13px;color:var(--mute);width:22px}
+  .tm-row.pinned .tm-pin{color:var(--cin-d)}
+  .tm-pin:hover{color:var(--ink)}
+  .tm-t{flex:1;font-family:var(--body);font-size:14.5px;color:var(--ink);line-height:1.5}
+  .tm-x{flex:none;color:var(--mute);font-size:12px;width:22px}
+  .tm-x:hover{color:var(--cin-d)}
+  .tm-prop{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+  .tm-prop span{flex:1;font-family:var(--body);font-size:14px;color:var(--dim);line-height:1.5}
+  .tm-approve{flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:#0a0a0a;background:var(--ink);border-radius:5px;padding:5px 11px;font-weight:600}
+  .tm-approve:hover{background:#fff}
+  .tm-approve:disabled{background:transparent;color:var(--cin-d);cursor:default}
   /* Think on an Idea reply — Mimir's pushes, each a one-tap follow-up */
   .id-use.think{gap:3px}.id-use.think b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .id-use.think:hover b{-webkit-text-fill-color:var(--ink)}

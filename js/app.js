@@ -1055,9 +1055,53 @@
   function saveDna(){const p=getProfile();
     p.dna={voice:($('dnaVoice').value||'').slice(0,600),always:($('dnaAlways').value||'').slice(0,600),never:($('dnaNever').value||'').slice(0,600)};
     saveProfileObj(p);toast('Studio DNA saved — it rides every call now')}
+  /* ═══ TASTE MEMORIES — a curatable list of the studio's rules (you add · VÆST distills) ═══ */
+  function getTasteMem(){const m=getProfile().tasteMem;return Array.isArray(m)?m:[]}
+  function saveTasteMem(list){const p=getProfile();p.tasteMem=list.slice(0,60);saveProfileObj(p)}
+  function addTasteMem(text){text=String(text||'').replace(/\s+/g,' ').trim().slice(0,160);if(!text)return false;
+    const list=getTasteMem();if(list.some(m=>m.text.toLowerCase()===text.toLowerCase()))return false;
+    list.unshift({id:uid('tm'),text,pinned:false,ts:Date.now()});saveTasteMem(list);return true}
+  function tasteMemAdd(){const inp=$('tmInput');if(!inp)return;
+    if(addTasteMem(inp.value)){inp.value='';renderTasteMem();toast('Taste memory added — it rides every call')}else toast('Already there, or empty')}
+  function removeTasteMem(id){saveTasteMem(getTasteMem().filter(m=>m.id!==id));renderTasteMem()}
+  function pinTasteMem(id){const list=getTasteMem();const m=list.find(x=>x.id===id);if(m)m.pinned=!m.pinned;saveTasteMem(list);renderTasteMem()}
+  // injected into every call — pinned first, honored alongside Studio DNA
+  function tasteMemSys(){const list=getTasteMem();if(!list.length)return '';
+    const sorted=[...list].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+    return capTxt('STUDIO TASTE MEMORIES — explicit preferences this studio holds. Honor them:\n'+sorted.map(m=>'- '+(m.pinned?'★ ':'')+m.text).join('\n'),1600)}
+  function renderTasteMem(){const el=$('tmList');if(!el)return;
+    const list=getTasteMem();
+    if(!list.length){el.innerHTML='<div class="set-note" style="margin-top:4px">No taste memories yet — add a rule your studio always follows, or distill them from what VÆST has learned below.</div>';return}
+    const sorted=[...list].sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0))||((b.ts||0)-(a.ts||0)));
+    el.innerHTML=sorted.map(m=>'<div class="tm-row'+(m.pinned?' pinned':'')+'">'
+      +'<button class="tm-pin" onclick="pinTasteMem(\''+m.id+'\')" title="'+(m.pinned?'Unpin':'Pin — weigh higher')+'">'+(m.pinned?'★':'☆')+'</button>'
+      +'<span class="tm-t">'+esc(m.text)+'</span>'
+      +'<button class="tm-x" onclick="removeTasteMem(\''+m.id+'\')" title="Remove">✕</button></div>').join('')}
+  // T2 — Mimir reads the learned approve/skip signals and proposes human-readable memories to keep
+  let _tmProps=[];
+  async function distillTaste(){
+    if(ANON){anonWall('Sign up to distill taste memories');return}
+    if(_busy){toast('One moment…');return}
+    const all=[];(projects||[]).forEach(p=>(p.taste||[]).forEach(x=>all.push(x)));(sessions||[]).forEach(sx=>(sx.taste||[]).forEach(x=>all.push(x)));
+    const ap=all.filter(x=>x.v==='approved').map(x=>x.t),sk=all.filter(x=>x.v==='skipped').map(x=>x.t);
+    if(ap.length+sk.length<5){toast('Not enough decisions yet — Approve or Skip a few more in Idea or Refine, then distill');return}
+    const box=$('tmDistill');if(box){box.style.display='';box.innerHTML='<div class="set-note">VÆST is reading your decisions…</div>'}
+    const prompt='This studio judged suggestions like this:\n'+(ap.length?'KEPT: '+ap.join(' · ')+'\n':'')+(sk.length?'PASSED ON: '+sk.join(' · '):'')
+      +'\n\nDistill the taste rules they seem to hold.';
+    try{
+      const out=await streamAPI('distill',[{role:'user',content:prompt}],'');
+      const props=String(out).split('\n').map(l=>l.replace(/^[-*•]\s*/,'').replace(/\*\*/g,'').trim()).filter(l=>l&&l.length>4&&l.length<160).slice(0,4);
+      if(!props.length){if(box)box.innerHTML='<div class="set-note">No clear pattern yet — keep making decisions.</div>';return}
+      _tmProps=props;
+      if(box)box.innerHTML='<div class="set-lbl" style="margin:2px 0 8px">VÆST noticed — keep the ones that ring true:</div>'
+        +props.map((p,i)=>'<div class="tm-prop"><span>'+esc(p)+'</span><button class="tm-approve" onclick="approveTasteMemAt('+i+',this)">Keep</button></div>').join('')
+        +'<button class="set-link" style="margin-top:8px" onclick="$(\'tmDistill\').style.display=\'none\'">Dismiss</button>';
+    }catch(e){if(box)box.innerHTML='<div class="set-note">Couldn’t distill just now — try again.</div>'}}
+  function approveTasteMemAt(i,btn){const t=_tmProps[i];if(t&&addTasteMem(t)){btn.textContent='✓ Kept';btn.disabled=true;renderTasteMem()}else{btn.textContent='Already kept';btn.disabled=true}}
   function toneSys(){
     const s=cur(),parts=[];
     const dna=dnaSys();if(dna)parts.push(dna);
+    const tm=tasteMemSys();if(tm)parts.push(tm);
     parts.push(PERSONA[personaKey()]+' This persona governs word choice, tone and mood of everything you write here.');
     if(LANGS[getLang()])parts.push(LANGS[getLang()]);
     const p=s&&s.projectId&&projects.find(x=>x.id===s.projectId);
@@ -1086,7 +1130,7 @@
     if(t==='usage')renderUsageBreak();
     if(t==='api')renderApiKeys();
     if(t==='about')renderAbout();
-    if(t==='persona'){loadDna();renderTasteBox()}}
+    if(t==='persona'){loadDna();renderTasteMem();renderTasteBox()}}
   // A2 — the taste memory made visible: how many decisions VÆST has learned + the latest few.
   // The strongest moat is the one users can't see; this shows it's real and getting personal.
   function renderTasteBox(){
