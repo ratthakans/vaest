@@ -2226,24 +2226,30 @@
     'one-pager':'a one-pager — everything essential on a single page, lead with the point, cut the rest',
     'exec':'an executive summary — short and decision-oriented, for a busy leader who has one minute',
     'punchier':'a punchier version — every line tighter, sharper openings, same substance and structure',
-    'board':'board-ready — crisp, skimmable, decision-oriented, minimal preamble'};
-  const RECAST_LABEL={'one-pager':'One-pager','exec':'Exec summary','punchier':'Punchier','board':'Board-ready'};
+    'board':'board-ready — crisp, skimmable, decision-oriented, minimal preamble',
+    'thai':'the same document, fully in Thai — translate all of it, keep the structure, meaning and voice',
+    'english':'the same document, fully in English — translate all of it, keep the structure, meaning and voice'};
+  const RECAST_LABEL={'one-pager':'One-pager','exec':'Exec summary','punchier':'Punchier','board':'Board-ready','thai':'In Thai','english':'In English'};
+  function _recBtn(k){return '<button onclick="recast(\''+k+'\')">'+RECAST_LABEL[k]+'</button>'}
   function openRecast(e){
     showCtx(e,'<div class="cap">Recast the whole document as…</div>'
-      +Object.keys(RECAST_LABEL).map(k=>'<button onclick="recast(\''+k+'\')">'+RECAST_LABEL[k]+'</button>').join('')
-      +'<div class="sep"></div><div class="cap" style="opacity:.7">Keeps the original in its own tab · counts as one document</div>')}
-  async function recast(kind){
+      +['one-pager','exec','punchier','board'].map(_recBtn).join('')
+      +'<div class="sep"></div>'+['thai','english'].map(_recBtn).join('')
+      +'<div class="sep"></div><input class="ctx-ask" placeholder="Recast as… (e.g. a press release)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();recastAsk(this)}else if(event.key!==\'Escape\')event.stopPropagation()">'
+      +'<div class="cap" style="opacity:.7">Keeps the original in its own tab · counts as one document</div>')}
+  function recast(kind){const t=RECASTS[kind];if(t)doRecast(RECAST_LABEL[kind],t)}
+  function recastAsk(el){const v=((el&&el.value)||'').trim();if(!v)return;doRecast(v.slice(0,40),v)} // E1 — any target
+  async function doRecast(label,target){
     hideCtx();
     if(ANON){anonWall('Sign up to recast documents');return}
     if(_busy){toast('Working…');return}
     const s=cur();if(!s)return;
     const srcMd=genMd();if(!srcMd.replace(/[#\s]/g,'')){toast('Nothing to recast yet');return}
-    const target=RECASTS[kind];if(!target)return;
     ensureCanvases(s);const c0=activeCv(s);if(c0)c0.md=srcMd; // persist the original tab first
     setBusy(true);
     // a NEW canvas tab holds the recast — the original stays put, switch between them by tab
-    const c={id:uid('cv'),t:RECAST_LABEL[kind],md:''};s.canvases.push(c);s.cvId=c.id;s.canvas='';
-    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Recasting · '+esc(RECAST_LABEL[kind])+'…</div><div class="gen-body" id="genBody"></div></div>';
+    const c={id:uid('cv'),t:label,md:''};s.canvases.push(c);s.cvId=c.id;s.canvas='';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Recasting · '+esc(label)+'…</div><div class="gen-body" id="genBody"></div></div>';
     renderTabs();
     const prompt='# Target\nRecast this document as '+target+'.\n\n# Document\n'+srcMd;
     try{
@@ -2251,7 +2257,7 @@
       const md=await streamAPI('recast',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md);
       setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();renderTabs();
       if(document.hidden)notifyDone('Recast');
-      toast('Recast as '+RECAST_LABEL[kind]+' — the original is still in its tab');
+      toast('Recast · '+label+' — the original is still in its tab');
     }catch(e){ // roll the new tab back so a failed recast leaves no empty canvas
       s.canvases=s.canvases.filter(x=>x.id!==c.id);s.cvId=c0?c0.id:((s.canvases[0]||{}).id);s.canvas=c0?c0.md:'';
       renderDoc(s.canvas);renderTabs();
@@ -2392,6 +2398,10 @@
   function docFilename(){return ($('mhTitle')?$('mhTitle').innerText.trim():'document').replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'document'}
   function buildDocHTML(forPrint){
     const title=$('mhTitle')?$('mhTitle').innerText.trim():'Document';
+    // E4 — a dated, addressed cover so the export reads as a real studio deliverable
+    const _s=cur();const _proj=_s&&_s.projectId&&projects.find(p=>p.id===_s.projectId);
+    let _date='';try{_date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){}
+    const _meta=(_proj?('Prepared for '+esc(_proj.name)+' · '):'')+(_date?_date+' · ':'')+'VÆST · Aesthetic Intelligence';
     let body='';let n=0;
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       const hEl=sec.querySelector('.sec-h');
@@ -2424,7 +2434,7 @@
     return '<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
       +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet">'
       +'<style>'+CSS+'</style></head><body><div class="page">'
-      +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">Summed &amp; refined by VÆST — Aesthetic Intelligence</div></div>'
+      +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">'+_meta+'</div></div>'
       +body+'<div class="foot">Generated by VÆST '+VAEST_VER+' · ORIONS.Agency</div></div></body></html>'}
   function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
   function downloadMD(){$('expMenu').classList.remove('show');dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md')}
