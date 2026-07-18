@@ -25,6 +25,7 @@
   "bundle": {
     "active": true,
     "targets": ["dmg", "app"],
+    "createUpdaterArtifacts": true,
     "category": "Productivity",
     "shortDescription": "The idea-crystallizing instrument by ORIONS.Agency",
     "icon": [
@@ -36,6 +37,12 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.15"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["https://vaest.orions.agency/desktop-update.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM1MTE0MUEwNkUyMUU0RTIKUldUaTVDRnVvRUVSeFhGdTVidUYrZUhybnExT2xRZEthMk03YUNzRGpQTFUwZXV3SEZwQW9qY2UK"
     }
   }
 }

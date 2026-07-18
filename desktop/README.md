@@ -58,30 +58,46 @@ Not required to test locally. When ready:
 These credentials are yours — keep them out of the repo (they're in `.gitignore`-safe env,
 never committed).
 
-## Auto-update (wire once you have a place to host the release feed)
+## Auto-update — ALREADY WIRED
 
-Tauri's updater checks a small JSON feed and, if a newer signed build exists, downloads and
-installs it. Two one-time setup steps:
+The shell checks a release feed on launch (in `src-tauri/src/lib.rs`) and, if a newer *signed*
+build exists, downloads + installs it silently (applies on next restart). Everything is set up:
 
-1. **Updater keypair** (Tauri's own signing for update integrity — separate from Apple):
+- Updater plugin added (Cargo.toml + lib.rs), `bundle.createUpdaterArtifacts: true`.
+- Keypair generated: **private** key at `~/.vaest-updater.key` (kept OUT of the repo — never
+  commit it; lose it and you can't sign updates). Its **public** key is already in
+  `src-tauri/tauri.conf.json` → `plugins.updater.pubkey`.
+- Feed endpoint: `https://vaest.orions.agency/desktop-update.json` (the `desktop-update.json`
+  at the web repo root — Vercel serves it). It currently lists 3.0.0, so the app finds
+  "no update" until you publish a real newer release.
+
+### Releasing a new version
+
+1. Bump `version` in `src-tauri/tauri.conf.json` (and `package.json`), e.g. 3.0.1.
+2. Build signed update artifacts (pass the key *contents*, not a path — Tauri v2 reads
+   `TAURI_SIGNING_PRIVATE_KEY` as the key string; the `_PATH` variant is ignored by the bundler):
    ```bash
-   npx tauri signer generate -w vaest-updater.key   # keep the PRIVATE key secret, never commit
+   export TAURI_SIGNING_PRIVATE_KEY="$(cat "$HOME/.vaest-updater.key")"
+   export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""      # no password on this key
+   npm run build
    ```
-   Put the printed **public** key in `src-tauri/tauri.conf.json` → `plugins.updater.pubkey`.
-2. **Release feed**: host `latest.json` at the `endpoints` URL (e.g. on Vercel at
-   `/desktop/latest.json`). On each release, `npm run build` emits a signed
-   `.dmg` + a `.sig`; publish the `.dmg` somewhere public and point `latest.json` at it:
+   This emits `VÆST.app.tar.gz` + `VÆST.app.tar.gz.sig` (the macOS update artifact) alongside
+   the `.dmg`, in `src-tauri/target/release/bundle/`.
+3. **Host the `.app.tar.gz`** somewhere public (e.g. Vercel at `/downloads/…`, or GitHub
+   Releases) — I can't host your binaries for you.
+4. Update `desktop-update.json` at the web repo root: set `version`, the `url` to the hosted
+   `.app.tar.gz`, and `signature` to the **contents of the `.sig` file**. Deploy the web app.
    ```json
    {
      "version": "3.0.1",
      "notes": "What changed",
      "pub_date": "2026-07-18T00:00:00Z",
      "platforms": {
-       "darwin-aarch64": { "signature": "<contents of the .sig>", "url": "https://.../VÆST_3.0.1_aarch64.dmg" },
-       "darwin-x86_64":  { "signature": "<...>", "url": "https://.../VÆST_3.0.1_x64.dmg" }
+       "darwin-aarch64": { "signature": "<paste .sig contents>", "url": "https://vaest.orions.agency/downloads/VAEST_3.0.1_aarch64.app.tar.gz" }
      }
    }
    ```
-   The app checks this on launch; a newer `version` triggers the update.
+   Every running app picks it up on its next launch.
 
-Until the feed exists, the updater simply finds nothing and the app runs normally.
+Note: real auto-update also wants the app **signed + notarized** (above) — macOS won't apply an
+update from an unidentified developer without the right-click-Open dance.
