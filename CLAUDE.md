@@ -36,7 +36,7 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
    spend where the user can see it (paid Idea, Brief interview, deck), never on invisible plumbing.
 
 6. **Ship + verify on production, in a browser.** Workflow every change: `node --check js/app.js`
-   → `npm test` (18 unit + 9 openai) → `node scratchpad/audit.mjs` (must say `AUDIT CLEAN`) →
+   → `npm test` (18 unit + 9 openai + 19 server — the billing/quota/margin math) → `node scratchpad/audit.mjs` (must say `AUDIT CLEAN`) →
    commit → push → poll the deploy READY → **open it in the browser and look**, because login and
    payment can't be scripted. `curl` sometimes hits a Vercel bot checkpoint — the browser passes it.
 
