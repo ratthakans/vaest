@@ -45,7 +45,8 @@
   .main.has-top .rail-toggle{display:none}
 
   /* ===== topbar (canvas state) ===== */
-  .top{display:flex;align-items:center;gap:7px;padding:13px 22px;border-bottom:1px solid var(--line);flex:none;background:rgba(5,5,6,.72);backdrop-filter:blur(16px) saturate(1.2);z-index:5}
+  .top{display:flex;align-items:center;gap:7px;padding:13px 22px;border-bottom:1px solid var(--line);flex:none;background:rgba(5,5,6,.72);backdrop-filter:blur(16px) saturate(1.2);z-index:5;transition:transform .3s var(--ease),opacity .3s var(--ease)}
+  .top.tuck{transform:translateY(-100%);opacity:0;pointer-events:none}
   /* narrow: collapse the secondary buttons (Home/Add files/Paste/Undo/snapshots) to icons so
      the primary actions — Refine + Export — never overflow off the right edge */
   @media(max-width:1040px){
@@ -93,6 +94,8 @@
   .home-in{width:100%;max-width:740px;padding-bottom:7vh;margin:auto;display:flex;flex-direction:column} /* margin:auto centers when short, stays fully scrollable when tall */
   .h-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
   /* E1 — time-aware greeting eyebrow above the home title */
+  @keyframes titleMorph{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .h-title.morph{animation:titleMorph .3s var(--ease)}
   .h-greet{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:12px;animation:paneIn .5s var(--ease) both}
   .h-title{font-family:var(--body);font-weight:500;font-size:clamp(25px,2.7vw,35px);letter-spacing:-.012em;line-height:1.22;margin:4px 0 22px;color:#ded8cb;text-wrap:balance}
   /* mode — a Claude-style product switcher at the top of the rail; three ways of working */
@@ -1109,3 +1112,16 @@
     filter:blur(14px);transform:skewX(-14deg);animation:norrSweep 1.5s var(--ease) forwards}
   @keyframes norrSweep{from{left:-45%}to{left:125%}}
   @media(prefers-reduced-motion:reduce){.norr-sweep{display:none}}
+
+  /* E6 — keyboard shortcut sheet */
+  .keys{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,5,6,.72);backdrop-filter:blur(4px)}
+  .keys.show{display:flex;animation:paneIn .2s var(--ease) both}
+  .keys-box{width:100%;max-width:440px;background:#141417;border:1px solid var(--line2);border-radius:16px;padding:20px 22px;box-shadow:var(--pop)}
+  .keys-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .keys-hd b{font-family:var(--body);font-style:italic;font-size:20px;color:var(--ink)}
+  .keys-hd .x{color:var(--mute);font-size:15px}.keys-hd .x:hover{color:var(--ink)}
+  .keys-grid{display:flex;flex-direction:column;gap:2px}
+  .kr{display:flex;align-items:center;gap:8px;padding:9px 4px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
+  .kr:first-child{border-top:none}
+  .kr span{flex:1;min-width:0}
+  .kr kbd{font-family:var(--mono);font-size:11px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line2);border-radius:6px;padding:3px 8px;min-width:26px;text-align:center}

@@ -879,7 +879,7 @@
       sel.removeAllRanges();sel.addRange(r);
       if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
     }});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();closeSummingPicker();closeAddPaste();if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();closeSummingPicker();closeAddPaste();$('keysView').classList.remove('show');if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
     if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
   $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
   $('dlgCancel').onclick=()=>dlgClose(null);
@@ -894,6 +894,13 @@
     let i=ids.indexOf(currentSid);
     i=e.key==='ArrowDown'?(i<0?0:Math.min(ids.length-1,i+1)):(i<0?0:Math.max(0,i-1));
     if(ids[i]!==currentSid){e.preventDefault();openSession(ids[i])}});
+
+  // E6 — power-user keys: ⌘1/2/3 switch mode · ? opens the shortcut sheet
+  addEventListener('keydown',e=>{
+    const t=e.target,inField=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable);
+    if((e.metaKey||e.ctrlKey)&&['1','2','3'].includes(e.key)){e.preventDefault();setMode(['idea','brief','crystallize'][+e.key-1]);return}
+    if(e.key==='?'&&!inField&&!e.metaKey&&!e.ctrlKey){e.preventDefault();toggleKeys()}});
+  function toggleKeys(){const k=$('keysView');if(k)k.classList.toggle('show')}
 
   /* ═══ selection toolbar — refine highlighted text (ODIN) ═══ */
   let _selRange=null;
@@ -1364,7 +1371,8 @@
     document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});
-    const ht=$('homeTitle');if(ht)ht.textContent=HOME_TITLE[mode]||HOME_TITLE.crystallize;
+    const ht=$('homeTitle');if(ht){const nt=HOME_TITLE[mode]||HOME_TITLE.crystallize;
+      if(ht.textContent!==nt){ht.textContent=nt;ht.classList.remove('morph');void ht.offsetWidth;ht.classList.add('morph')}} // E3 — title morphs on mode change
     // E1 — a quiet, time-aware greeting for signed-in users (the app knows you)
     const gr=$('homeGreet');
     if(gr){const nm=(getProfile().name||'').trim().split(' ')[0]||'';
@@ -1391,8 +1399,13 @@
   /* scroll-spy — the outline follows where you are; back-to-top past 600px */
   function initScrollSpy(){
     const cv=$('cvView');if(!cv||cv._spy)return;cv._spy=true;
+    let lastY=0;
     cv.addEventListener('scroll',raf(()=>{
       const tt=$('toTop');if(tt)tt.classList.toggle('show',cv.scrollTop>600&&cv.style.display!=='none');
+      // E7 — focus reading: past 200px, scrolling down retracts the topbar; up brings it back
+      const y=cv.scrollTop,tb=$('topbar');
+      if(tb){if(y>200&&y>lastY+6)tb.classList.add('tuck');else if(y<lastY-6||y<160)tb.classList.remove('tuck')}
+      lastY=y;
       spyOutline()}))}
 
   /* document outline in the rail — click to jump */

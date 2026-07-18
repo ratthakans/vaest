@@ -425,6 +425,21 @@
     </div>
   </div>
 </div>
+<!-- keyboard shortcuts sheet (press ?) -->
+<div class="keys" id="keysView" onclick="if(event.target===this)toggleKeys()">
+  <div class="keys-box">
+    <div class="keys-hd"><b>Keyboard</b><button class="x" onclick="toggleKeys()" aria-label="Close">✕</button></div>
+    <div class="keys-grid">
+      <div class="kr"><span>Switch to Idea · Brief · Crystallize</span><kbd>⌘1</kbd><kbd>⌘2</kbd><kbd>⌘3</kbd></div>
+      <div class="kr"><span>Search &amp; commands</span><kbd>⌘K</kbd></div>
+      <div class="kr"><span>Send message</span><kbd>↵</kbd></div>
+      <div class="kr"><span>Crystallize</span><kbd>⌘↵</kbd></div>
+      <div class="kr"><span>Switch between recents</span><kbd>⌥↑</kbd><kbd>⌥↓</kbd></div>
+      <div class="kr"><span>Close · cancel</span><kbd>Esc</kbd></div>
+      <div class="kr"><span>This sheet</span><kbd>?</kbd></div>
+    </div>
+  </div>
+</div>
 <div class="snap" id="voiceView" onclick="if(event.target===this)closeVoice()">
   <div class="snap-box">
     <div class="snap-hd"><b id="voiceTitle">Project voice</b><button class="save" onclick="saveVoice()">Save</button></div>
