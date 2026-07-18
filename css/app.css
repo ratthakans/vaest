@@ -455,12 +455,6 @@
   .r-empty b:hover{color:var(--ink)}
   .r-empty.sm{border:none;padding:2px 9px 6px;margin:0}
   /* document outline — jump nav for the open doc */
-  #olLbl,#olList{display:none!important}
-  .ol-item{display:flex;align-items:baseline;gap:9px;padding:5px 9px;border-radius:6px;font-size:12px;color:#8f8c84;cursor:pointer;transition:.12s}
-  .ol-item:hover{background:rgba(255,255,255,.06);color:var(--snow)}
-  .ol-item .on2{font-family:var(--mono);font-size:9px;color:#54544f;flex:none}
-  .ol-item .ot{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ol-item .op{color:var(--cinnabar);font-style:normal}
   /* rail usage meter — quiet, glanceable, click-through to Settings */
   .r-usage{flex:none;margin:8px 12px 2px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;
     background:rgba(255,255,255,.025);cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
@@ -558,7 +552,6 @@
     animation:agl 20s ease-in-out infinite}
   @keyframes agl{0%,100%{transform:none}33%{transform:translate(-2.5%,1.8%) scale(1.07)}66%{transform:translate(2%,-1.5%) scale(1.04)}}
   .auth::after{content:none}
-  @keyframes adrift{to{background-position:30px 0,33px 0,36px 0}}
   .auth.show{display:flex}
   .auth-in{position:relative;z-index:2;width:100%;max-width:404px;animation:viewIn .5s var(--ease) both;
     background:rgba(255,255,255,.055);backdrop-filter:blur(28px) saturate(1.35);-webkit-backdrop-filter:blur(28px) saturate(1.35);
@@ -568,7 +561,6 @@
   .auth-mark svg{width:30px;height:30px;border-radius:7px}
   .auth-mark .wm{font-family:var(--ui);font-weight:700;font-size:17px;letter-spacing:.12em;color:var(--ink)}
   .auth-mark .wm i{font-style:normal;color:inherit}
-  .auth-mark .by{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-left:auto}
   .auth-h{font-weight:650;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-bottom:24px;color:var(--ink)}
   .auth-f{display:flex;flex-direction:column;gap:10px}
   .auth-f input{width:100%;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:13px 16px;font-family:inherit;font-size:14.5px;
@@ -621,12 +613,9 @@
   .plan-price{font-size:15px;font-weight:650;white-space:nowrap}
   .auth-sw button{color:var(--ink);font-weight:650;text-decoration:underline;text-underline-offset:3px;margin-left:6px}
   .auth-foot{margin-top:40px;text-align:center}
-  .auth-foot .af-line{font-family:var(--ui);font-size:13px;color:var(--dim);letter-spacing:.01em}
   .auth-foot .af-links{margin-top:10px;font-family:var(--ui);font-size:12.5px;color:var(--mute)}
   .auth-foot .af-links a{color:var(--dim);text-decoration:none}
   .auth-foot .af-links a:hover{color:var(--ink)}
-  .auth-foot .af-cta{display:inline-block;margin-top:16px;font-family:var(--ui);font-size:13px;font-weight:500;color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line2)}
-  .auth-foot .af-cta:hover{text-decoration-color:var(--ink)}
 
   /* usage analytics modal */
   .stats{position:fixed;inset:0;z-index:135;display:none;align-items:flex-start;justify-content:center;padding:6vh 20px 20px;background:rgba(0,0,0,0.62);backdrop-filter:blur(6px);overflow-y:auto}
@@ -735,8 +724,6 @@
     opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s var(--ease);box-shadow:0 10px 30px rgba(0,0,0,.4)}
   .to-top.show{opacity:1;visibility:visible;transform:none}
   .to-top:hover{background:rgba(34,34,38,.95);border-color:rgba(255,255,255,.3)}
-  .ol-item.cur{background:rgba(255,255,255,.07);color:var(--snow)}
-  .ol-item.cur .on2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 
   .exp-sep{height:1px;background:var(--line);margin:5px 8px}
   .exp-item.present .mo{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
@@ -863,7 +850,7 @@
 
   /* fluid chroma — same breath as the landing, on every gradient accent */
   @keyframes chromaflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-  .id-lbl,.id-m.ai .who,.cmt .cr.ca,.bb-chain.on,.ol-item.cur .on2,.chip.paste b,.mi-t .anchor{
+  .id-lbl,.id-m.ai .who,.cmt .cr.ca,.bb-chain.on,.chip.paste b,.mi-t .anchor{
     background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
 
   /* flaw overlay — Refined/Think anchors, three rotating hues */
@@ -898,23 +885,18 @@
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}
   /* optional brief, demoted below the chat */
-  .opt-lbl{margin:28px 0 10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
   /* home stays a clean Idea chat; brief/files reveal on demand via a quiet toggle */
-  .add-src-row{text-align:center}
-  .add-src{display:inline-flex;align-items:center;gap:7px;margin:16px auto 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);background:none;border:none;cursor:pointer;transition:color .15s}
-  .add-src:hover{color:var(--dim)}
   .brief-box.collapsed{display:none}
   /* ── anonymous trial — log in / sign up, top-right (ChatGPT-style) ── */
   /* floats over scrollable home content — needs its own backdrop so scrolled text never collides with it */
   .anon-bar{position:absolute;top:10px;right:16px;z-index:30;display:flex;align-items:center;gap:10px;
     padding:6px 8px 6px 14px;border-radius:100px;background:rgba(13,13,15,.62);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06)}
-  .anon-tag{display:none}
   .anon-login{font-size:13px;font-weight:600;color:var(--dim);padding:7px 13px;border-radius:8px;transition:.14s}
   .anon-login:hover{color:var(--ink);background:rgba(255,255,255,.06)}
   .anon-signup{font-size:13px;font-weight:650;color:#0a0a0a;background:var(--ink);padding:7px 15px;border-radius:8px;transition:.14s}
   .anon-signup:hover{background:#fff}
-  @media(max-width:640px){.anon-tag{display:none}.anon-bar{top:10px;right:12px}}
+  @media(max-width:640px){.anon-bar{top:10px;right:12px}}
   /* free-messages-left hint under the Idea input */
   .anon-limit{margin:14px 2px 2px;font-size:12.5px;color:var(--mute);text-align:center}
   .anon-limit .al-n{font-family:var(--mono);color:var(--cin-d);font-weight:600}
@@ -934,18 +916,8 @@
   .id-hint{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .id-sum{margin-left:auto;flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;font-weight:600;color:var(--ink);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:6px 13px;transition:border-color .2s,background .2s}
   .id-sum:hover{border-color:var(--ink);background:rgba(255,255,255,.06)}
-  .id-mode{margin-left:auto;display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px;flex:none}
-  .id-mode button{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);padding:4px 10px;border-radius:4px}
-  .id-mode button.on{background:var(--ink);color:#0a0a0a;font-weight:600}
   .id-thread{max-height:300px;overflow-y:auto;padding:6px 14px;display:block}
   /* first-run empty state — suggested starters */
-  .id-empty{padding:18px 4px 12px}
-  .id-empty .ie-t{font-size:13.5px;color:var(--dim);margin-bottom:14px}
-  .id-empty .ie-chips{display:flex;flex-wrap:wrap;gap:8px}
-  .ie-chip{font-size:12.5px;color:var(--ink);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:8px 14px;transition:background .2s,border-color .2s}
-  .ie-chip:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.24)}
-  .ie-how{margin-top:16px;font-size:11.5px;color:var(--mute);line-height:1.6}
-  .ie-how b{color:var(--dim);font-weight:600}
   /* per-message actions — copy / regenerate / save */
   .id-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
   .id-use.ghost{opacity:.55;font-size:11px;padding:2px 7px}
@@ -1017,24 +989,8 @@
   .id-send:hover{background:#fff}
   .id-send:disabled{opacity:.4}
   /* saved sparks — research auto-filed by topic */
-  .spark-tray{display:none;padding:12px 14px 14px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)}
-  .spark-tray.has{display:block}
-  .sk-hd{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
-  .sk-hd b{color:var(--dim);font-weight:600}
-  .sk-grp{margin-bottom:11px}
-  .sk-grp:last-child{margin-bottom:0}
-  .sk-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:7px}
-  .sk-n{font-family:var(--mono);font-size:9px;color:var(--mute);-webkit-text-fill-color:var(--mute);border:1px solid var(--line);border-radius:20px;padding:1px 6px;font-weight:500}
-  .sk-chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:7px;padding:5px 6px 5px 11px;margin:0 6px 6px 0;font-size:12px;color:var(--dim);vertical-align:top;animation:chipIn .3s var(--ease)}
-  .sk-chip .sk-x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px}
-  .sk-chip button{flex:none;color:var(--mute);font-size:12px;line-height:1;width:16px;height:16px;border-radius:4px}
-  .sk-chip button:hover{color:var(--ink);background:rgba(255,255,255,.08)}
 
   /* brief templates */
-  .tpl{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:-14px 0 18px}
-  .tpl-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-right:3px}
-  .tpl button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:6px 12px;transition:.16s var(--ease)}
-  .tpl button:hover{color:var(--ink);border-color:var(--line2);background:rgba(255,255,255,.04)}
 
   /* tone preset */
   .tone{display:flex;align-items:center;gap:3px;margin-top:16px;padding:3px;background:rgba(255,255,255,.04);border-radius:10px;width:fit-content}
@@ -1078,7 +1034,6 @@
     /* document reading */
     .doc{padding:40px 20px 100px}
     .mh-title{font-size:30px}
-    .d-mast{font-size:22px}
     /* home */
     .home{padding:24px 16px 60px}
     .h-title{font-size:clamp(30px,10vw,44px)}
@@ -1097,7 +1052,7 @@
     .dlg-box{max-width:100%;margin:auto 12px}
     .set-tabs{overflow-x:auto;scrollbar-width:none}.set-tabs::-webkit-scrollbar{display:none}
     /* comment forms + inputs at ≥16px so iOS doesn't zoom-on-focus */
-    .cmt-form input,.cmt-form textarea,.auth-f input,.dlg-in,.wl input,.vc-ta,#brief,#ideaInput{font-size:16px}
+    .cmt-form input,.cmt-form textarea,.auth-f input,.dlg-in,.vc-ta,#brief,#ideaInput{font-size:16px}
     /* rail a hair narrower than the phone so the scrim shows */
     .rail{width:86vw;max-width:320px}
   }

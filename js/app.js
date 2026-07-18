@@ -50,7 +50,7 @@
     flush();return html}
 
   /* ═══ state — sessions/projects · localStorage + Supabase ═══ */
-  const STORE='vaest_v2',DB_V=5,TOKEN_CAP=5e6,LEGACY_WHO='orions-workspace';
+  const STORE='vaest_v2',DB_V=5,LEGACY_WHO='orions-workspace';
   // VÆST 3.0 — every item carries a mode: 'idea' (chat) · 'brief' (interview→doc) · 'crystallize' (canvas)
   const MODES=['idea','brief','crystallize'];
   function inferMode(s){
@@ -177,7 +177,6 @@
       el.innerHTML='Free · Galdr + one Crystallize · <button onclick="showNotInvited()">See plans</button>';
       return}
     el.style.display='none'}
-  function renderTierNote(){renderAnonLimit()}
   // capture the trial chat so it survives the jump into a real account
   function snapshotAnonChats(){
     try{return sessions.filter(s=>chatsOf(s).some(c=>c.ideas.length))
@@ -203,7 +202,7 @@
       endAnon(); // if we were on the free trial, carry the chat into the account
       if(await checkAccess()){hideAuth();await boot()}
       else if(window._wantPlan){const p=window._wantPlan;window._wantPlan=null;hideAuth();startCheckout(p)}
-      else{hideAuth();await boot();renderTierNote()} // free account — Galdr stays usable; engines wall on use
+      else{hideAuth();await boot();renderAnonLimit()} // free account — Galdr stays usable; engines wall on use
     }catch(e){$('authErr').textContent=e.message}
     finally{go.disabled=false;go.textContent=_authMode==='login'?'Sign in':'Sign up'}}
 
@@ -1735,27 +1734,9 @@
     try{const t=await streamAPI('tag',[{role:'user',content:text.slice(0,1200)}],'',null);
       return (t||'').replace(/["'.\n]/g,'').replace(/\s{2,}/g,' ').trim().split(/\s+/).slice(0,3).join(' ')||'General'}
     catch(e){return 'General'}}
-  function sparkTopics(){
-    const s=cur();const sp=(s&&s.sparks)||[];const map={};
-    sp.forEach(x=>{const t=x.topic&&x.topic!=='…'?x.topic:'Filing…';(map[t]=map[t]||[]).push(x)});
-    return map}
-  function renderSparks(){
-    const el=$('sparkTray');if(!el)return;
-    const map=sparkTopics();const topics=Object.keys(map);
-    if(!topics.length){el.classList.remove('has');el.innerHTML='';return}
-    el.classList.add('has');
-    el.innerHTML='<div class="sk-hd">Research · <b>'+topics.length+'</b> '+(topics.length===1?'thread':'threads')+'</div>'
-      +topics.map(t=>'<div class="sk-grp"><div class="sk-t">'+esc(t)+' <span class="sk-n">'+map[t].length+'</span></div>'
-        +map[t].map(sp=>'<div class="sk-chip" title="'+esc(sp.text.slice(0,240))+'"><span class="sk-x">'+esc(sp.text.replace(/[#*>`\n]/g,' ').replace(/\s{2,}/g,' ').trim().slice(0,64))+(sp.text.length>64?'…':'')+'</span><button onclick="removeSpark(\''+sp.id+'\')" title="Remove">✕</button></div>').join('')
-        +'</div>').join('')}
-  function removeSpark(id){
-    const s=cur();if(!s||!s.sparks)return;
-    s.sparks=s.sparks.filter(sp=>sp.id!==id);s.updatedAt=Date.now();save();renderSparks()}
   // keep the END of a long text — for conversations, the newest turns matter most
   const capTail=(t,n)=>{t=String(t||'');return t.length>n?'…[earlier messages trimmed]\n'+t.slice(-n):t};
-  // the raw idea chat → Crystallize input (when the "Idea chat" source is picked).
   // Selected chats → Crystallize input, one block per chat so Odin sees the topic boundaries.
-  // Messages already saved as sparks are skipped so nothing is fed twice.
   function chatsContext(chatIds,excludeTexts){
     const s=cur();if(!s||!chatIds||!chatIds.length)return '';
     const per=Math.max(2500,Math.floor(9000/chatIds.length)); // shared budget — every picked chat gets a voice
@@ -1767,14 +1748,6 @@
     }).filter(Boolean);
     if(!blocks.length)return '';
     return '\n\n# Idea chats (raw conversations — curate: keep what serves the work, drop the rest)\n'+blocks.join('\n\n')}
-  // sparks for the chosen topics → Crystallize input
-  function sparksContext(topics){
-    const s=cur();const sp=(s&&s.sparks)||[];if(!sp.length||!topics||!topics.length)return '';
-    const picked=sp.filter(x=>topics.includes(x.topic&&x.topic!=='…'?x.topic:'Filing…'));
-    if(!picked.length)return '';
-    const byTopic={};picked.forEach(x=>{const t=x.topic||'General';(byTopic[t]=byTopic[t]||[]).push(x.text)});
-    return '\n\n# Saved sparks (chosen research to build from)\n'
-      +capTxt(Object.keys(byTopic).map(t=>'## '+t+'\n'+byTopic[t].join('\n\n')).join('\n\n'),8000)}
   function toggleRail(){const a=$('app');innerWidth<=760?a.classList.toggle('rail-open'):a.classList.toggle('rail-off')}
   function closeRailMobile(){if(innerWidth<=760)$('app').classList.remove('rail-open')}
   function toggleExp(e){e.stopPropagation();$('expMenu').classList.toggle('show');
@@ -1987,36 +1960,34 @@
     const s=cur();if(!s)return;
     s.brief=$('brief').value.trim();
     const liveChats=chatsOf(s).filter(c=>c.ideas.length);
-    const srcs=[!!s.brief,s.files.length>0,(s.sparks||[]).length>0,liveChats.length>0].filter(Boolean).length;
+    const srcs=[!!s.brief,s.files.length>0,liveChats.length>0].filter(Boolean).length;
     if(!srcs){toast('Chat with Galdr, paste a brief, or attach a file first');return}
     // 2+ sources, itemized ones, OR a re-crystallize over an existing document → show the picker
     // (the picker is also where the "this replaces your document · counts as one" note lives)
-    if(srcs>1||s.files.length||(s.sparks||[]).length||liveChats.length>1||(s.canvas&&s.canvas.trim())){openSummingPicker();return}
-    doSumming({brief:!!s.brief,files:[],topics:[],chats:liveChats.map(c=>c.id)})}
+    if(srcs>1||s.files.length||liveChats.length>1||(s.canvas&&s.canvas.trim())){openSummingPicker();return}
+    doSumming({brief:!!s.brief,files:[],chats:liveChats.map(c=>c.id)})}
   function openSummingPicker(){
     const s=cur();if(!s)return;const rows=[];
-    chatsOf(s).filter(c=>c.ideas.length).forEach(c=>rows.push('<label class="sum-r"><input type="checkbox" data-k="chat" data-id="'+c.id+'" checked><span class="sum-nm">'+esc(c.title||'Idea chat')+'</span><span class="sum-sub">'+c.ideas.length+' message'+(c.ideas.length>1?'s':'')+' · chat — saved sparks are never double-counted</span></label>'));
+    chatsOf(s).filter(c=>c.ideas.length).forEach(c=>rows.push('<label class="sum-r"><input type="checkbox" data-k="chat" data-id="'+c.id+'" checked><span class="sum-nm">'+esc(c.title||'Idea chat')+'</span><span class="sum-sub">'+c.ideas.length+' message'+(c.ideas.length>1?'s':'')+' · chat</span></label>'));
     if(s.brief)rows.push('<label class="sum-r"><input type="checkbox" data-k="brief" checked><span class="sum-nm">Brief</span><span class="sum-sub">'+esc(s.brief.replace(/\n/g,' ').slice(0,64))+(s.brief.length>64?'…':'')+'</span></label>');
     s.files.forEach((f,i)=>rows.push('<label class="sum-r"><input type="checkbox" data-k="file" data-i="'+i+'" checked><span class="sum-nm">'+(f.img?'▦ ':'')+esc(f.n)+'</span><span class="sum-sub">'+(f.img?'image':(f.paste?'paste tile':'file'))+'</span></label>'));
-    const map=sparkTopics();Object.keys(map).forEach(t=>rows.push('<label class="sum-r on-topic"><input type="checkbox" data-k="topic" data-t="'+esc(t).replace(/"/g,'&quot;')+'" checked><span class="sum-nm">'+esc(t)+'</span><span class="sum-sub">'+map[t].length+' spark'+(map[t].length>1?'s':'')+'</span></label>'));
     const warn=(s.canvas&&s.canvas.trim())
       ? '<div class="sum-warn">You already have a document — crystallizing again <b>replaces it</b> and counts as one document. (Undo brings the old one back.)</div>' : '';
     $('sumSrc').innerHTML=warn+(rows.join('')||'<div style="color:var(--mute);font-size:13px">Nothing to sum yet.</div>');
     $('sumView').classList.add('show')}
   function closeSummingPicker(){$('sumView').classList.remove('show')}
   function doSummingFromPicker(){
-    const sel={brief:false,files:[],topics:[],chats:[]};
+    const sel={brief:false,files:[],chats:[]};
     document.querySelectorAll('#sumSrc input:checked').forEach(cb=>{const k=cb.dataset.k;
-      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='topic')sel.topics.push(cb.dataset.t);else if(k==='chat')sel.chats.push(cb.dataset.id)});
-    if(!sel.brief&&!sel.files.length&&!sel.topics.length&&!sel.chats.length){toast('Pick at least one source');return}
+      if(k==='brief')sel.brief=true;else if(k==='file')sel.files.push(+cb.dataset.i);else if(k==='chat')sel.chats.push(cb.dataset.id)});
+    if(!sel.brief&&!sel.files.length&&!sel.chats.length){toast('Pick at least one source');return}
     closeSummingPicker();doSumming(sel)}
-  // readable source names for the crystallize moment — chat titles, brief, files, spark topics
-  function crystallizeSources(sel,imgs){
+  // readable source names for the crystallize moment — chat titles, brief, files
+  function crystallizeSources(sel){
     const s=cur();if(!s)return [];const out=[];
     (sel.chats||[]).forEach(id=>{const c=chatsOf(s).find(x=>x.id===id);if(c)out.push(c.title||'Idea chat')});
     if(sel.brief&&s.brief)out.push('Brief');
     (sel.files||[]).forEach(i=>{const f=s.files[i];if(f)out.push((f.img?'▦ ':'')+f.n)});
-    (sel.topics||[]).forEach(t=>out.push(t));
     return out.map(x=>String(x).slice(0,24))}
   async function doSumming(sel){
     if(_busy){toast('Working — one moment');return}
@@ -2028,14 +1999,13 @@
     const src=chosen.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,20000)).join('\n\n');
     const prompt=((sel.brief&&s.brief)?('# Brief\n'+s.brief+'\n\n'):'')+(src?('# Sources\n'+src):'')
       +(imgs.length?('\n\n# Attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references (mood, palette, typography, composition)'):'')
-      +sparksContext(sel.topics)
-      +chatsContext(sel.chats,new Set(((s.sparks||[]).map(sp=>(sp.text||'').trim()))))
+      +chatsContext(sel.chats)
       +projectContext(s);
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     // the crystallize moment — name each source and let them converge, so the premise is visible:
     // scattered thinking becoming one document. Purely presentational; streaming starts underneath.
-    const labels=crystallizeSources(sel,imgs);
+    const labels=crystallizeSources(sel);
     const conv=labels.length>1
       ? '<div class="gen-conv">'+labels.map((l,i)=>'<span class="gc-src" style="animation-delay:'+(i*90)+'ms">'+esc(l)+'</span>').join('<span class="gc-plus">+</span>')+'</div>'
       : '';
@@ -2183,7 +2153,6 @@
     chatsOf(s).filter(c=>c.ideas.length).forEach(c=>bits.push('chat “'+(c.title||'untitled')+'” · '+c.ideas.length+' messages'));
     if(s.brief&&s.brief.trim())bits.push('brief: '+s.brief.replace(/\s+/g,' ').slice(0,140));
     (s.files||[]).forEach(f=>bits.push((f.img?'image: ':'file: ')+f.n));
-    const tp=sparkTopics();Object.keys(tp).forEach(t=>bits.push('saved sparks · '+t+' ('+tp[t].length+')'));
     if(!bits.length)return '';
     return capTxt('This document was crystallized from these sources:\n- '+bits.join('\n- ')
       +'\nIf something a source clearly carries never made it into the document, flag it as one of your points.',1500)}
@@ -2631,7 +2600,7 @@
       if(backFromCheckout){history.replaceState(null,'',location.pathname)}
       if(ok){hideAuth();if(backFromCheckout==='success')toast(boosted?'Usage credit added — it carries over, use it anytime':'You’re in — welcome to VÆST');await boot()}
       else if(wantPlan&&['basic','pro','director'].includes(wantPlan)){history.replaceState(null,'',location.pathname);startCheckout(wantPlan)}
-      else{hideAuth();await boot();renderTierNote()} // free account (or lapsed) — Galdr keeps working, engines wall on use
+      else{hideAuth();await boot();renderAnonLimit()} // free account (or lapsed) — Galdr keeps working, engines wall on use
     }
     else{
       saveAuth(AUTH&&AUTH.refresh_token?AUTH:null);

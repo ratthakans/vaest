@@ -17,7 +17,6 @@
     <button class="rail-toggle" onclick="toggleRail()" title="Menu" aria-label="Menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
     <!-- anonymous trial — log in / sign up, top-right, ChatGPT-style -->
     <div class="anon-bar" id="anonBar" style="display:none">
-      <span class="anon-tag">Trying VÆST · free</span>
       <button class="anon-login" onclick="anonLogin()">Log in</button>
       <button class="anon-signup" onclick="anonSignup()">Sign up free</button>
     </div>
@@ -65,7 +64,6 @@
             <textarea id="ideaInput" rows="1" placeholder="Talk it through with Galdr…" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,140)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
             <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
           </div>
-          <div class="spark-tray" id="sparkTray" style="display:none"></div>
           <div class="anon-limit" id="anonLimit" style="display:none"></div>
         </div>
         </div>
@@ -137,8 +135,6 @@
       <button class="r-new" onclick="newSession()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New</button>
       <button class="r-search" onclick="openPalette()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search / commands <span class="rs-k">⌘K</span></button>
       <div class="r-scroll">
-        <div class="r-lbl" id="olLbl" style="display:none">Outline</div>
-        <div id="olList" style="display:none"></div>
         <div class="r-lbl">Projects <button onclick="newProject()" title="New project" aria-label="New project">＋</button></div>
         <div id="projList"></div>
         <div class="r-lbl" title="Quick switch: ⌥↑ / ⌥↓">Recents</div>
