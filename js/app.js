@@ -1836,7 +1836,7 @@
     const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Think/Refine
     const trail=isBrief
       ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
-      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
+      : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="openRecast(event)">Recast <em>for a room</em></span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
@@ -2221,6 +2221,42 @@
     catch(e){toast('Failed: '+e.message)}
     finally{setBusy(false);const b=document.querySelector('.doc-idea');if(b)b.classList.remove('working')}}
 
+  /* ═══ RECAST — the same document, recast for another room (Odin · new canvas tab) ═══ */
+  const RECASTS={
+    'one-pager':'a one-pager — everything essential on a single page, lead with the point, cut the rest',
+    'exec':'an executive summary — short and decision-oriented, for a busy leader who has one minute',
+    'punchier':'a punchier version — every line tighter, sharper openings, same substance and structure',
+    'board':'board-ready — crisp, skimmable, decision-oriented, minimal preamble'};
+  const RECAST_LABEL={'one-pager':'One-pager','exec':'Exec summary','punchier':'Punchier','board':'Board-ready'};
+  function openRecast(e){
+    showCtx(e,'<div class="cap">Recast the whole document as…</div>'
+      +Object.keys(RECAST_LABEL).map(k=>'<button onclick="recast(\''+k+'\')">'+RECAST_LABEL[k]+'</button>').join('')
+      +'<div class="sep"></div><div class="cap" style="opacity:.7">Keeps the original in its own tab · counts as one document</div>')}
+  async function recast(kind){
+    hideCtx();
+    if(ANON){anonWall('Sign up to recast documents');return}
+    if(_busy){toast('Working…');return}
+    const s=cur();if(!s)return;
+    const srcMd=genMd();if(!srcMd.replace(/[#\s]/g,'')){toast('Nothing to recast yet');return}
+    const target=RECASTS[kind];if(!target)return;
+    ensureCanvases(s);const c0=activeCv(s);if(c0)c0.md=srcMd; // persist the original tab first
+    setBusy(true);
+    // a NEW canvas tab holds the recast — the original stays put, switch between them by tab
+    const c={id:uid('cv'),t:RECAST_LABEL[kind],md:''};s.canvases.push(c);s.cvId=c.id;s.canvas='';
+    $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Recasting · '+esc(RECAST_LABEL[kind])+'…</div><div class="gen-body" id="genBody"></div></div>';
+    renderTabs();
+    const prompt='# Target\nRecast this document as '+target+'.\n\n# Document\n'+srcMd;
+    try{
+      const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
+      const md=await streamAPI('recast',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md);
+      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();renderTabs();
+      if(document.hidden)notifyDone('Recast');
+      toast('Recast as '+RECAST_LABEL[kind]+' — the original is still in its tab');
+    }catch(e){ // roll the new tab back so a failed recast leaves no empty canvas
+      s.canvases=s.canvases.filter(x=>x.id!==c.id);s.cvId=c0?c0.id:((s.canvases[0]||{}).id);s.canvas=c0?c0.md:'';
+      renderDoc(s.canvas);renderTabs();
+    }finally{setBusy(false)}}
+
   /* ═══ MASTERING (Norrsken · final recheck · approve per item) ═══ */
   let _mast=null;
   const LENS={'':'',tone:'Focus only on "tone and feel" — is it consistent, does it fit the audience?',
@@ -2438,7 +2474,10 @@
     const s=cur();if(!s||!s.canvas.trim())return;
     const btn=$('presGo');btn.disabled=true;btn.textContent='Building the deck…';setBusy(true);
     try{
-      const raw=await streamAPI('present',[{role:'user',content:'Turn this into a presentation:\n\n'+genMd()}],toneSys());
+      // C3 — pinned sections (chapters) become the deck's spine: a key slide each, in order
+      const pins=(s&&s.pins)||{};const pinned=Object.keys(pins).filter(h=>pins[h]);
+      const spine=pinned.length?('\n\nThe user pinned these sections as the spine — give each its own key slide, in this order, and treat the rest as support: '+pinned.join(' · ')):'';
+      const raw=await streamAPI('present',[{role:'user',content:'Turn this into a presentation:\n\n'+genMd()+spine}],toneSys());
       let slides;try{slides=JSON.parse(raw.replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){
         const m=raw.match(/\[[\s\S]*\]/);slides=m?JSON.parse(m[0]):null}
       if(!Array.isArray(slides)||!slides.length)throw new Error('couldn’t shape the slides');

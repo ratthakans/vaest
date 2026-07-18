@@ -32,6 +32,7 @@ export const ROUTE = {
   improve:   { model: 'claude-opus-4-8' },
   edit:      { model: 'claude-opus-4-8' },
   apply:     { model: 'claude-opus-4-8' },
+  recast:    { model: 'claude-opus-4-8' },                                        // rewrite the whole doc into a different register/length (Odin — same voice, new shape)
   think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
@@ -114,6 +115,14 @@ Hard rules:
 - Let the structure follow the real content — don't force a fixed template. For creative work, cover the core idea/direction and the way to execute it (steps, deliverables).
 - Concise and readable; each section makes one clear point.
 - If the work clearly spans multiple distinct deliverables (e.g. brand identity vs copywriting vs event visual), split them: put a line \`===CANVAS: Short Title===\` before each part, and give every part its own "# title" + "## " sections. Only split when the dimensions are genuinely separate — otherwise return one document with no marker.`,
+  recast: `${BASE}
+
+# CURRENT TASK: RECAST — rewrite the WHOLE document into a different register or length, on request.
+You get the full document and a target (e.g. one-pager, executive summary, punchier, board-ready).
+- Keep the facts, the substance, and VÆST's voice. Change only the register, length, and shape to fit the target.
+- A one-pager / exec summary is genuinely shorter — cut to what the target reader needs, lead with the point.
+- "Punchier" tightens every line and sharpens the openings; "board-ready" is crisp, decision-oriented, skimmable.
+- Return the full markdown: "# title" then "## " sections. Structure may change to suit the target — that's the point.`,
   improve: `${BASE}
 
 # CURRENT TASK: IMPROVE — refine one section.
@@ -350,7 +359,7 @@ export default async function handler(req, res) {
   // Fail-open: any counter error allows the request, so a bug never blocks Summing.
   // a "document" = one full Odin generation: Crystallize (summing) or a Brief compile
   // (briefdoc). Without counting briefdoc, Brief mode is an unlimited-Opus backdoor.
-  const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign';
+  const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign' || mode === 'recast';
   if (countsDoc && !freeTier) { // the one free Crystallize has no plan to count against — its own flag gates it
     try {
       const q = await checkDocQuota(user.email, plan, ud);
@@ -373,7 +382,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
