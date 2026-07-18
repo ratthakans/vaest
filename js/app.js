@@ -1035,28 +1035,29 @@
   /* ═══ About — version + the engine roster ═══ */
   const VAEST_VER='3.0';
   // white-label engines · role · version. Real model + wired status shown to internal only.
+  // white-label engines · role · version. The underlying model/provider is NEVER shown —
+  // to anyone, internal included. Engines are the product; the model behind them is ours.
   const ENGINES=[
-    {n:'Galdr', role:'Idea — thinks out loud with you',    ver:'2.5', model:'Gemini Flash · Sonnet 5 (members)', key:'galdr'},
-    {n:'Odin',  role:'Crystallize — writes every word on the canvas', ver:'1.8', model:'Claude Opus 4.8', key:'odin'},
-    {n:'Mimir', role:'Think — a second mind that pushes',   ver:'1.0', model:'GPT-5.6 Sol', key:'mimir'},
-    {n:'Norrsken', role:'Refine + Present — the apex audit, and the deck', ver:'3.0', model:'Claude Fable 5', key:'norrsken'},
+    {n:'Galdr',    role:'Idea — thinks out loud with you',                ver:'2.5', key:'galdr'},
+    {n:'Odin',     role:'Crystallize — writes every word on the canvas',  ver:'1.8', key:'odin'},
+    {n:'Mimir',    role:'Think — a second mind that pushes',              ver:'1.0', key:'mimir'},
+    {n:'Norrsken', role:'Refine + Present — the apex audit, and the deck', ver:'3.0', key:'norrsken'},
   ];
   function renderAbout(){
     const el=$('engineList');if(!el)return;
     const q=window.QUOTA;const internal=!!(q&&q.internal);const en=(q&&q.engines)||null;
     $('abVer').textContent=VAEST_VER;
     el.innerHTML=ENGINES.map(e=>{
-      // internal sees the real model + a wired dot; everyone else sees the role only
-      let sub=e.role;
-      if(internal){const wired=en?(e.key==='norrsken'?en.odin:en[e.key]):null; // Norrsken rides Odin's key
-        const dot=wired===false?'<span class="eg-dot off"></span>':'<span class="eg-dot"></span>';
-        sub='<span class="eg-model">'+dot+esc(e.model)+'</span>';}
-      // one descriptor per row: regular users read the role, the team reads the real model
-      return '<div class="eg-row"><div class="eg-l"><b>'+e.n+'</b></div>'
-        +'<div class="eg-sub">'+sub+'</div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
-    // foot: build + (internal) Sol-fallback + KV status
+      // name · role · version — the same for everyone. Internal accounts get a live wired
+      // dot (status only, no model name) so the team can still tell an engine is keyed.
+      let dot='';
+      if(internal&&en){const wired=(e.key==='norrsken'?en.odin:en[e.key]); // Norrsken rides Odin's key
+        dot='<span class="eg-dot'+(wired===false?' off':'')+'" title="'+(wired===false?'no key — falling back':'wired')+'"></span>';}
+      return '<div class="eg-row"><div class="eg-l">'+dot+'<b>'+e.n+'</b></div>'
+        +'<div class="eg-sub">'+e.role+'</div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
+    // foot: build + (internal) engine-only diagnostics — no model/provider names anywhere
     const bits=['ORIONS.Agency'];
-    if(internal&&en){if(en.mimirFallback>0)bits.push('Sol→Odin ×'+en.mimirFallback+' this month');
+    if(internal&&en){if(en.mimirFallback>0)bits.push('Mimir fell back ×'+en.mimirFallback+' this month');
       bits.push('rate limit · '+(en.kv?'distributed':'in-memory'));}
     $('abFoot').innerHTML=bits.join(' · ')+' · <a href="/privacy" style="color:var(--dim)">Privacy</a> · <a href="/terms" style="color:var(--dim)">Terms</a>'}
   /* ═══ API keys — build VÆST into your own tools ═══ */
