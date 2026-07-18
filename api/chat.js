@@ -412,25 +412,31 @@ export default async function handler(req, res) {
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
       : /sonnet/.test(mid) ? 'sonnet' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
-    // single read-modify-write: record token usage + real spend and, only now that the
-    // document succeeded, bump the counters — merged so the writes don't clobber each other.
-    // Known + accepted: two calls finishing in the same instant can race this RMW and drop
-    // one call's metering (no row-level atomicity via REST). Loss is bounded by one call's
-    // cost, favors the customer, and every gate re-checks on the next call.
-    const d0 = await readUsageData(user.email);
-    let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
-    nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
-    // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
-    // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
-    if (route.openai && /opus/.test(mid)) {
-      const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
-      nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
-    }
-    if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
-    if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
-    await writeUsageRow(user.email, nextData);
-    res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`); // lets the client show per-document cost
+    // Send the per-document cost and close the response FIRST, so the metering read-modify-write
+    // below no longer adds its round-trips to the tail the user is waiting on. It still runs
+    // before the handler returns (usage is recorded); its own try/catch keeps a metering hiccup
+    // from reaching the outer catch, which would try to write to an already-closed response.
+    res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`);
     res.end();
+    try {
+      // single read-modify-write: record token usage + real spend and, now that the document
+      // succeeded, bump the counters — merged so the writes don't clobber each other.
+      // Known + accepted: two calls finishing in the same instant can race this RMW and drop
+      // one call's metering (no row-level atomicity via REST). Loss is bounded by one call's
+      // cost, favors the customer, and every gate re-checks on the next call.
+      const d0 = await readUsageData(user.email);
+      let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
+      nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
+      // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
+      // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
+      if (route.openai && /opus/.test(mid)) {
+        const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
+        nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
+      }
+      if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
+      if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
+      await writeUsageRow(user.email, nextData);
+    } catch (me) { console.error('post-stream metering failed:', me?.message || me); }
   } catch (e) {
     // sanitize — upstream errors can carry provider/model names; the client gets a neutral line
     console.error('chat error:', e?.message || e);

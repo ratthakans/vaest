@@ -11,37 +11,31 @@ export default async function handler(req, res) {
   const user = await verifyUser(req);
   if (!user) { res.status(401).json({ allowed: false, error: 'unauthorized' }); return; }
 
-  const access = await resolveAccess(user.email);
+  // the sub row (resolveAccess) and the usage row are independent — read them together, then
+  // hand the usage row to whichever branch below needs it (no second/third round-trip)
+  const [access, ud] = await Promise.all([resolveAccess(user.email), readUsageData(user.email).catch(() => ({}))]);
   const internal = access.internal;
+  const month = new Date().toISOString().slice(0, 7);
 
   let usage = null;
   if (!internal && access.allowed) {
-    try { usage = await usageSnapshot(user.email, access.plan); } catch (e) {}
+    try { usage = await usageSnapshot(user.email, access.plan, ud); } catch (e) {}
   } else if (!internal) {
     // free tier — expose the Galdr allowance as the same abstract % so the app's rail
     // meter works before there's a plan (plus whether the one free Crystallize is unspent)
     try {
-      const d = await readUsageData(user.email);
-      const month = new Date().toISOString().slice(0, 7);
-      const used = d.month === month ? (d.used || 0) : 0;
+      const used = ud.month === month ? (ud.used || 0) : 0;
       const FREE_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 400_000;
       const now = new Date();
       usage = {
         pct: Math.min(100, Math.round(used / FREE_CAP * 100)),
         resetsOn: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10),
-        freeCrystallize: !d.freeSummed,
+        freeCrystallize: !ud.freeSummed,
       };
     } catch (e) {}
   }
   // internal glance: how many times this month Mimir(Sol) silently fell back to Odin(Opus)
-  let mimirFallback = 0;
-  if (internal) {
-    try {
-      const d = await readUsageData(user.email);
-      const month = new Date().toISOString().slice(0, 7);
-      mimirFallback = d.solFbMonth === month ? (d.solFb || 0) : 0;
-    } catch (e) {}
-  }
+  const mimirFallback = internal && ud.solFbMonth === month ? (ud.solFb || 0) : 0;
 
   const p = access.plan;
   res.status(200).json({

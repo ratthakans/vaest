@@ -440,9 +440,16 @@
       usage=b.usage||0;currentSid=(sessions[0]||{}).id||null;return true}
     return false}
   const storeKey=()=>STORE+':'+((AUTH&&AUTH.email)||'anon');
+  const SOFT_STATE_CAP=4.2e6; // bytes — past this the workspace is big enough to nudge a trim
   let _sizeWarned=false;
-  function save(){try{localStorage.setItem(storeKey(),JSON.stringify(stateBlob()))}catch(e){}
-    if(!_sizeWarned&&stateBytes()>4.2e6){_sizeWarned=true;toast('Your workspace is getting large — trim old sessions or empty the trash in Settings › Privacy to keep syncing fast')}
+  function save(){
+    const json=JSON.stringify(stateBlob()); // stringify once — reused for the write + the size check
+    try{localStorage.setItem(storeKey(),json)}
+    catch(e){ // almost always QuotaExceededError — local persistence is now failing, don't hide it
+      setSync('off');
+      if(!_sizeWarned){_sizeWarned=true;toast('Storage is full — empty the trash or trim old sessions in Settings › Privacy so saving can resume')}
+    }
+    if(!_sizeWarned&&json.length>SOFT_STATE_CAP){_sizeWarned=true;toast('Your workspace is getting large — trim old sessions or empty the trash in Settings › Privacy to keep syncing fast')}
     cloudSave()}
   function loadLocal(){
     try{if(applyBlob(JSON.parse(localStorage.getItem(storeKey()))))return true}catch(e){}
@@ -497,8 +504,13 @@
     if(r.status===429){let d={};try{d=await r.json()}catch(e){}const msg=d.error||'Usage limit reached';
       if(ANON&&d.signup){anonWall(msg)}else toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
-    const reader=r.body.getReader(),dec=new TextDecoder();let full='',stopped=false;
-    try{for(;;){const {done,value}=await reader.read();if(done)break;full+=dec.decode(value,{stream:true});if(onText)onText(full.split('[[USAGE]]')[0])}}
+    const reader=r.body.getReader(),dec=new TextDecoder();let full='',stopped=false,usIdx=-1;
+    try{for(;;){const {done,value}=await reader.read();if(done)break;
+      const prevLen=full.length;full+=dec.decode(value,{stream:true});
+      // the [[USAGE]] trailer lands only at the very end — scan just the fresh tail (with an
+      // 8-char overlap for a marker split across chunks) instead of re-splitting the whole buffer
+      if(usIdx<0){const at=full.indexOf('[[USAGE]]',Math.max(0,prevLen-8));if(at>=0)usIdx=at}
+      if(onText)onText(usIdx>=0?full.slice(0,usIdx):full)}}
     catch(e){if(e.name==='AbortError'){stopped=true;toast('Stopped — kept what streamed so far')}else throw e}
     finally{_abort=null}
     if(stopped){const u=full.indexOf('[[USAGE]]');return (u>=0?full.slice(0,u):full).trim()}
@@ -1435,28 +1447,31 @@
   /* document outline in the rail — click to jump */
   // floating outline — a column of ticks at the right edge of the canvas; hover reveals the
   // section title, click scrolls to it, and the tick nearest the top stays lit as you scroll.
+  // cached once per renderOutline (i.e. per renderDoc) so the per-frame scroll spy below never
+  // re-queries the DOM — only the rects, which do have to be re-read as you scroll
+  let _otSecs=[],_otTicks=[];
   function renderOutline(){
     const rail=$('outlineRail');if(!rail)return;
     const on=$('cvView').style.display!=='none';
     const secs=on?[...document.querySelectorAll('#doc .sec')].filter(x=>x.getAttribute('data-h')!=='_intro'):[];
-    if(secs.length<2){rail.classList.remove('on');rail.innerHTML='';return}
+    if(secs.length<2){rail.classList.remove('on');rail.innerHTML='';_otSecs=[];_otTicks=[];return}
     const s=cur();const pins=(s&&s.pins)||{};
     rail.classList.add('on');
     rail.innerHTML=secs.map((el,i)=>{const h=el.getAttribute('data-h');
       return '<div class="ot-tick" data-oh="'+esc(h)+'"><span class="ot-name">'+(pins[h]?'<b>◆</b>':'<b>'+String(i+1).padStart(2,'0')+'</b>')+esc(h)+'</span><i></i></div>'}).join('');
-    rail.querySelectorAll('.ot-tick').forEach(it=>it.addEventListener('click',()=>{
+    _otSecs=secs;_otTicks=[...rail.querySelectorAll('.ot-tick')];
+    _otTicks.forEach(it=>it.addEventListener('click',()=>{
       const h=it.getAttribute('data-oh');
       const sec=[...document.querySelectorAll('#doc .sec')].find(x=>x.getAttribute('data-h')===h);if(!sec)return;
       const cv=$('cvView');smoothTo(cv,cv.scrollTop+sec.getBoundingClientRect().top-cv.getBoundingClientRect().top-28);
       sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200)}));
     spyOutline()}
-  // light the tick whose section owns the top of the viewport
+  // light the tick whose section owns the top of the viewport (uses the cached node lists)
   function spyOutline(){
-    const rail=$('outlineRail');if(!rail||!rail.classList.contains('on'))return;
+    const rail=$('outlineRail');if(!rail||!rail.classList.contains('on')||!_otSecs.length)return;
     const cv=$('cvView'),top=cv.getBoundingClientRect().top+90;
-    const secs=[...document.querySelectorAll('#doc .sec')].filter(x=>x.getAttribute('data-h')!=='_intro');
-    let cur=0;secs.forEach((el,i)=>{if(el.getBoundingClientRect().top<=top)cur=i});
-    rail.querySelectorAll('.ot-tick').forEach((t,i)=>t.classList.toggle('cur',i===cur))}
+    let curIdx=0;_otSecs.forEach((el,i)=>{if(el.getBoundingClientRect().top<=top)curIdx=i});
+    _otTicks.forEach((t,i)=>t.classList.toggle('cur',i===curIdx))}
   function showCanvas(){const s=cur();if(!s)return;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
