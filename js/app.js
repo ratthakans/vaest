@@ -1363,7 +1363,7 @@
     const briefWait=['Reading your brief…','Finding the gaps…','Framing the next question…','Thinking…'];
     let stopBW=waitLines(live.querySelector('.tx'),briefWait),bwaited=true;
     try{
-      const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';th.scrollTop=th.scrollHeight}});
+      const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';softScroll(th)}});
       const out=await streamAPI('briefchat',briefMsgs(s),toneSys(),r);r.stop();if(bwaited){bwaited=false;stopBW()}
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
       const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
@@ -1381,8 +1381,8 @@
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Compiling the brief…</div><div class="gen-body" id="genBody"></div></div>';
     try{
-      const r=raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}});
-      const md=await streamAPI('briefdoc',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
+      const md=await streamAPI('briefdoc',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md);
       setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();showCanvas();
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
@@ -1509,9 +1509,9 @@
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Aligning the brief to your reference…</div><div class="gen-body" id="genBody"></div></div>';
     const prompt='# REFERENCE BRIEF (match its shape, section set & order, tone, formatting, density)\n'+ref
       +'\n\n# CURRENT BRIEF (keep every fact, name, number — reshape only)\n'+md;
-    const r=raf(full=>{const b=$('genBody');if(b)b.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
+    const rev=mdReveal($('genBody'));
     try{
-      const out=await streamAPI('briefalign',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      const out=await streamAPI('briefalign',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(out);
       setCanvasMd(s,out);s.updatedAt=Date.now();save();renderDoc(out);
       toast('Brief reshaped to match your reference — Undo if it drifted');
     }catch(e){r.stop();renderDoc(s.canvas);/* streamAPI surfaced the wall/toast */}
@@ -1657,6 +1657,14 @@
       raf=requestAnimationFrame(tick)};
     return {push(t){target=t||'';schedule()},finish(cb){ended=true;doneCb=cb;schedule()}};
   }
+  // Paced markdown reveal for the document streams (Crystallize / Brief compile / Align). The
+  // Idea chat has long used smoothStreamer to turn bursty network chunks into a steady word-by-
+  // word flow; this shares that path with the canvas so a document appears just as smoothly.
+  // on(full) feeds streamAPI's onText; done(final) lets the reveal catch up before the caller
+  // swaps in the final render, so there's no jump from a mid-reveal state to the finished doc.
+  function mdReveal(el,opts){opts=opts||{};
+    const sr=smoothStreamer((txt,streaming)=>{el.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');if(opts.scroll)opts.scroll()});
+    return {on:t=>sr.push(t),done:t=>{sr.push(t||'');return new Promise(r=>sr.finish(r))}};}
   async function streamIdeaReply(s,restoreOnFail){
     _ideaBusy=true;setIdeaSendMode(true);
     const ch=curChat(s); // pin the chat — replies land here even if the user switches tabs mid-stream
@@ -1672,7 +1680,7 @@
     const clearStall=()=>{clearTimeout(stallT);live.classList.remove('stalled')};
     try{
       const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
-      const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');th.scrollTop=th.scrollHeight}});
+      const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');softScroll(th)}});
       armStall();
       const out=await streamAPI('idea',msgs,toneSys(),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
       clearStall();
@@ -2015,7 +2023,9 @@
     const theatre=['Reading your sources…'].concat(labels.slice(0,3).map(l=>'Weaving in '+l+'…'),['Finding the through-line…','Shaping the sections…','Choosing the words…']);
     let stopTheatre=waitLines($('genStatus'),theatre),theatreOn=true;
     try{
-      const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{if(full&&theatreOn){theatreOn=false;stopTheatre()}const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
+      const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
+      const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),full=>{if(full&&theatreOn){theatreOn=false;stopTheatre()}rev.on(full)});
+      await rev.done(md);
       if(theatreOn){theatreOn=false;stopTheatre()}
       const split=splitCanvases(md);
       if(split){s.canvases=split.map(p=>({id:uid('cv'),t:p.t,md:p.md}));s.cvId=s.canvases[0].id;s.canvas=s.canvases[0].md;
