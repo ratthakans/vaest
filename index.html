@@ -77,9 +77,23 @@
           <div class="brief-start" id="briefStart">
             <textarea id="briefIn" rows="3" placeholder="Paste what you have — or attach references (docs, images, even a video). VÆST asks for the rest."></textarea>
             <div class="brief-start-foot">
-              <button class="bb-attach" onclick="$('briefFileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
+              <button class="bb-attach" title="Material — the content this brief is about" onclick="$('briefFileInput').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach</button>
+              <button class="bb-attach" id="brefBtn" title="A brief you want this one to resemble — shape and tone only" onclick="toggleBriefRef()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4" stroke-opacity=".55"/></svg> Ref</button>
               <button class="go" id="briefGoBtn" onclick="startBrief()">Analyse brief <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
             </div>
+            <!-- Ref = the shape to resemble. Kept apart from Attach (material) on purpose. -->
+            <div class="bref-panel" id="brefPanel" style="display:none">
+              <div class="bref-eye">A brief you want this one to resemble. VÆST matches its <b>shape, sections and tone</b> — your content stays yours, and it guides the interview from the first question.</div>
+              <textarea id="brefIn" rows="4" spellcheck="false" placeholder="Paste the reference brief here…"></textarea>
+              <input type="file" id="brefFileInput" accept=".docx,.pdf,.md,.txt,.html" style="display:none" onchange="brefFilePick(event)">
+              <div class="bref-foot">
+                <button class="rp-attach" onclick="$('brefFileInput').click()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach a file</button>
+                <span style="flex:1"></span>
+                <button class="rp-x" onclick="toggleBriefRef()">Cancel</button>
+                <button class="rp-go" onclick="saveBriefRef()">Use as reference</button>
+              </div>
+            </div>
+            <div class="bref-chip" id="brefChip" style="display:none"></div>
           </div>
           <div class="brief-files" id="briefFiles"></div>
           <input type="file" id="briefFileInput" multiple accept=".docx,.pdf,.md,.txt,.csv,.html,.png,.jpg,.jpeg,.webp,.gif,.heic,.mp4,.mov,.webm,.m4v" style="display:none" onchange="briefFilePick(event)">

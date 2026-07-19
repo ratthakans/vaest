@@ -115,6 +115,7 @@ Rules:
 Use everything provided (initial input, files, and the full Q&A). Produce a clean, professional brief.
 - Structure with "# <project> — Brief" then "## " sections drawn from: Objective, Audience, Deliverables, Scope, Timeline, Budget, Tone & voice, References, Success criteria, Constraints.
 - Include ONLY sections with real content — never pad or invent. Keep each section tight and concrete.
+- If a "# REFERENCE BRIEF (shape only…)" block is present, mirror its section set, order, tone, formatting habits and density — but fill it ONLY with this project's real content. Never copy the reference's facts, names or numbers, and never mention that a reference exists. Where the reference has a section this project has no real content for, leave it out.
 - This is the brief itself, not advice about it. Return the full markdown only.`,
   briefalign: `${BASE}
 

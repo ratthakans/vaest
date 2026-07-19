@@ -266,14 +266,21 @@
   .di-go{flex:none;font-size:12.5px;font-weight:650;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line2);padding:8px 15px;border-radius:var(--r-md);transition:.14s}
   .di-go:hover{background:rgba(255,255,255,.12);color:#fff}
   /* Brief · Match a reference — reshape the brief toward a pasted example */
-  .ref-panel{margin:10px 0 30px;padding:14px 15px;border:1px solid var(--line);border-left:2px solid var(--cinnabar);
+  .ref-panel,.bref-panel{margin:10px 0 30px;padding:14px 15px;border:1px solid var(--line);border-left:2px solid var(--cinnabar);
     border-radius:var(--r-lg);background:rgba(255,255,255,.03);animation:qPop .28s var(--ease) both}
-  .rp-eye{font-size:12px;line-height:1.5;color:var(--dim);margin-bottom:10px}
-  .ref-panel textarea{width:100%;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:var(--r-md);outline:none;resize:vertical;
+  .bref-panel{margin:12px 0 0}
+  .rp-eye,.bref-eye{font-size:12px;line-height:1.5;color:var(--dim);margin-bottom:10px}
+  .bref-eye b{color:var(--ink);font-weight:650}
+  .ref-panel textarea,.bref-panel textarea{width:100%;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:var(--r-md);outline:none;resize:vertical;
     color:var(--ink);font-family:var(--ui);font-size:13.5px;line-height:1.6;padding:10px 12px;max-height:280px;transition:border-color .16s}
-  .ref-panel textarea:focus{border-color:var(--line2)}
-  .ref-panel textarea::placeholder{color:var(--mute)}
-  .rp-foot{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:11px}
+  .ref-panel textarea:focus,.bref-panel textarea:focus{border-color:var(--line2)}
+  .ref-panel textarea::placeholder,.bref-panel textarea::placeholder{color:var(--mute)}
+  .rp-foot,.bref-foot{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:11px}
+  /* the set reference, shown quietly under the composer */
+  .bref-chip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
+  .bref-chip .chip.ref b{color:var(--cinnabar)}
+  .bref-note{font-size:11.5px;color:var(--mute)}
+  #brefBtn.on{border-color:var(--cinnabar);color:var(--ink)}
   .rp-x{font-size:12.5px;font-weight:600;color:var(--mute);padding:8px 12px;border-radius:var(--r-md);transition:.14s}
   .rp-x:hover{color:var(--ink)}
   .rp-go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--ink);

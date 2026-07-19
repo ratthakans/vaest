@@ -1459,9 +1459,14 @@
     const imgs=files.filter(f=>f.img); // B1 — visual references the interviewer actually SEES
     const textCtx=files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,8000)).join('\n\n');
     const visNote=imgs.length?('\n\n# Visual references attached ('+imgs.map(f=>f.n).join(', ')+') — read them as real references for the work’s style: mood, palette, typography, composition, pacing. Ask about that direction and let it shape the brief.'):'';
+    // C1 — a reference brief steers the interview: ask for what ITS sections need
+    const ol=s.briefRef?refOutline(s.briefRef.c):'';
+    const refNote=s.briefRef?('\n\n# The finished brief must resemble a reference the user provided ("'+s.briefRef.n+'")'
+      +(ol?('\n Its sections: '+ol):'')
+      +'\n Prioritise questions that fill those sections, and match its depth. Never mention the reference or copy its content — it is a model for SHAPE only.'):'';
     return qa.map((m,i)=>{
       if(i===0&&m.r==='user'){
-        const c=m.c+(textCtx?('\n\n# Attached files (already provided)\n'+textCtx):'')+visNote;
+        const c=m.c+(textCtx?('\n\n# Attached files (already provided)\n'+textCtx):'')+visNote+refNote;
         return {role:'user',content:imgs.length?msgContent(c,imgs):c};
       }
       return {role:m.r==='user'?'user':'assistant',content:m.c}});
@@ -1471,6 +1476,48 @@
     el.innerHTML=(s&&s.files&&s.files.length)?s.files.map((f,i)=>
       '<span class="chip"><b>'+esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4))+'</b><span>'+esc(f.n)+'</span><button onclick="removeFile('+i+');renderBriefFiles()" title="Remove">✕</button></span>').join(''):''}
   function briefFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs).then(renderBriefFiles)}
+  /* C1/C2 — Ref is NOT Attach. Attach carries the material the brief is about; Ref carries a
+     brief whose SHAPE we want to land on. Kept in s.briefRef so it steers the interview from
+     the first question and the compile from the first draft — not only a reshape afterwards. */
+  function toggleBriefRef(){
+    const p=$('brefPanel');if(!p)return;
+    const open=p.style.display==='none';
+    p.style.display=open?'':'none';
+    if(open){const s=cur();const t=$('brefIn');
+      if(t){if(s&&s.briefRef&&!t.value.trim())t.value=s.briefRef.c;setTimeout(()=>t.focus(),40)}
+      p.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+  async function brefFilePick(e){
+    const f=(e.target.files||[])[0];e.target.value='';if(!f)return;
+    const t=$('brefIn');if(!t)return;
+    toast('Reading '+f.name+'…');
+    try{const c=await extractFile(f);
+      if(c&&c.trim()){t.value=(t.value.trim()?t.value.trim()+'\n\n':'')+c.trim();t.dataset.n=f.name;toast('Reference loaded from '+f.name)}
+      else toast('Couldn’t read '+f.name)}
+    catch(err){toast('Couldn’t read '+f.name)}}
+  function saveBriefRef(){
+    const s=cur(),t=$('brefIn');if(!s||!t)return;
+    const c=t.value.trim();
+    if(!c){toast('Paste a reference brief, or attach one');return}
+    s.briefRef={n:t.dataset.n||'Pasted reference',c:capTxt(c,14000)};s.updatedAt=Date.now();save();
+    $('brefPanel').style.display='none';renderBrefChip();
+    toast('Reference set — the interview and the brief will follow its shape')}
+  function clearBriefRef(){const s=cur();if(!s)return;delete s.briefRef;save();
+    const t=$('brefIn');if(t){t.value='';delete t.dataset.n}
+    renderBrefChip();toast('Reference removed')}
+  function renderBrefChip(){
+    const s=cur(),el=$('brefChip');if(!el)return;
+    const r=s&&s.briefRef;
+    el.style.display=r?'':'none';
+    const b=$('brefBtn');if(b)b.classList.toggle('on',!!r);
+    if(r)el.innerHTML='<span class="chip ref"><b>REF</b><span>'+esc(r.n)+'</span><button onclick="clearBriefRef()" title="Remove reference">✕</button></span>'
+      +'<span class="bref-note">shape &amp; tone only — your content stays yours</span>'}
+  // Only the reference's SKELETON rides along in the interview (headings, not the whole text) —
+  // enough to ask the right questions without paying for the full document every turn.
+  function refOutline(c){
+    const heads=String(c||'').split('\n').map(l=>l.trim())
+      .filter(l=>/^#{1,3}\s+\S/.test(l)||/^[A-Z][A-Za-z /&'-]{2,40}:$/.test(l))
+      .map(l=>l.replace(/^#{1,3}\s*/,'').replace(/:$/,'')).slice(0,14);
+    return heads.join(' · ')}
   function renderBriefQA(){
     const s=cur(),th=$('briefThread');if(!th)return;
     const qa=(s&&s.briefQA)||[];const last=qa.length-1;
@@ -1535,7 +1582,8 @@
     const imgs=files.filter(f=>f.img); // B1 — visual refs fold their style into the compiled brief
     const filesCtx=files.filter(f=>!f.img).map((f,i)=>'### File '+(i+1)+': '+f.n+'\n'+capTxt(f.c,12000)).join('\n\n');
     const qaText=(s.briefQA||[]).map(m=>(m.r==='user'?'User: ':'VÆST: ')+m.c).join('\n\n');
-    const prompt='# Initial input\n'+(s.briefSeed||'(see files)')+(filesCtx?('\n\n# Files\n'+filesCtx):'')
+    const prompt=(s.briefRef?('# REFERENCE BRIEF (shape only — mirror its section set, order, tone, density; never copy its facts)\n'+capTxt(s.briefRef.c,12000)+'\n\n'):'')
+      +'# Initial input\n'+(s.briefSeed||'(see files)')+(filesCtx?('\n\n# Files\n'+filesCtx):'')
       +(imgs.length?('\n\n# Visual references (shown below): '+imgs.map(f=>f.n).join(', ')+' — read the style (mood, palette, typography, composition, pacing) and let the brief reflect that direction where it fits (e.g. a look-and-feel / art-direction note).'):'')
       +'\n\n# Interview (questions & answers)\n'+qaText;
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
@@ -1579,7 +1627,9 @@
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
       if(started){renderBriefFiles();renderBriefQA();updateBriefCompile(s)}
-      else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles()}}
+      else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles();
+        const bp=$('brefPanel');if(bp)bp.style.display='none';const bt=$('brefIn');if(bt){bt.value='';delete bt.dataset.n}}
+      renderBrefChip()}
     renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
@@ -1675,7 +1725,7 @@
       const out=await streamAPI('briefalign',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(out);
       setCanvasMd(s,out);s.updatedAt=Date.now();save();renderDoc(out);
       toast('Brief reshaped to match your reference — Undo if it drifted');
-    }catch(e){r.stop();renderDoc(s.canvas);/* streamAPI surfaced the wall/toast */}
+    }catch(e){renderDoc(s.canvas);/* streamAPI surfaced the wall/toast */}
     finally{setBusy(false)}}
   function toggleChain(){const s=cur();if(!s)return;
     if(!canRefine()){toast('Auto-Refine is on Pro and above');return}
