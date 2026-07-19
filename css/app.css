@@ -1088,6 +1088,14 @@
   .id-attach:hover{color:var(--ink);background:rgba(255,255,255,.07)}
   .idea-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
   .idea-files:empty{display:none}
+  /* A4 — what the project is feeding this conversation. One dim line, never a card. */
+  .scope-line{margin-top:11px;font-size:11.5px;line-height:1.5;color:var(--mute)}
+  .scope-line b{color:var(--dim);font-weight:600}
+  .scope-line .sl-i{cursor:default;border-bottom:1px dotted rgba(255,255,255,.12)}
+  /* C3 — the running summary of the interview */
+  .brief-prog{display:flex;flex-wrap:wrap;gap:4px 16px;margin:14px 0 2px;font-size:11.5px;line-height:1.5}
+  .bp-got{color:var(--dim)}
+  .bp-need{color:var(--mute)}
   /* saved sparks — research auto-filed by topic */
 
   /* brief templates */

@@ -108,7 +108,10 @@ Rules:
 - Ask ONE focused question at a time — the single most valuable missing piece. Be brief and concrete; suggest example answers when it helps.
 - Never invent facts. If the user is vague, probe gently.
 - Reply in the user's language.
-- When the brief has enough across the essentials to be genuinely actionable, reply with exactly "BRIEF_COMPLETE" on its own first line, then one short sentence on what you have. Do not keep asking once it's complete.`,
+- When the brief has enough across the essentials to be genuinely actionable, reply with exactly "BRIEF_COMPLETE" on its own first line, then one short sentence on what you have. Do not keep asking once it's complete.
+- Finish EVERY reply with one final line in exactly this form:
+  [[GOT]] Objective · Audience [[MISSING]] Budget · Timeline
+  List the checklist essentials you now have a real answer for after [[GOT]], and those still open after [[MISSING]], separated by " · ". Use the checklist's short names above, in the user's language. Omit a marker entirely if its list is empty. The interface strips this line — never mention it, never put anything after it.`,
   briefdoc: `${BASE}
 
 # CURRENT TASK: COMPILE BRIEF — turn the gathered material + interview into one complete creative brief.

@@ -62,6 +62,7 @@
         <div class="idea hero" id="ideaBox">
           <div class="id-thread" id="ideaThread"></div>
           <div class="idea-files" id="ideaFiles"></div>
+          <div class="scope-line" id="ideaScope" style="display:none"></div>
           <div class="id-in">
             <button class="id-attach" id="ideaAttach" aria-label="Attach a file" title="Attach a file — Galdr reads it" onclick="$('ideaFileInput').click()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
             <textarea id="ideaInput" rows="1" placeholder="Talk it through with Galdr…" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,140)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
@@ -94,12 +95,14 @@
               </div>
             </div>
             <div class="bref-chip" id="brefChip" style="display:none"></div>
+            <div class="scope-line" id="briefScope" style="display:none"></div>
           </div>
           <div class="brief-files" id="briefFiles"></div>
           <input type="file" id="briefFileInput" multiple accept=".docx,.pdf,.md,.txt,.csv,.html,.png,.jpg,.jpeg,.webp,.gif,.heic,.mp4,.mov,.webm,.m4v" style="display:none" onchange="briefFilePick(event)">
           <!-- interview — appears once analysis begins -->
           <div class="brief-interview" id="briefInterview" style="display:none">
             <div class="id-thread" id="briefThread"></div>
+            <div class="brief-prog" id="briefProg" style="display:none"></div>
             <div class="brief-compile" id="briefCompile" style="display:none">
               <span class="bc-note">Looks complete — compile it into a brief, or keep answering below.</span>
               <button class="go" onclick="compileBrief()">Compile brief <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>

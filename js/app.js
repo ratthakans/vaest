@@ -1531,6 +1531,27 @@
     if(card)card.scrollIntoView({block:'nearest'}); else th.scrollTop=th.scrollHeight}
   // Compile is offered two ways: once VÆST declares BRIEF_COMPLETE (primary), or as an
   // escape hatch after a few answers so a user in a hurry is never trapped in the interview.
+  /* C3 — the running summary. The interviewer ends each reply with a
+     "[[GOT]] a · b [[MISSING]] x · y" line; we parse it, strip it, and show it as a quiet
+     progress line. Rides along on the same call — no extra engine spend. */
+  function parseBriefProgress(out){
+    const t=String(out);
+    const split=x=>String(x||'').split('·').map(y=>y.replace(/[\[\]]/g,'').trim()).filter(y=>y&&y.length<40).slice(0,10);
+    // each marker is read on its own — a turn that has only [[MISSING]] (nothing captured yet)
+    // still updates the line
+    const mg=t.match(/\[\[GOT\]\]([\s\S]*?)(?=\[\[MISSING\]\]|$)/);
+    const mn=t.match(/\[\[MISSING\]\]([\s\S]*?)(?=\[\[GOT\]\]|$)/);
+    const got=mg?split(mg[1]):null,need=mn?split(mn[1]):null;
+    // strip the marker line however it came out — a stray bracket must never reach the canvas
+    const clean=String(out).replace(/\[\[GOT\]\][\s\S]*$/,'').replace(/\[\[MISSING\]\][\s\S]*$/,'').trim();
+    return {got,need,clean}}
+  function renderBriefProgress(s){
+    const el=$('briefProg');if(!el)return;
+    const got=(s&&s.briefGot)||[],need=(s&&s.briefNeed)||[];
+    if(!got.length&&!need.length){el.style.display='none';el.innerHTML='';return}
+    el.style.display='';
+    el.innerHTML=(got.length?'<span class="bp-got">Captured — '+esc(got.join(' · '))+'</span>':'')
+      +(need.length?'<span class="bp-need">Still open — '+esc(need.join(' · '))+'</span>':'')}
   function updateBriefCompile(s){
     const bc=$('briefCompile');if(!bc)return;
     const complete=!!(s&&s.briefComplete);
@@ -1566,12 +1587,16 @@
     const briefWait=['Reading your brief…','Finding the gaps…','Framing the next question…','Thinking…'];
     let stopBW=waitLines(live.querySelector('.tx'),briefWait),bwaited=true;
     try{
-      const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';softScroll(th)}});
+      // hide both control markers mid-stream too, so neither ever flashes in the reply
+      const strip=t=>t.replace(/^BRIEF_COMPLETE\s*/i,'').replace(/\[\[GO?T?\]?\]?[\s\S]*$/,'').replace(/\[+\s*$/,'');
+      const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(strip(full))+'<span class="cursor"></span>';softScroll(th)}});
       const out=await streamAPI('briefchat',briefMsgs(s),toneSys()+projectContext(s,true),r);r.stop();if(bwaited){bwaited=false;stopBW()}
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
-      const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
+      const prog=parseBriefProgress(out);
+      if(prog.got)s.briefGot=prog.got;if(prog.need)s.briefNeed=prog.need;
+      const clean=prog.clean.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
       s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
-      updateBriefCompile(s);
+      renderBriefProgress(s);updateBriefCompile(s);
     }catch(e){stopBW();live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
     finally{_briefBusy=false}}
   async function compileBrief(){
@@ -1626,11 +1651,11 @@
       else gr.style.display='none'}
     if(mode==='brief'){const started=!!(s&&s.briefQA&&s.briefQA.length);
       $('briefStart').style.display=started?'none':'';$('briefInterview').style.display=started?'':'none';
-      if(started){renderBriefFiles();renderBriefQA();updateBriefCompile(s)}
+      if(started){renderBriefFiles();renderBriefQA();renderBriefProgress(s);updateBriefCompile(s)}
       else{const bi=$('briefIn');if(bi)bi.value='';renderBriefFiles();
         const bp=$('brefPanel');if(bp)bp.style.display='none';const bt=$('brefIn');if(bt){bt.value='';delete bt.dataset.n}}
       renderBrefChip()}
-    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit()}
+    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit();renderScopeLines()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
     if(!MODES.includes(m))return;
@@ -2186,6 +2211,28 @@
     if(sibs.length)out+='\n\n# Context from other work in the same project (background only, don’t re-summarize)\n'
       +sibs.map(x=>'## '+x.title+'\n'+capTxt(x.canvas,capSib)).join('\n\n');
     return out}
+  // A4 — what the project is actually feeding this conversation, in the user's words.
+  // Sliced to the SAME caps projectContext() uses, so the line never claims more than is sent.
+  function scopeInfo(s,light){
+    if(!s||!s.projectId)return null;
+    const p=projects.find(x=>x.id===s.projectId);if(!p)return null;
+    const refs=(p.refs||[]).slice(0,light?3:99);
+    const sibs=sessions.filter(x=>x.projectId===s.projectId&&x.id!==s.id&&x.canvas&&x.canvas.trim()).slice(0,light?2:3);
+    if(!refs.length&&!sibs.length)return null;
+    return {name:p.name,refs,sibs}}
+  function scopeLineHTML(s,light){
+    const i=scopeInfo(s,light);if(!i)return '';
+    const bits=[];
+    if(i.refs.length)bits.push(i.refs.length+' reference'+(i.refs.length>1?'s':''));
+    if(i.sibs.length)bits.push(i.sibs.length+' document'+(i.sibs.length>1?'s':''));
+    const names=[...i.refs.map(r=>r.n),...i.sibs.map(x=>x.title)].join(' · ');
+    return '<span class="sl-i" title="'+esc(names)+'">Drawing on <b>/ '+esc(i.name)+'</b> — '+bits.join(' · ')+'</span>'}
+  function renderScopeLines(){
+    const s=cur();
+    [['ideaScope',true],['briefScope',true]].forEach(([id,light])=>{
+      const el=$(id);if(!el)return;
+      const h=scopeLineHTML(s,light);
+      el.innerHTML=h;el.style.display=h?'':'none'})}
   // What this session can currently draw on — attached files + whatever the project shares.
   // Used by the chat modes (Crystallize builds its own richer prompt).
   function sessionContext(s,light){
