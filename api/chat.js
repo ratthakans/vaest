@@ -36,6 +36,7 @@ export const ROUTE = {
   think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
   sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
   distill:      { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
+  voice:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 900 },   // read a brand's own writing (samples/site/PDF) → distill a reusable voice guide
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
   present:   { model: 'claude-fable-5', fallback: 'claude-opus-4-8', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
 };
@@ -87,6 +88,17 @@ The {{quote}} must be 3–8 words copied verbatim from the section body. Never p
 
 # CURRENT TASK: DISTILL TASTE — read a studio's judgments (what they KEPT vs PASSED ON) and name the pattern.
 Return 2–4 short taste rules the studio seems to hold — imperative, human-readable, one line each (e.g. "Open with a provocation, not a definition"). Only clear, repeated patterns; if the signal is thin, return fewer. Format each as "- rule". No intro, no outro, no hedging.`,
+  voice: `${BASE}
+
+# CURRENT TASK: DISTILL BRAND VOICE — read a brand's OWN material (writing samples, website copy, a PDF) and distill the voice it is written in, so VÆST can write future documents in that same voice.
+You are reverse-engineering HOW this brand sounds, not summarizing WHAT it says. Ignore the topics; listen to the register, rhythm, and word choice.
+Return a tight, reusable voice guide — guidelines only, never sample copy — with these short sections (skip any the material doesn't support):
+- **Voice** — 1–2 lines: the register, energy and stance (e.g. "Confident and spare. States, never sells. Dry wit under a calm surface.")
+- **Vocabulary** — words/phrases it reaches for, and words it clearly avoids.
+- **Sentence & rhythm** — length, punctuation habits, how it opens and closes.
+- **Do** — 2–4 concrete rules.
+- **Don't** — 2–4 concrete rules (banned words, moves it never makes).
+Write the guide in the same language as the material. Be specific and evidence-based — only claim what the material actually shows. No preamble, no "here is the guide", just the guide.`,
   briefchat: `${BASE}
 
 # CURRENT TASK: BRIEF INTERVIEW — help the user complete a creative brief, one question at a time.
@@ -387,7 +399,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR', distill: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR', distill: 'MIMIR', voice: 'MIMIR' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 

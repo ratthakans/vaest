@@ -709,6 +709,34 @@
     padding:12px 14px;font-family:var(--ui);font-size:13.5px;line-height:1.7;color:var(--ink);outline:none}
   .vc-ta:focus{border-color:var(--ink)}
   .vc-ta::placeholder{color:var(--mute)}
+  .vc-ta[readonly]{opacity:.85}
+
+  /* brand-voice: distil from the brand's own material */
+  .vc-extract{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 13px;background:rgba(255,255,255,.015)}
+  .vc-ex-lbl{font-size:11px;font-weight:650;letter-spacing:.02em;color:var(--dim);margin-bottom:9px}
+  .vc-link{display:flex;gap:7px}
+  .vc-link input{flex:1;min-width:0;background:var(--app);border:1px solid var(--line2);border-radius:var(--r-sm);padding:8px 11px;font-family:var(--ui);font-size:12.5px;color:var(--ink);outline:none}
+  .vc-link input:focus{border-color:var(--ink)}
+  .vc-link input::placeholder{color:var(--mute)}
+  .vc-link input:disabled{opacity:.5}
+  .vc-add{flex:none;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--line2);font-size:12px;font-weight:650;color:var(--ink);transition:.14s}
+  .vc-add:hover{border-color:var(--ink);background:rgba(255,255,255,.04)}
+  .vc-src{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .vc-src:empty{display:none}
+  .vc-chip{display:inline-flex;align-items:center;gap:6px;max-width:220px;padding:4px 6px 4px 9px;border-radius:var(--r-pill);border:1px solid var(--line2);background:var(--app);font-size:11.5px;color:var(--dim)}
+  .vc-chip-t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vc-chip button{flex:none;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;color:var(--mute);font-size:10px}
+  .vc-chip button:hover{background:rgba(255,255,255,.1);color:var(--ink)}
+  .vc-ex-row{display:flex;align-items:center;gap:10px;margin-top:11px}
+  .vc-file{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--dim)}
+  .vc-file:hover{color:var(--ink)}
+  .vc-distill{margin-left:auto;padding:7px 13px;border-radius:var(--r-pill);border:1px solid var(--line2);font-size:12px;font-weight:700;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;transition:.14s}
+  .vc-distill:hover{border-color:var(--cinnabar)}
+  .vc-distill:disabled{opacity:.6;border-color:var(--line)}
+  .vc-or{text-align:center;font-size:11px;color:var(--mute);margin:14px 0 10px}
+  .vc-confirm{margin-top:10px;font-size:12px;line-height:1.6;color:var(--dim)}
+  .vc-confirm b{color:var(--ink)}
 
   .cv-tab .tx{margin-left:8px;opacity:.6;font-size:10px}
   .cv-tab .tx:hover{opacity:1}

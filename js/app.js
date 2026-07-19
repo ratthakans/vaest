@@ -920,7 +920,7 @@
     let h='<button onclick="renameProject(\''+pid+'\');hideCtx()">Rename</button>'
       +'<div class="sep"></div><div class="cap">Reference'+(nRef?' · '+nRef+' files':'')+'</div>'
       +'<button onclick="addProjectRef(\''+pid+'\');hideCtx()">Add reference (file)</button>'
-      +'<button onclick="openVoice(\''+pid+'\');hideCtx()">Voice & guidelines'+(p&&p.voice?' ·&nbsp;set':'')+'</button>';
+      +'<button onclick="openVoice(\''+pid+'\');hideCtx()">Brand voice'+(p&&p.voice?' ·&nbsp;set':'')+'</button>';
     if(nRef)p.refs.forEach((r,k)=>h+='<button class="danger" onclick="removeProjectRef(\''+pid+'\','+k+');hideCtx()">✕ '+esc(r.n.slice(0,26))+'</button>');
     h+='<div class="sep"></div><button class="danger" onclick="deleteProject(\''+pid+'\');hideCtx()">Delete project</button>';
     showCtx(e,h)}
@@ -1138,14 +1138,50 @@
         +(ap.length?'\nAPPROVED: '+ap.join(' · '):'')+(rj.length?'\nPASSED ON: '+rj.join(' · '):''),1200))}
     return parts.join('\n\n')}
 
-  /* project voice modal */
-  let _voicePid=null;
-  function openVoice(pid){const p=projects.find(x=>x.id===pid);if(!p)return;_voicePid=pid;
-    $('voiceTitle').textContent='Voice — '+p.name;$('voiceText').value=p.voice||'';
+  /* project brand-voice modal — paste a link / PDF / samples → Mimir distills a voice guide → confirm */
+  let _voicePid=null,_voiceSrc=[];
+  function openVoice(pid){const p=projects.find(x=>x.id===pid);if(!p)return;_voicePid=pid;_voiceSrc=[];
+    $('voiceTitle').textContent='Brand voice — '+p.name;$('voiceText').value=p.voice||'';
+    const lk=$('voiceLink');if(lk)lk.value='';const cf=$('voiceConfirm');if(cf)cf.style.display='none';
+    renderVoiceSrc();
     const tEl=$('vcTaste');const n=(p.taste||[]).length;
     if(tEl){if(n){tEl.style.display='';tEl.innerHTML='<span>Taste memory: learned from <b>'+n+'</b> decision'+(n>1?'s':'')+' — quietly biases every suggestion</span><button onclick="clearTaste()">Forget</button>'}
       else{tEl.style.display='none'}}
-    $('voiceView').classList.add('show');setTimeout(()=>$('voiceText').focus(),60)}
+    $('voiceView').classList.add('show')}
+  function renderVoiceSrc(){const el=$('voiceSrc');if(!el)return;
+    el.innerHTML=_voiceSrc.map((s,i)=>'<span class="vc-chip" title="'+esc(s.n)+'">'+(s.k==='link'?'🔗':'📄')+' <span class="vc-chip-t">'+esc(s.n)+'</span><button aria-label="Remove" onclick="rmVoiceSrc('+i+')">✕</button></span>').join('');
+    const d=$('voiceDistill');if(d)d.style.display=_voiceSrc.length?'':'none'}
+  function rmVoiceSrc(i){_voiceSrc.splice(i,1);renderVoiceSrc()}
+  async function addVoiceLink(){
+    if(ANON){anonWall('Sign up to read a link');return}
+    const el=$('voiceLink');const url=(el&&el.value||'').trim();if(!url)return;
+    if(_voiceSrc.length>=8){toast('That’s plenty to work with');return}
+    const btn=$('voiceLink');if(btn)btn.disabled=true;toast('Reading the link…');
+    try{
+      if(!await ensureAuth()){showAuth('Session expired — sign in again');return}
+      const r=await fetch('/api/extract',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},body:JSON.stringify({url})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok){toast(d.error||'Couldn’t read that link');return}
+      _voiceSrc.push({k:'link',n:d.title||url,c:d.text});renderVoiceSrc();if(el)el.value='';toast('Added')
+    }catch(e){toast('Couldn’t read that link')}finally{if(btn)btn.disabled=false}}
+  async function addVoiceFiles(e){const fs=[...(e.target.files||[])];e.target.value='';if(!fs.length)return;
+    toast('Reading '+fs.length+' file'+(fs.length>1?'s':'')+'…');let ok=0;
+    for(const f of fs){if(_voiceSrc.length>=8)break;try{const c=await extractFile(f);if(c&&c.trim()){_voiceSrc.push({k:'file',n:f.name,c:c.trim()});ok++}}catch(e){}}
+    renderVoiceSrc();toast(ok?('Added '+ok):'Couldn’t read those')}
+  async function distillVoice(){
+    if(ANON){anonWall('Sign up to distill a brand voice');return}
+    if(_busy){toast('One moment…');return}
+    if(!_voiceSrc.length){toast('Add a link or a file first');return}
+    const ta=$('voiceText'),d=$('voiceDistill');
+    const material=_voiceSrc.map(s=>'=== '+s.n+' ===\n'+capTxt(s.c,7000)).join('\n\n');
+    if(d){d.disabled=true;d.textContent='✧ Distilling…'}
+    ta.readOnly=true;
+    try{
+      const out=await streamAPI('voice',[{role:'user',content:'Distill the brand voice from this material:\n\n'+capTxt(material,26000)}],toneSys(),full=>{ta.value=full;ta.scrollTop=ta.scrollHeight});
+      ta.value=String(out).trim();
+      const cf=$('voiceConfirm');if(cf)cf.style.display='';
+    }catch(e){toast(e.message||'Couldn’t distill just now')}
+    finally{ta.readOnly=false;ta.focus();if(d){d.disabled=false;d.textContent='✧ Distill into brand voice →'}}}
   async function clearTaste(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
     if(!await uiConfirm('Forget the '+(p.taste||[]).length+' learned taste decisions for this project?',{ok:'Forget',danger:true}))return;
     p.taste=[];save();$('vcTaste').style.display='none';toast('Taste memory cleared')}
@@ -1284,10 +1320,10 @@
       rows+='<div class="ub-row"><span>Rate limit '+(en.kv?'':'<em class="ub-off">in-memory — connect KV</em>')+'</span><b>'+(en.kv?'distributed':'per-instance')+'</b></div>';
     $('usageBreak').innerHTML=rows}
   function closeSettings(){$('setView').classList.remove('show')}
-  function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null}
+  function closeVoice(){$('voiceView').classList.remove('show');_voicePid=null;_voiceSrc=[]}
   function saveVoice(){const p=projects.find(x=>x.id===_voicePid);if(!p)return;
     p.voice=$('voiceText').value.trim();save();closeVoice();
-    toast(p.voice?'Voice saved — every session in this project follows it':'Voice cleared')}
+    toast(p.voice?'Brand voice confirmed — every Crystallize here writes in it':'Voice cleared — VÆST writes in its own voice + your taste')}
   function setTone(t){const s=cur();if(!s)return;s.tone=t;s.updatedAt=Date.now();save();renderTone();
     toast('Persona: '+({'':'Standard',formal:'Formal — editorial',playful:'Playful — a little mischief'}[t]||'Standard')+' · rides on top of every call from now on')}
   function renderTone(){const s=cur();let t=(s&&s.tone)||'';if(!PERSONA[t||'standard'])t='';

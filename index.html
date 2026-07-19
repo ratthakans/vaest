@@ -461,10 +461,28 @@
 </div>
 <div class="snap" id="voiceView" onclick="if(event.target===this)closeVoice()">
   <div class="snap-box">
-    <div class="snap-hd"><b id="voiceTitle">Project voice</b><button class="save" onclick="saveVoice()">Save</button></div>
-    <div style="padding:14px 16px 18px">
-      <div style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:10px">Guidelines every session in this project must follow — tone of voice, vocabulary, banned words, formats. Applied to Crystallize, section edits and refinements.</div>
+    <div class="snap-hd"><b id="voiceTitle">Brand voice</b><button class="save" id="voiceSave" onclick="saveVoice()">Confirm</button></div>
+    <div class="set-body" style="padding:14px 16px 18px">
+      <div style="font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:12px">The voice VÆST writes this project in — applied to every Crystallize, edit and refinement. Leave it empty and VÆST writes in its own voice, guided by your taste.</div>
+
+      <!-- Extract from the brand's own material -->
+      <div class="vc-extract">
+        <div class="vc-ex-lbl">Distill it from the brand’s own writing</div>
+        <div class="vc-link">
+          <input id="voiceLink" type="url" spellcheck="false" placeholder="Paste a link — the site, an about page…" onkeydown="if(event.key==='Enter'){event.preventDefault();addVoiceLink()}">
+          <button class="vc-add" onclick="addVoiceLink()">Add</button>
+        </div>
+        <div class="vc-src" id="voiceSrc"></div>
+        <div class="vc-ex-row">
+          <button class="vc-file" onclick="$('voiceFiles').click()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg> Attach PDF, doc…</button>
+          <button class="vc-distill" id="voiceDistill" onclick="distillVoice()">✧ Distill into brand voice →</button>
+        </div>
+        <input id="voiceFiles" type="file" multiple accept=".pdf,.doc,.docx,.txt,.md,.markdown,.rtf,.html,.htm,.csv" style="display:none" onchange="addVoiceFiles(event)">
+      </div>
+
+      <div class="vc-or">or write the guidelines yourself</div>
       <textarea class="vc-ta" id="voiceText" spellcheck="false" placeholder="e.g. Voice: confident, quiet, no exclamation marks.&#10;Always call it “the studio”, never “the agency”.&#10;Banned: synergy, world-class, elevate."></textarea>
+      <div class="vc-confirm" id="voiceConfirm" style="display:none">Read it over — edit anything that’s off, then <b>Confirm</b> to make it this project’s voice.</div>
       <div class="vc-taste" id="vcTaste" style="display:none"></div>
     </div>
   </div>
