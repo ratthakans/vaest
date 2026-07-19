@@ -61,10 +61,13 @@
         <div class="mode-pane" data-pane="idea">
         <div class="idea hero" id="ideaBox">
           <div class="id-thread" id="ideaThread"></div>
+          <div class="idea-files" id="ideaFiles"></div>
           <div class="id-in">
+            <button class="id-attach" id="ideaAttach" aria-label="Attach a file" title="Attach a file — Galdr reads it" onclick="$('ideaFileInput').click()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
             <textarea id="ideaInput" rows="1" placeholder="Talk it through with Galdr…" oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,140)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIdea()}"></textarea>
             <button class="id-send" id="ideaSend" onclick="sendIdea()">↑</button>
           </div>
+          <input type="file" id="ideaFileInput" multiple accept=".docx,.pdf,.md,.txt,.csv,.html,.png,.jpg,.jpeg,.webp,.gif,.heic,.mp4,.mov,.webm,.m4v" style="display:none" onchange="ideaFilePick(event)">
           <div class="anon-limit" id="anonLimit" style="display:none"></div>
         </div>
         </div>

@@ -570,7 +570,18 @@
   function removeFile(i){const s=cur();if(!s)return;s.files.splice(i,1);s.updatedAt=Date.now();save();renderChips()}
   function renderChips(){const s=cur();
     $('chips').innerHTML=(s&&s.files.length)?s.files.map((f,i)=>
-      '<span class="chip'+(f.paste?' paste':'')+'" onclick="openPaste('+i+')" title="Click to view"><b>'+(f.paste?'IDEA':esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4)))+'</b><span>'+esc(f.n)+'</span><button onclick="event.stopPropagation();removeFile('+i+')" title="Remove">✕</button></span>').join(''):''}
+      '<span class="chip'+(f.paste?' paste':'')+'" onclick="openPaste('+i+')" title="Click to view"><b>'+(f.paste?'IDEA':esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4)))+'</b><span>'+esc(f.n)+'</span><button onclick="event.stopPropagation();removeFile('+i+')" title="Remove">✕</button></span>').join(''):'';
+    renderIdeaFiles()}
+  // B — the same attachment pool, shown in the Idea composer (one pool, three surfaces)
+  // anon context is stripped server-side (text-only, 2K cap) — so don't let a trial user
+  // attach something that would be silently dropped; show the wall instead.
+  function ideaFilePick(e){const fs=[...(e.target.files||[])];e.target.value='';
+    if(ANON){anonWall('Sign up to bring your own files into the conversation');return}
+    if(fs.length)addFiles(fs)}
+  function renderIdeaFiles(){const s=cur(),el=$('ideaFiles');if(!el)return;
+    const fs=(s&&s.files)||[];
+    el.innerHTML=fs.length?fs.map((f,i)=>
+      '<span class="chip'+(f.paste?' paste':'')+'" onclick="openPaste('+i+')" title="Click to view"><b>'+(f.img?'IMG':f.paste?'IDEA':esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4)))+'</b><span>'+esc(f.n)+'</span><button onclick="event.stopPropagation();removeFile('+i+')" title="Remove">✕</button></span>').join(''):''}
   // paste viewer — click a chip to read what's inside
   function openPaste(i){const s=cur();const f=s&&s.files[i];if(!f)return;
     $('pasteTitle').textContent=f.n;
@@ -1509,7 +1520,7 @@
     let stopBW=waitLines(live.querySelector('.tx'),briefWait),bwaited=true;
     try{
       const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(full.replace(/^BRIEF_COMPLETE\s*/i,''))+'<span class="cursor"></span>';softScroll(th)}});
-      const out=await streamAPI('briefchat',briefMsgs(s),toneSys(),r);r.stop();if(bwaited){bwaited=false;stopBW()}
+      const out=await streamAPI('briefchat',briefMsgs(s),toneSys()+projectContext(s,true),r);r.stop();if(bwaited){bwaited=false;stopBW()}
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
       const clean=out.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
       s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
@@ -1531,7 +1542,7 @@
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Compiling the brief…</div><div class="gen-body" id="genBody"></div></div>';
     try{
       const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
-      const md=await streamAPI('briefdoc',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),rev.on);await rev.done(md);
+      const md=await streamAPI('briefdoc',[{role:'user',content:msgContent(prompt,imgs)}],toneSys()+projectContext(s),rev.on);await rev.done(md);
       setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();showCanvas();
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
@@ -1839,9 +1850,12 @@
     const clearStall=()=>{clearTimeout(stallT);live.classList.remove('stalled')};
     try{
       const msgs=ch.ideas.slice(-IDEA_CTX).map(m=>({role:m.r==='user'?'user':'assistant',content:m.c}));
+      // B3 — attached images ride on the latest user turn so Galdr actually SEES the reference
+      const imgs=((s.files||[]).filter(f=>f.img)).slice(-4);
+      if(imgs.length)for(let i=msgs.length-1;i>=0;i--){if(msgs[i].role==='user'){msgs[i]={...msgs[i],content:msgContent(msgs[i].content,imgs)};break}}
       const sr=smoothStreamer((txt,streaming)=>{const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');softScroll(th)}});
       armStall();
-      const out=await streamAPI('idea',msgs,toneSys()+(nudge?'\n\n'+nudge:''),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
+      const out=await streamAPI('idea',msgs,toneSys()+sessionContext(s,true)+(nudge?'\n\n'+nudge:''),full=>{if(full&&waited){waited=false;stopWait()}armStall();sr.push(full)});
       clearStall();
       if(waited){waited=false;stopWait()} // empty/instant response — clear the status too
       if(out&&out.trim()){ch.ideas.push({r:'ai',c:out,ts:Date.now()});s.updatedAt=Date.now()}
@@ -2105,17 +2119,32 @@
   function updateUndo(){$('undoBtn').disabled=!undoStack.some(u=>u.sid===currentSid)}
 
   /* ═══ SUMMING ═══ */
-  function projectContext(s){
-    if(!s.projectId)return '';
+  // One project = one shared context. Every mode reads the same two things: the project's
+  // reference library and the documents already crystallized alongside this session — so an
+  // Idea chat started next to a finished document actually knows that document exists.
+  // `light` trims the budget hard for the chatty modes (Idea/Brief), where a full library on
+  // every keystroke-turn would cost real money for context the user rarely needs in full.
+  function projectContext(s,light){
+    if(!s||!s.projectId)return '';
     let out='';
+    const nRef=light?3:99,capRef=light?1200:6000,nSib=light?2:3,capSib=light?700:1500;
     const p=projects.find(x=>x.id===s.projectId);
     if(p&&p.refs&&p.refs.length){ // reference library — permanent project context
       out+='\n\n# References for project "'+p.name+'" (permanent guidelines/reference — follow these)\n'
-        +p.refs.map(r=>'## '+r.n+'\n'+capTxt(r.c,6000)).join('\n\n')}
-    const sibs=sessions.filter(x=>x.projectId===s.projectId&&x.id!==s.id&&x.canvas&&x.canvas.trim()).slice(0,3);
+        +p.refs.slice(0,nRef).map(r=>'## '+r.n+'\n'+capTxt(r.c,capRef)).join('\n\n')}
+    const sibs=sessions.filter(x=>x.projectId===s.projectId&&x.id!==s.id&&x.canvas&&x.canvas.trim()).slice(0,nSib);
     if(sibs.length)out+='\n\n# Context from other work in the same project (background only, don’t re-summarize)\n'
-      +sibs.map(x=>'## '+x.title+'\n'+capTxt(x.canvas,1500)).join('\n\n');
+      +sibs.map(x=>'## '+x.title+'\n'+capTxt(x.canvas,capSib)).join('\n\n');
     return out}
+  // What this session can currently draw on — attached files + whatever the project shares.
+  // Used by the chat modes (Crystallize builds its own richer prompt).
+  function sessionContext(s,light){
+    let out='';
+    const files=(s&&s.files)||[];
+    const docs=files.filter(f=>!f.img);
+    if(docs.length)out+='\n\n# Files attached to this conversation (read them, refer to them by name)\n'
+      +docs.slice(0,light?6:99).map(f=>'## '+f.n+'\n'+capTxt(f.c,light?2500:8000)).join('\n\n');
+    return out+projectContext(s,light)}
   // long-text cap with an explicit marker so the model knows it's partial
   const capTxt=(t,n)=>{t=String(t||'');return t.length>n?t.slice(0,n)+'\n…[truncated — file continues]':t};
   // build message content — attach downscaled images as vision blocks

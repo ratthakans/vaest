@@ -942,6 +942,7 @@
   .idea.hero .id-in{padding:14px 12px 14px 18px}
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
   .idea.hero .id-send{width:36px;height:36px;font-size:16px}
+  .idea.hero .id-attach{width:36px;height:36px}
   /* optional brief, demoted below the chat */
   /* home stays a clean Idea chat; brief/files reveal on demand via a quiet toggle */
   .brief-box.collapsed{display:none}
@@ -1075,6 +1076,11 @@
   .id-send{flex:none;width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--on-ink);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .id-send:hover{background:#fff}
   .id-send:disabled{opacity:.4}
+  /* attach — same pool the desk and Brief use, reachable from the Idea composer */
+  .id-attach{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--mute);transition:color var(--base),background var(--base)}
+  .id-attach:hover{color:var(--ink);background:rgba(255,255,255,.07)}
+  .idea-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .idea-files:empty{display:none}
   /* saved sparks — research auto-filed by topic */
 
   /* brief templates */
