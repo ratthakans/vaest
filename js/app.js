@@ -981,6 +981,18 @@
     i=e.key==='ArrowDown'?(i<0?0:Math.min(ids.length-1,i+1)):(i<0?0:Math.max(0,i-1));
     if(ids[i]!==currentSid){e.preventDefault();openSession(ids[i])}});
 
+  // one-tap answers: ↑↓ moves, Enter picks, 1–4 jumps straight to an option.
+  // Never steals a key while the user is typing — the reply box always wins.
+  addEventListener('keydown',e=>{
+    if(!_qOpts.length||_briefBusy)return;
+    const iv=$('briefInterview');if(!iv||iv.style.display==='none')return;
+    const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    if(e.key==='ArrowDown'){e.preventDefault();qMove(1)}
+    else if(e.key==='ArrowUp'){e.preventDefault();qMove(-1)}
+    else if(e.key==='Enter'){e.preventDefault();pickBriefOpt(_qIdx)}
+    else if(/^[1-9]$/.test(e.key)&&+e.key<=_qOpts.length){e.preventDefault();pickBriefOpt(+e.key-1)}});
+
   // E6 — power-user keys: ⌘1/2/3 switch mode · ? opens the shortcut sheet
   addEventListener('keydown',e=>{
     const t=e.target,inField=t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable);
@@ -1524,11 +1536,33 @@
     th.innerHTML=qa.map((m,i)=>{const isAI=m.r!=='user';
       // the current question (last message, still an AI turn, brief not yet complete) pops as a focused card
       if(i===last&&isAI&&!(s&&s.briefComplete))
-        return '<div class="q-card"><div class="q-eye"><span class="q-dot"></span> VÆST asks</div><div class="q-body">'+renderMd(m.c)+'</div></div>';
+        return '<div class="q-card"><div class="q-eye"><span class="q-dot"></span> VÆST asks</div><div class="q-body">'+renderMd(m.c)+'</div>'+qOptsHTML(m.opts)+'</div>';
       return '<div class="id-m '+(isAI?'ai':'you')+'"><div class="who">'+(isAI?'VÆST':'YOU')+'</div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
+    // one-tap answers belong to the question that's live right now
+    const lastM=qa[last];
+    _qOpts=(last>=0&&lastM&&lastM.r!=='user'&&!(s&&s.briefComplete)&&lastM.opts)||[];_qIdx=0;
     // spotlight the question rather than pinning to the very bottom
     const card=th.querySelector('.q-card');
     if(card)card.scrollIntoView({block:'nearest'}); else th.scrollTop=th.scrollHeight}
+  /* One-tap answers. VÆST proposes 2–4 concrete picks per question; ↑↓ moves, Enter or a
+     number key picks, and typing in the box below always overrides them. */
+  let _qOpts=[],_qIdx=0;
+  function qOptsHTML(opts){
+    if(!opts||!opts.length)return '';
+    return '<div class="q-opts" role="listbox" aria-label="Suggested answers">'
+      +opts.map((o,i)=>'<button class="q-opt'+(i===0?' on':'')+'" role="option" aria-selected="'+(i===0)+'" data-qi="'+i+'" onmousemove="qHover('+i+')" onclick="pickBriefOpt('+i+')">'
+        +'<span class="qo-n">'+(i+1)+'</span><span class="qo-t">'+esc(o)+'</span><span class="qo-k">↵</span></button>').join('')
+      +'<button class="q-opt q-other" onclick="briefOther()"><span class="qo-n">✎</span><span class="qo-t">Something else</span>'
+      +'<span class="qo-skip" onclick="event.stopPropagation();skipBriefQ()">Skip</span></button>'
+      +'<div class="q-hint">↑↓ to move · Enter to pick · or just type below</div></div>'}
+  function qPaint(){
+    document.querySelectorAll('#briefThread .q-opt[data-qi]').forEach(b=>{
+      const on=+b.getAttribute('data-qi')===_qIdx;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)})}
+  function qHover(i){if(i===_qIdx)return;_qIdx=i;qPaint()}
+  function qMove(d){if(!_qOpts.length)return;_qIdx=(_qIdx+d+_qOpts.length)%_qOpts.length;qPaint()}
+  function pickBriefOpt(i){const t=_qOpts[i];if(!t)return;_qOpts=[];sendBriefText(t)}
+  function briefOther(){const inp=$('briefReply');if(inp){inp.focus();inp.scrollIntoView({block:'nearest'})}}
+  function skipBriefQ(){if(_briefBusy){toast('One moment…');return}_qOpts=[];sendBriefText('Skip this one — move on.')}
   // Compile is offered two ways: once VÆST declares BRIEF_COMPLETE (primary), or as an
   // escape hatch after a few answers so a user in a hurry is never trapped in the interview.
   /* C3 — the running summary. The interviewer ends each reply with a
@@ -1539,12 +1573,16 @@
     const split=x=>String(x||'').split('·').map(y=>y.replace(/[\[\]]/g,'').trim()).filter(y=>y&&y.length<40).slice(0,10);
     // each marker is read on its own — a turn that has only [[MISSING]] (nothing captured yet)
     // still updates the line
-    const mg=t.match(/\[\[GOT\]\]([\s\S]*?)(?=\[\[MISSING\]\]|$)/);
-    const mn=t.match(/\[\[MISSING\]\]([\s\S]*?)(?=\[\[GOT\]\]|$)/);
+    const mg=t.match(/\[\[GOT\]\]([\s\S]*?)(?=\[\[MISSING\]\]|\[\[OPTIONS\]\]|$)/);
+    const mn=t.match(/\[\[MISSING\]\]([\s\S]*?)(?=\[\[GOT\]\]|\[\[OPTIONS\]\]|$)/);
+    const mo=t.match(/\[\[OPTIONS\]\]([\s\S]*?)(?=\[\[GOT\]\]|\[\[MISSING\]\]|$)/);
     const got=mg?split(mg[1]):null,need=mn?split(mn[1]):null;
-    // strip the marker line however it came out — a stray bracket must never reach the canvas
-    const clean=String(out).replace(/\[\[GOT\]\][\s\S]*$/,'').replace(/\[\[MISSING\]\][\s\S]*$/,'').trim();
-    return {got,need,clean}}
+    // one-tap answers for this question
+    const opts=mo?mo[1].split('|').map(x=>x.replace(/[\[\]]/g,'').trim()).filter(x=>x&&x.length<90).slice(0,4):null;
+    // strip from the FIRST control marker to the end — covers every marker in one pass, in any
+    // order, so nothing bracketed can ever reach the thread
+    const clean=t.replace(/\n*\[\[[A-Z][\s\S]*$/,'').replace(/\[+\s*$/,'').trim();
+    return {got,need,opts,clean}}
   function renderBriefProgress(s){
     const el=$('briefProg');if(!el)return;
     const got=(s&&s.briefGot)||[],need=(s&&s.briefNeed)||[];
@@ -1574,9 +1612,15 @@
     save();renderRail();renderBriefQA();
     await briefTurn(s)}
   async function sendBriefAnswer(){
+    const inp=$('briefReply');const t=inp.value.trim();if(!t)return;
     if(_briefBusy){toast('One moment…');return}
-    const s=cur();if(!s)return;const inp=$('briefReply');const t=inp.value.trim();if(!t)return;
-    inp.value='';inp.style.height='';$('briefCompile').style.display='none';
+    inp.value='';inp.style.height='';
+    await sendBriefText(t)}
+  // one path for every way an answer can arrive: typed, picked, or skipped
+  async function sendBriefText(t){
+    if(_briefBusy){toast('One moment…');return}
+    const s=cur();if(!s||!t)return;
+    $('briefCompile').style.display='none';
     s.briefQA=s.briefQA||[];s.briefQA.push({r:'user',c:t,ts:Date.now()});save();renderBriefQA();
     await briefTurn(s)}
   async function briefTurn(s){
@@ -1588,14 +1632,15 @@
     let stopBW=waitLines(live.querySelector('.tx'),briefWait),bwaited=true;
     try{
       // hide both control markers mid-stream too, so neither ever flashes in the reply
-      const strip=t=>t.replace(/^BRIEF_COMPLETE\s*/i,'').replace(/\[\[GO?T?\]?\]?[\s\S]*$/,'').replace(/\[+\s*$/,'');
+      const strip=t=>t.replace(/^BRIEF_COMPLETE\s*/i,'').replace(/\n*\[\[?[A-Z]?[\s\S]*$/,'').replace(/\[+\s*$/,'');
       const r=raf(full=>{if(full&&bwaited){bwaited=false;stopBW()}const tx=live.querySelector('.tx');if(tx){tx.innerHTML=renderMd(strip(full))+'<span class="cursor"></span>';softScroll(th)}});
       const out=await streamAPI('briefchat',briefMsgs(s),toneSys()+projectContext(s,true),r);r.stop();if(bwaited){bwaited=false;stopBW()}
       const complete=/^BRIEF_COMPLETE/i.test(out.trim());
       const prog=parseBriefProgress(out);
       if(prog.got)s.briefGot=prog.got;if(prog.need)s.briefNeed=prog.need;
       const clean=prog.clean.replace(/^BRIEF_COMPLETE\s*/i,'').trim();
-      s.briefQA.push({r:'ai',c:clean||'Looks complete.',ts:Date.now()});s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
+      s.briefQA.push({r:'ai',c:clean||'Looks complete.',opts:(!complete&&prog.opts&&prog.opts.length)?prog.opts:undefined,ts:Date.now()});
+      s.briefComplete=complete;s.updatedAt=Date.now();save();renderBriefQA();
       renderBriefProgress(s);updateBriefCompile(s);
     }catch(e){stopBW();live.remove();toast('Failed: '+e.message);const last=s.briefQA[s.briefQA.length-1];if(last&&last.r==='user'){s.briefQA.pop();const inp=$('briefReply');if(inp)inp.value=last.c;save();renderBriefQA()}}
     finally{_briefBusy=false}}

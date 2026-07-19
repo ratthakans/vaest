@@ -160,6 +160,23 @@
   .q-body p{margin:0 0 8px}.q-body p:last-child{margin-bottom:0}
   .q-body ul{margin:8px 0 0 18px}.q-body li{margin:4px 0}
   @keyframes qPop{from{opacity:0;transform:translateY(10px) scale(.985)}60%{opacity:1;transform:translateY(-2px) scale(1.004)}to{transform:none}}
+  /* one-tap answers — same row shape as the command palette, so it reads as a known control */
+  .q-opts{display:flex;flex-direction:column;gap:2px;margin-top:14px}
+  .q-opt{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 10px;border-radius:var(--r-sm);
+    font-family:var(--ui);font-size:13.5px;color:var(--dim);transition:background var(--base),color var(--base)}
+  .q-opt .qo-n{width:22px;height:22px;flex:none;border-radius:var(--r-xs);display:grid;place-items:center;
+    background:var(--soft);color:var(--mute);font-family:var(--mono);font-size:10.5px}
+  .q-opt .qo-t{flex:1;min-width:0}
+  .q-opt .qo-k{flex:none;font-size:11px;color:transparent}
+  .q-opt.on{background:rgba(255,255,255,.07);color:var(--ink)}
+  .q-opt.on .qo-n{background:rgba(255,255,255,.14);color:var(--ink)}
+  .q-opt.on .qo-k{color:var(--mute)}
+  .q-opt.q-other{color:var(--mute);margin-top:2px}
+  .q-opt.q-other:hover{color:var(--ink)}
+  .q-opt .qo-skip{flex:none;font-size:11.5px;font-weight:600;color:var(--mute);padding:3px 9px;border-radius:var(--r-pill);border:1px solid var(--line)}
+  .q-opt .qo-skip:hover{color:var(--ink);border-color:var(--line2)}
+  .q-hint{margin-top:9px;font-size:11px;color:var(--mute)}
+  @media(hover:none){.q-opt .qo-k{display:none}.q-hint{display:none}}
   .brief-compile{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line2);border-radius:var(--r-lg);background:rgba(120,235,180,.06);animation:chipIn .24s var(--ease)}
   .brief-compile .bc-note{flex:1;font-size:13px;color:var(--dim)}
   .brief-compile .go{flex:none}
