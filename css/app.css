@@ -447,12 +447,19 @@
   .s-item .more{opacity:0;width:20px;height:20px;border-radius:var(--r-xs);display:grid;place-items:center;color:#8e8e88;font-size:14px;letter-spacing:.5px;flex:none}
   .s-item:hover .more{opacity:1}
   .s-item .more:hover{background:rgba(255,255,255,.1);color:var(--snow)}
-  .p-row{display:flex;align-items:center;gap:8px;padding:8px 9px 5px;font-size:12px;font-weight:700;color:#d8d8d2;position:relative}
+  .p-row{display:flex;align-items:center;gap:7px;padding:8px 9px 5px;font-size:12px;font-weight:700;color:#d8d8d2;position:relative;cursor:pointer;border-radius:var(--r-sm)}
+  .p-row:hover{background:rgba(255,255,255,.03)}
+  .p-row .pcar{font-size:9px;color:var(--mute);width:9px;flex:none;transition:color .12s}
+  .p-row:hover .pcar{color:var(--dim)}
   .p-row .pi{font-family:var(--mono);font-size:9px;color:var(--cinnabar)}
+  .p-row .p-n{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--mute);font-weight:400}
   .p-row .more{opacity:0;margin-left:auto;width:20px;height:20px;border-radius:var(--r-xs);display:grid;place-items:center;color:#8e8e88;font-size:14px}
+  .p-row .p-n+.more{margin-left:6px}
   .p-row:hover .more{opacity:1}
   .p-row .more:hover{background:rgba(255,255,255,.1);color:var(--snow)}
   .p-kids{padding-left:10px}
+  /* General-pool divider inside the MD library when a project scope is also shown */
+  .md-div{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:8px 9px 3px}
   /* drag a Recent / MD onto a project to file it there */
   .p-block{border-radius:var(--r-md);transition:background .12s,box-shadow .12s}
   .p-block.drop-on{background:rgba(226,88,44,.1);box-shadow:inset 0 0 0 1px var(--cinnabar)}

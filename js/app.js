@@ -793,6 +793,7 @@
     const raw=(e.dataTransfer&&e.dataTransfer.getData('text/plain'))||'';const i=raw.indexOf(':');if(i<0)return;
     const kind=raw.slice(0,i),id=raw.slice(i+1);
     if(kind==='s')moveSession(id,pid);else if(kind==='md')moveMD(id,pid)}
+  function toggleProject(id){const p=projects.find(x=>x.id===id);if(!p)return;p.collapsed=!p.collapsed;save();renderRail()}
   async function newProject(){const n=((await uiPrompt('Name the project','',{ok:'Create',placeholder:'Project name'}))||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
   async function renameProject(id){const p=projects.find(x=>x.id===id);if(!p)return;
@@ -833,11 +834,15 @@
     const pl=$('projList');
     if(pl)pl.innerHTML=projects.length?projects.map(p=>{
       const kids=sessions.filter(s=>s.projectId===p.id).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-      // a project is a drop target — drag a Recent or an MD onto it to file it here
-      return '<div class="p-block" ondragover="onProjOver(event)" ondragleave="onProjLeave(event)" ondrop="onProjDrop(event,\''+p.id+'\')">'
-        +'<div class="p-row"><span class="pi">/</span>'+esc(p.name)
+      const col=!!p.collapsed;
+      // a project is a drop target — drag a Recent or an MD onto it to file it here.
+      // click the row to fold it away so the rail never runs long.
+      return '<div class="p-block'+(col?' collapsed':'')+'" ondragover="onProjOver(event)" ondragleave="onProjLeave(event)" ondrop="onProjDrop(event,\''+p.id+'\')">'
+        +'<div class="p-row" onclick="toggleProject(\''+p.id+'\')" title="'+(col?'Show':'Hide')+' items">'
+        +'<span class="pcar" aria-hidden="true">'+(col?'▸':'▾')+'</span><span class="pi">/</span>'+esc(p.name)
+        +(kids.length?'<span class="p-n">'+kids.length+'</span>':'')
         +'<button class="more" aria-label="Project options" onclick="event.stopPropagation();openPCtx(event,\''+p.id+'\')">⋯</button></div>'
-        +'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty sm"><span>Empty — drag items in</span></div>')+'</div></div>';
+        +(col?'':'<div class="p-kids">'+(kids.length?kids.map(sItem).join(''):'<div class="r-empty sm"><span>Empty — drag items in</span></div>')+'</div>')+'</div>';
     }).join(''):'<div class="r-empty"><span>No projects yet</span></div>';
     // Recents — every item, newest first (Claude-style quick access), capped
     const rl=$('recentList');
@@ -846,22 +851,32 @@
     // MD library
     renderMDList()}
   // MD is scoped to the project you're in — each project keeps its own library; items
-  // saved outside any project live in the General pool. The section label names the scope.
+  // saved outside any project live in the General pool. When you're inside a project we
+  // show that project's docs AND the General pool (General is universal), so moving a chat
+  // into a project never makes your saved docs vanish. The section label names the scope.
   function mdScopeId(){const s=cur();return (s&&s.projectId)||null}
+  function mdItemHTML(m){
+    return '<div class="md-item" data-mid="'+m.id+'" draggable="true" ondragstart="onRailDrag(event,\'md\',\''+m.id+'\')" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
+      +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
+      +'<span class="md-t">'+esc(m.title)+'</span>'
+      +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>';
+  }
   function renderMDList(){
     const ml=$('mdList');if(!ml)return;
     const pid=mdScopeId();
-    const lib=(library||[]).filter(m=>(m.projectId||null)===pid).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    const cn=$('mdCount');if(cn)cn.textContent=lib.length?lib.length:'';
+    const byNew=(a,b)=>(b.createdAt||0)-(a.createdAt||0);
+    const all=library||[];
+    const scoped=pid?all.filter(m=>m.projectId===pid).sort(byNew):[];
+    const general=all.filter(m=>!m.projectId).sort(byNew);
+    const total=scoped.length+general.length;
+    const cn=$('mdCount');if(cn)cn.textContent=total?total:'';
     const sc=$('mdScope');if(sc){const p=pid&&projects.find(x=>x.id===pid);sc.textContent=p?('/ '+p.name):''}
-    ml.innerHTML=lib.length?lib.map(m=>
-      '<div class="md-item" data-mid="'+m.id+'" draggable="true" ondragstart="onRailDrag(event,\'md\',\''+m.id+'\')" onclick="openMD(\''+m.id+'\')" title="'+esc(m.title)+'">'
-      +'<svg class="mi-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3v5h5M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>'
-      +'<span class="md-t">'+esc(m.title)+'</span>'
-      +'<button class="more" aria-label="MD options" onclick="event.stopPropagation();openMDCtx(event,\''+m.id+'\')">⋯</button></div>'
-    ).join(''):'';
+    let html=scoped.map(mdItemHTML).join('');
+    // General docs always stay visible; only badge them "General" when a project scope is also shown
+    if(general.length){if(scoped.length)html+='<div class="md-div">General</div>';html+=general.map(mdItemHTML).join('')}
+    ml.innerHTML=html;
     // no saved MD → the whole section stays out of sight (the one-time Save hint teaches it)
-    const lbl=$('mdLbl');const show=lib.length>0;
+    const lbl=$('mdLbl');const show=total>0;
     if(lbl)lbl.style.display=show?'':'none';
     ml.style.display=show?'':'none'}
   function moveMD(id,pid){const md=(library||[]).find(x=>x.id===id);if(!md)return;
