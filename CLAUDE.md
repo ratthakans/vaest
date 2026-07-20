@@ -36,7 +36,11 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
    spend where the user can see it (paid Idea, Brief interview, deck), never on invisible plumbing.
 
 6. **Ship + verify on production, in a browser.** Workflow every change: `node --check js/app.js`
-   → `npm test` (18 unit + 9 openai + 19 server — the billing/quota/margin math) → `node scratchpad/audit.mjs` (must say `AUDIT CLEAN`) →
+   → `npm test` (unit + openai + server billing/margin math + `tests/ssrf.mjs` + `tests/audit.mjs`,
+   which must print `AUDIT CLEAN` — it enforces law #1 and #4 mechanically) → **for anything that
+   takes untrusted input or touches money, a deliberate adversarial review before shipping** (a
+   guard that merely exists is not a guard: /api/extract shipped "SSRF-guarded" and was fully
+   exploitable) →
    commit → push → poll the deploy READY → **open it in the browser and look**, because login and
    payment can't be scripted. `curl` sometimes hits a Vercel bot checkpoint — the browser passes it.
 

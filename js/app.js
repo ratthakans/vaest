@@ -365,18 +365,27 @@
   // (invite-request path retired — the gate is a plan picker now, self-serve only)
 
   /* ═══ usage analytics — cost per document ═══ */
-  const RATE_DEF={opus:2600,fable:600,idea:150,mimir:3100,skadi:400}; // THB per 1M (in+out combined) — estimate, editable
-  function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r&&r.opus>=0&&r.fable>=0)return {...RATE_DEF,...r}}catch(e){}return {...RATE_DEF}}
-  function saveRates(){const r={opus:+$('rateOpus').value||0,fable:+$('rateFable').value||0,idea:+$('rateIdea').value||0,mimir:+$('rateMimir').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
-  function docCost(s,rt){const t=s.tok||{};return (t.opus||0)/1e6*rt.opus+(t.fable||0)/1e6*rt.fable+(t.idea||0)/1e6*(rt.idea||0)+(t.mimir||0)/1e6*(rt.mimir||0)+(t.skadi||0)/1e6*(rt.skadi||0)}
+  const RATE_DEF={odin:2600,norrsken:600,idea:150,mimir:3100,skadi:400}; // THB per 1M (in+out combined) — estimate, editable
+  // Law #1: the buckets used to be named after the models. Old workspaces still carry those
+  // keys in localStorage and in the synced blob, so read them once and forget them.
+  function migrateRateKeys(o){if(!o)return o;const r={...o};
+    if(r.opus!=null&&r.odin==null)r.odin=r.opus;if(r.fable!=null&&r.norrsken==null)r.norrsken=r.fable;
+    delete r.opus;delete r.fable;return r}
+  function migrateTokenKeys(){
+    (sessions||[]).forEach(x=>{const t=x.tok;if(!t)return;
+      if(t.opus!=null&&t.odin==null)t.odin=t.opus;if(t.fable!=null&&t.norrsken==null)t.norrsken=t.fable;
+      delete t.opus;delete t.fable})}
+  function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r)return {...RATE_DEF,...migrateRateKeys(r)}}catch(e){}return {...RATE_DEF}}
+  function saveRates(){const r={odin:+$('rateOdin').value||0,norrsken:+$('rateNorrsken').value||0,idea:+$('rateIdea').value||0,mimir:+$('rateMimir').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
+  function docCost(s,rt){const t=s.tok||{};return (t.odin||0)/1e6*rt.odin+(t.norrsken||0)/1e6*rt.norrsken+(t.idea||0)/1e6*(rt.idea||0)+(t.mimir||0)/1e6*(rt.mimir||0)+(t.skadi||0)/1e6*(rt.skadi||0)}
   const baht=n=>'฿'+(n>=1000?Math.round(n).toLocaleString():n.toFixed(n<10?2:1));
-  function openStats(){if(!(window.QUOTA&&window.QUOTA.internal))return;const rt=getRates();$('rateOpus').value=rt.opus;$('rateFable').value=rt.fable;$('rateIdea').value=rt.idea||0;$('rateMimir').value=rt.mimir||0;$('statsView').classList.add('show');renderStats()}
+  function openStats(){if(!(window.QUOTA&&window.QUOTA.internal))return;const rt=getRates();$('rateOdin').value=rt.odin;$('rateNorrsken').value=rt.norrsken;$('rateIdea').value=rt.idea||0;$('rateMimir').value=rt.mimir||0;$('statsView').classList.add('show');renderStats()}
   function closeStats(){$('statsView').classList.remove('show')}
   function renderStats(){
     const rt=getRates();
     const docs=sessions.filter(s=>(s.ops||0)>0);
-    let tOpus=0,tFable=0,tIdea=0,tMimir=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOpus+=t.opus||0;tFable+=t.fable||0;tIdea+=t.idea||0;tMimir+=t.mimir||0;cost+=docCost(s,rt)});
-    const tAll=tOpus+tFable+tIdea+tMimir;
+    let tOdin=0,tNorrsken=0,tIdea=0,tMimir=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOdin+=t.odin||0;tNorrsken+=t.norrsken||0;tIdea+=t.idea||0;tMimir+=t.mimir||0;cost+=docCost(s,rt)});
+    const tAll=tOdin+tNorrsken+tIdea+tMimir;
     const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?tAll/nDoc:0;
     $('statsKpis').innerHTML=[
       ['Documents measured',nDoc],
@@ -391,7 +400,7 @@
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
-        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.opus||0)+(t.fable||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
+        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.odin||0)+(t.norrsken||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Think / Refine and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile,library}}
@@ -433,6 +442,7 @@
       library.forEach(m=>{if(m&&m.title&&/(\*\*|^#|`)/.test(m.title))m.title=mdTitle(m.md||m.title)});
       // normalize to the modes schema (idempotent) — old blobs (v4) and any item missing a mode
       if(b.v<5||sessions.some(s=>!MODES.includes(s.mode))||sessions.some(s=>s.sparks||s.chats))migrateToModes();
+      migrateTokenKeys(); // law #1 — drop model-named buckets from state loaded off disk/cloud
       sweepGhosts();
       return true}
     if(Array.isArray(b.projects)&&(b.LIB||b.CANVAS)){ // migrate v1
@@ -523,7 +533,7 @@
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{opus:0,fable:0};const b=um[3]==='norrsken'?'fable':um[3]==='galdr'?'idea':um[3]==='mimir'?'mimir':'opus';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+      const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':um[3]==='galdr'?'idea':um[3]==='mimir'?'mimir':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
@@ -1359,7 +1369,7 @@
       else{toast('Couldn’t delete — nothing was removed')}}
     catch(e){toast('Couldn’t delete, try again')}}
   function renderUsageBreak(){
-    const rt=getRates();let o=0,f=0,idea=0,mi=0;sessions.forEach(x=>{const t=x.tok||{};o+=(t.opus||0)+(t.skadi||0);f+=t.fable||0;idea+=t.idea||0;mi+=t.mimir||0});
+    const rt=getRates();let o=0,f=0,idea=0,mi=0;sessions.forEach(x=>{const t=x.tok||{};o+=(t.odin||0)+(t.skadi||0);f+=t.norrsken||0;idea+=t.idea||0;mi+=t.mimir||0});
     const q=window.QUOTA;const qe=$('quotaRow2');
     if(qe){const h=quotaBarHTML(q);if(h){qe.style.display='';qe.innerHTML=h}else qe.style.display='none'}
     // Norrsken rides the same Anthropic key as Odin. `false` here means the key is absent, so that
