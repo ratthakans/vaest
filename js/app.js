@@ -2833,6 +2833,11 @@
 
   /* ═══ EXPORT ═══ */
   function docFilename(){return ($('mhTitle')?$('mhTitle').innerText.trim():'document').replace(/[^\w฀-๿ -]/g,'').trim().replace(/\s+/g,'_').slice(0,48)||'document'}
+  // The exported file declares its own language. This was hardcoded — every document said
+  // lang="th" and every deck said lang="en", so roughly half of a bilingual studio's
+  // deliverables shipped mislabelled: screen readers pick the wrong voice, and Thai and
+  // Latin scripts need different line-breaking rules.
+  function docLang(t){return /[\u0E00-\u0E7F]/.test(String(t||''))?'th':'en'}
   function buildDocHTML(forPrint){
     const title=$('mhTitle')?$('mhTitle').innerText.trim():'Document';
     // E4 — a dated, addressed cover so the export reads as a real studio deliverable
@@ -2868,7 +2873,7 @@
       +'th{font-family:"Inter","IBM Plex Sans Thai Looped",sans-serif;text-align:left;font-weight:650;border-bottom:1.5px solid rgba(27,24,21,.16);padding:8px 16px 8px 0;font-size:'+(forPrint?'9pt':'13.5px')+'}'
       +'td{border-bottom:1px solid rgba(27,24,21,.09);padding:9px 16px 9px 0;vertical-align:top}'
       +'.foot{margin-top:34px;padding-top:12px;border-top:1px solid rgba(27,24,21,.12);font-family:"IBM Plex Mono",monospace;font-size:'+(forPrint?'8pt':'10.5px')+';color:#8e8e88;letter-spacing:.06em}';
-    return '<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
+    return '<!doctype html><html lang="'+docLang(title+' '+body)+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
       +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet">'
       +'<style>'+CSS+'</style></head><body><div class="page">'
       +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">'+_meta+'</div></div>'
@@ -2948,7 +2953,7 @@
       if(s.kind==='close')return '<section class="sl close"><div class="rule"></div><h2>'+esc2(s.title)+'</h2>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="sl-foot">VÆST · ORIONS.Agency</div></section>';
       return '<section class="sl"><div class="sl-eye">'+esc2(s.title)+'</div><h2>'+esc2(s.title)+'</h2><ul>'+((s.bullets||[]).map(b=>'<li>'+esc2(b)+'</li>').join(''))+'</ul>'+(s.note?'<p class="note">'+esc2(s.note)+'</p>':'')+'</section>';
     };
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc2(title)+' — VÆST</title>'
+    return '<!doctype html><html lang="'+docLang(title+' '+JSON.stringify(slides))+'"><head><meta charset="utf-8"><title>'+esc2(title)+' — VÆST</title>'
       +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@1,6..72,500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap" rel="stylesheet">'
       +'<style>'
       +'@page{size:'+page+';margin:0}*{box-sizing:border-box;margin:0;padding:0}'
