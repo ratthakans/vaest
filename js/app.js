@@ -624,13 +624,14 @@
   // shared merge core — feed new source material into the current document (files & pastes)
   async function mergeIntoDoc(s,{srcBlock,imgs=[],busyLine,okToast,onFail}){
     pushUndo();setBusy(true);
-    const prompt='Original document:\n\n'+genMd()+'\n\nNewly added data:\n'+srcBlock
+    const doc=promptDoc();
+    const prompt='Original document:\n\n'+doc.md+'\n\nNewly added data:\n'+srcBlock
       +(imgs.length?('\n\nNewly attached images (shown below): '+imgs.map(f=>f.n).join(', ')+' — read them as real visual references'):'')
       +'\n\nMerge the new data into the existing document smoothly and consistently. Return the full markdown (keep the "# title" and "## " structure; add/adjust only what’s relevant).';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> '+busyLine+'</div><div class="gen-body" id="genBody"></div></div>';
     let failed=false;
     try{const md=await streamAPI('summing',[{role:'user',content:msgContent(prompt,imgs)}],toneSys(),raf(full=>{const g=$('genBody');if(g){g.innerHTML=renderMd(full)+'<span class="cursor"></span>';softScroll($('cvView'))}}));
-      setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();toast(okToast)}
+      setCanvasMd(s,doc.restore(md));s.updatedAt=Date.now();save();renderRail();showCanvas();toast(okToast)}
     catch(e){failed=true;undoStack.pop();updateUndo();renderDoc(s.canvas);toast('Failed: '+e.message)}
     finally{setBusy(false);if(failed&&onFail)onFail()}}
   async function addAndMerge(fs){
@@ -2246,6 +2247,19 @@
   function promptMd(){
     return genMd().replace(/!\[([^\]]*)\]\(data:image\/[^)]*\)/g, (_m, alt) => '['+(alt||'image')+' — embedded image, omitted]');
   }
+  // For prompts that ask the model to REWRITE the document. Each embedded image becomes a
+  // short URL-shaped token the model can copy verbatim; restore() swaps the real data back
+  // into the returned markdown. Before this, the base64 went out in full (a token bomb) and
+  // could not be reproduced in the reply, so every apply/recast silently dropped the images.
+  // If a token doesn't come back, safeImg() rejects it and the image is simply absent —
+  // no broken render, no injection.
+  function promptDoc(){
+    const map=[];
+    const md=genMd().replace(/!\[([^\]]*)\]\((data:image\/[^)]*)\)/g,(_m,alt,url)=>{
+      const token='vaest-img-'+map.length;map.push({token,url});return '!['+alt+']('+token+')'});
+    const restore=out=>map.reduce((s,m)=>s.split(m.token).join(m.url),String(out==null?'':out));
+    return {md,restore,count:map.length};
+  }
   function genMd(){
     let md='# '+($('mhTitle')?$('mhTitle').innerText.trim():'Document')+'\n\n';
     document.querySelectorAll('#doc .sec').forEach(sec=>{
@@ -2612,9 +2626,10 @@
     if(ta){ta.value='';ta.style.height=''}
     pushUndo();setBusy(true);
     const bar=document.querySelector('.doc-idea');if(bar)bar.classList.add('working');
-    const prompt='Full document:\n\n'+genMd()+'\n\nWork this idea into the document where it fits, keeping the structure and everything that still serves the work:\n'+idea+'\n\nReturn the FULL markdown document.';
+    const doc=promptDoc();
+    const prompt='Full document:\n\n'+doc.md+'\n\nWork this idea into the document where it fits, keeping the structure and everything that still serves the work:\n'+idea+'\n\nReturn the FULL markdown document.';
     try{const md=await streamAPI('apply',[{role:'user',content:prompt}],toneSys());
-      applyMd(md);toast('Idea woven through the document')}
+      applyMd(doc.restore(md));toast('Idea woven through the document')}
     catch(e){toast('Failed: '+e.message)}
     finally{setBusy(false);const b=document.querySelector('.doc-idea');if(b)b.classList.remove('working')}}
 
@@ -2648,10 +2663,12 @@
     const c={id:uid('cv'),t:label,md:''};s.canvases.push(c);s.cvId=c.id;s.canvas='';
     $('doc').innerHTML='<div class="gen"><div class="gen-eye"><span class="pulse"></span> Recasting · '+esc(label)+'…</div><div class="gen-body" id="genBody"></div></div>';
     renderTabs();
-    const prompt='# Target\nRecast this document as '+target+'.\n\n# Document\n'+srcMd;
+    const doc=promptDoc();  // srcMd above keeps the real images on the original tab
+    const prompt='# Target\nRecast this document as '+target+'.\n\n# Document\n'+doc.md;
     try{
       const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
-      const md=await streamAPI('recast',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md);
+      const md0=await streamAPI('recast',[{role:'user',content:prompt}],toneSys(),rev.on);await rev.done(md0);
+      const md=doc.restore(md0);
       setCanvasMd(s,md);s.updatedAt=Date.now();save();renderRail();showCanvas();renderTabs();
       if(document.hidden)notifyDone('Recast');
       toast('Recast · '+label+' — the original is still in its tab');
@@ -2795,9 +2812,10 @@
     pushUndo();setBusy(true);unmarkFlaws();
     const it=$('doc').querySelector('.mi[data-i="'+i+'"] .mi-act');if(it)it.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying…</span>';
     const before=snapshot();
-    const prompt='Original document:\n\n'+genMd()+'\n\nApply just this one suggestion: '+point.t+(point.q?(' (it concerns this part: "'+point.q+'")'):'')+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
+    const doc=promptDoc();
+    const prompt='Original document:\n\n'+doc.md+'\n\nApply just this one suggestion: '+point.t+(point.q?(' (it concerns this part: "'+point.q+'")'):'')+'\n\nReturn the full markdown (keep the "# title" and "## " structure; adjust only what’s relevant).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);_mast.done[i]='fixed';tasteLog('approved',point);_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
+      .then(md=>{applyMd(doc.restore(md));_mast.done[i]='fixed';tasteLog('approved',point);_mast.chg=_mast.chg||{};_mast.chg[i]=flashChanged(before);renderMast();toast('Applied')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false)})}
   function applyAll(){
@@ -2806,9 +2824,10 @@
     pushUndo();setBusy(true);unmarkFlaws();
     const foot=$('doc').querySelector('.mast-foot');if(foot)foot.innerHTML='<span class="mi-run"><span class="pulse"></span> Applying across the whole document…</span>';
     const before=snapshot();
-    const prompt='Original document:\n\n'+genMd()+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p.t+(x.p.q?(' (concerns: "'+x.p.q+'")'):'')).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
+    const doc=promptDoc();
+    const prompt='Original document:\n\n'+doc.md+'\n\nApply all of these suggestions and make the whole document consistent:\n'+rem.map((x,k)=>(k+1)+'. '+x.p.t+(x.p.q?(' (concerns: "'+x.p.q+'")'):'')).join('\n')+'\n\nReturn the full markdown (keep the "# title" and "## " structure).';
     streamAPI('apply',[{role:'user',content:prompt}],toneSys())
-      .then(md=>{applyMd(md);const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';tasteLog('approved',x.p);_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
+      .then(md=>{applyMd(doc.restore(md));const chg=flashChanged(before);_mast.chg=_mast.chg||{};rem.forEach(x=>{_mast.done[x.i]='fixed';tasteLog('approved',x.p);_mast.chg[x.i]=chg});renderMast();toast('All applied — the whole document is consistent')})
       .catch(e=>{renderMast();toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false)})}
 
@@ -3101,9 +3120,10 @@
     const s=cur();const c=(_cmtCache[s.id]||[]).find(x=>x.id===cid);if(!c)return;
     pushUndo();setBusy(true);toast('Applying the client’s note…');
     const before=snapshot();
-    const prompt='Original document:\n\n'+genMd()+'\n\nA client left this comment on the section "'+c.h+'":\n"'+c.text+'"\n\nRevise the document to address the comment (adjust only what’s relevant; keep the "# title" and "## " structure). Return the full markdown.';
+    const doc=promptDoc();
+    const prompt='Original document:\n\n'+doc.md+'\n\nA client left this comment on the section "'+c.h+'":\n"'+c.text+'"\n\nRevise the document to address the comment (adjust only what’s relevant; keep the "# title" and "## " structure). Return the full markdown.';
     try{const md=await streamAPI('apply',[{role:'user',content:prompt}],toneSys());
-      applyMd(md);flashChanged(before);toast('Client note applied — review it, then Resolve the comment')}
+      applyMd(doc.restore(md));flashChanged(before);toast('Client note applied — review it, then Resolve the comment')}
     catch(e){toast('Failed: '+e.message)}
     finally{setBusy(false)}}
   async function resolveComment(cid){
