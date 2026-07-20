@@ -2522,7 +2522,7 @@
     const r=raf(full=>{c.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
     streamAPI('improve',[{role:'user',content:prompt}],toneSys(),r)
       .then(text=>{r.stop();c.innerHTML=renderMd(text);sec.classList.add('flash');setTimeout(()=>sec.classList.remove('flash'),1200);
-        box.__done[i]='fixed';tasteLog('approved',point);schedulePersist();paintSectionThink(box)})
+        box.__done[i]='fixed';tasteLog('approved',point);markDeliberate(h,point.t);schedulePersist();paintSectionThink(box)})
       .catch(e=>{r.stop();c.innerHTML=old;paintSectionThink(box);toast('Failed: '+e.message)})
       .finally(()=>{setBusy(false)})}
   // whole-document idea — weave a direction across the canvas (Odin)
@@ -2620,7 +2620,7 @@
     // toneSys carries persona + project voice + taste memory (every approve/skip so far) —
     // Refine judged blind to all of it before this. The sources digest closes the loop:
     // the final gate knows what the work was built from, not just what it became.
-    const sys=[toneSys(),(LENS[lens]||''),sourcesDigest()].filter(Boolean).join('\n\n');
+    const sys=[toneSys(),(LENS[lens]||''),sourcesDigest(),deliberateDigest()].filter(Boolean).join('\n\n');
     streamAPI('mastering',[{role:'user',content:prompt}],sys,
         raf(full=>{const m=$('mastStream');if(m)m.innerHTML=renderMd(full)+'<span class="cursor"></span>'}))
       .then(text=>{const pts=parsePoints(text);_mast={points:pts,done:{},lens:lens,kind:'mastering'};renderMast();
@@ -2671,6 +2671,27 @@
     if(!mk){toast('Spot not found in the current text');return}
     const cv=$('cvView');const top=cv.scrollTop+mk.getBoundingClientRect().top-cv.getBoundingClientRect().top-cv.clientHeight/2;
     smoothTo(cv,top);mk.classList.add('pulse');setTimeout(()=>mk.classList.remove('pulse'),1400)}
+  /* Provenance for Refine. A push the studio proposed AND approved is a choice, not a defect —
+     but once Odin wrote it in, the document carried no trace of that, so Refine (told to hunt
+     tonal inconsistency) reliably targeted the very passage that had just been approved. Taste
+     memory rides along in toneSys, but it's a 90-char bias, not protection for one paragraph.
+     Record which sections carry an approved push, and hand that to the audit. */
+  function markDeliberate(h,note){
+    const s=cur();if(!s||!h)return;
+    s.bold=s.bold||{};
+    s.bold[h]={t:String(note||'').replace(/\*\*/g,'').slice(0,90),ts:Date.now()};
+    const keys=Object.keys(s.bold);
+    if(keys.length>12){const oldest=keys.sort((a,b)=>s.bold[a].ts-s.bold[b].ts)[0];delete s.bold[oldest]}
+    save()}
+  function deliberateDigest(){
+    const s=cur();if(!s||!s.bold)return '';
+    // headings get renamed and sections get cut — only speak for the ones still on the canvas
+    const live=new Set([...document.querySelectorAll('#doc .sec .sec-h')].map(e=>e.innerText.trim()));
+    const hit=Object.keys(s.bold).filter(h=>live.has(h));
+    if(!hit.length)return '';
+    return capTxt('These sections carry a push this studio proposed and deliberately approved:\n'
+      +hit.map(h=>'- “'+h+'” — '+s.bold[h].t).join('\n')
+      +'\nThey are choices, not accidents. Audit them for craft — clarity, accuracy, redundancy, whether the claim holds — but never flag them for being bolder, sharper or stranger than the rest, and never propose smoothing them toward the surrounding tone.',1200)}
   // taste memory — every approve/skip teaches the system what this team wants
   function tasteLog(verdict,point){
     if(!point)return;const s=cur();if(!s||s.private)return;
