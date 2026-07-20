@@ -22,6 +22,12 @@
 <style>
   .docwrap{max-width:1200px;margin:0 auto;padding:60px 44px 120px;display:grid;grid-template-columns:230px 1fr;gap:56px;align-items:start}
   @media(max-width:900px){.docwrap{grid-template-columns:1fr;gap:0;padding:40px 24px 90px}}
+  /* a grid item defaults to min-width:auto, so it refuses to shrink below its content's
+     min-content width — one long line in the docs made the single mobile column 495px wide
+     and pushed the whole page sideways. min-width:0 lets 1fr actually be 1fr; the code
+     blocks then scroll inside themselves as intended. */
+  .docwrap>*{min-width:0}
+  .docwrap pre{max-width:100%;overflow-x:auto}
   .toc{position:sticky;top:96px}
   @media(max-width:900px){.toc{position:static;margin-bottom:36px;border:1px solid var(--line);border-radius:12px;padding:16px}}
   .toc h4{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
