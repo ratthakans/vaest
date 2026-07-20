@@ -75,13 +75,15 @@ Rules: 6–12 slides total. One cover, one close. Bullets are 3–6 words each, 
 
 # CURRENT TASK: Ø THINK — a Senior Creative Director provocation pass over the document.
 Read the whole canvas like a CD reviewing a junior's deck: not proofreading — pushing. Find what would make the work braver and more shareable:
-- missing cultural hooks or tensions, safe choices that could be bent (e.g. minimalist → a brutalist clash), unclaimed naming/copy angles, places where the idea stops one step too early.
+- missing cultural hooks or tensions, unclaimed naming/copy angles, a claim the work is too polite to make, places where the idea stops one step too early.
+STAY INSIDE THE WORK'S OWN VOICE. You are pushing the IDEA, not the register. Every push must be something this document could carry out while still sounding like itself — and while honouring the project's voice and guidelines above, which are not yours to bend. Never propose a change whose main effect is a different tone, a louder style, or a clash for its own sake: if a push only works by changing who this piece sounds like, it is the wrong push. Bolder thinking, same voice.
 Propose 3–6 pushes. Format each as: "- **short title** {{a short exact quote from the document this relates to}} — the push, 1–2 lines, concrete."
 The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
   sectionthink: `${BASE}
 
 # CURRENT TASK: Ø THINK (SECTION) — a Senior Creative Director provocation pass over ONE section.
-You get the document's title for context and one section's heading + body. Push only that section: the sharper cultural angle, the safe choice worth bending, the idea it stops one step short of.
+You get the document's title for context and one section's heading + body. Push only that section: the sharper cultural angle, the claim it is too polite to make, the idea it stops one step short of.
+STAY INSIDE THE WORK'S OWN VOICE. You are pushing the IDEA, not the register — every push must be executable while this section still sounds like itself and still honours the project's voice and guidelines above. Never propose a change whose main effect is a different tone or a louder style. Bolder thinking, same voice.
 Propose 2–3 pushes. Format each as: "- **short title** {{a short exact quote from the section this relates to}} — the push, 1–2 lines, concrete."
 The {{quote}} must be 3–8 words copied verbatim from the section body. Never propose changes to other sections. Only bullets — no intro, no outro.`,
   distill: `${BASE}
@@ -169,6 +171,7 @@ Return the FULL markdown document only (keep the "# title" and "## " structure) 
 
 # CURRENT TASK: REFINED — a holistic audit of the whole document, bird's-eye.
 Read the entire canvas and hunt three things: INCONSISTENCY (tone or claims that contradict across sections), REDUNDANCY (repeated words, ideas that circle), LOGIC (does the flow actually hold up).
+A DELIBERATE OUTLIER IS NOT AN INCONSISTENCY. Passages are often bolder, sharper or stranger than their neighbours because someone chose that — several will have been proposed and approved by this studio already. Flag tone only where it reads as an accident: a lapse in register, a line that sounds like a different writer by mistake, a claim that contradicts another. Never flag a passage merely for being braver than the ones around it, and never propose flattening a line to make the document more even. Evenness is not the goal — coherence is. When in doubt, leave the bold line alone and find a real problem instead.
 Propose 2–5 genuinely improving points.
 Format each as: "- **short title** {{a short exact quote from the document where the problem lives}} — 1–2 lines on how to fix it."
 The {{quote}} must be 3–8 words copied verbatim from the document. Only bullets — no intro, no outro.`,
