@@ -427,7 +427,7 @@
   .r-scroll{flex:1;overflow-y:auto;padding:4px 12px 10px;min-height:0}
   .r-scroll::-webkit-scrollbar-thumb{border-color:#0a0a0b;background:rgba(255,255,255,.16)}
   .r-lbl{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:.22em;
-    text-transform:uppercase;color:#7a7871;font-weight:600;padding:16px 6px 7px}
+    text-transform:uppercase;color:#8b8a84;font-weight:600;padding:16px 6px 7px}
   .r-lbl button{width:20px;height:20px;border-radius:var(--r-xs);display:grid;place-items:center;color:#8e8e88;font-size:14px}
   .r-lbl button:hover{background:rgba(255,255,255,.09);color:var(--snow)}
   .s-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:var(--r-sm);font-size:13px;font-weight:500;
@@ -467,7 +467,7 @@
   .s-item .tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .s-item .tt.editing{overflow:visible;white-space:normal;background:rgba(255,255,255,.14);color:var(--snow);
     outline:1px solid rgba(0,0,0,0.65);border-radius:var(--r-xs);padding:1px 5px;margin:-1px -5px;cursor:text}
-  .s-item .ago{font-size:10px;color:#75726c;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .s-item .ago{font-size:10px;color:#8b8a84;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .s-item.on .ago{color:#98948d}
   .s-item .more{opacity:0;width:20px;height:20px;border-radius:var(--r-xs);display:grid;place-items:center;color:#8e8e88;font-size:14px;letter-spacing:.5px;flex:none}
   .s-item:hover .more{opacity:1}
@@ -491,7 +491,7 @@
   .s-item[draggable],.md-item[draggable]{cursor:grab}
   .s-item[draggable]:active,.md-item[draggable]:active{cursor:grabbing}
   /* empty states — a quiet dashed card with a glyph, not a bare mumble */
-  .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#6d6b64;line-height:1.5;padding:2px 12px 8px}
+  .r-empty{display:flex;align-items:center;gap:9px;font-size:11.5px;color:#8b8a84;line-height:1.5;padding:2px 12px 8px}
   .r-empty svg{display:none}
   .r-empty b{font-weight:600;color:var(--dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .r-empty b:hover{color:var(--ink)}
@@ -508,7 +508,7 @@
   .r-usage .qbar i.hot{background:var(--cinnabar)}
   .r-usage .qv{font-size:11px;color:var(--mute)}
   .r-foot{flex:none;padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;
-    font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:#7a7871}
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:#8b8a84}
   .sync{width:6px;height:6px;border-radius:50%;background:#7a7871;flex:none}
   .sync.ok{background:#5d9e7e}.sync.sync{background:#c9a04a;animation:pl 1s infinite}.sync.off{background:var(--cinnabar)}
   .r-foot .tok{margin-left:auto}
@@ -614,7 +614,7 @@
   .auth-f input{width:100%;border:1px solid rgba(255,255,255,.14);border-radius:var(--r-lg);padding:13px 16px;font-family:inherit;font-size:14.5px;
     color:var(--ink);background:rgba(255,255,255,.05);outline:none;transition:border-color var(--base) var(--ease),background var(--base) var(--ease)}
   .auth-f input:focus{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.085)}
-  .auth-f input::placeholder{color:#77766f}
+  .auth-f input::placeholder{color:#8b8a84}
   .auth-f input:-webkit-autofill{-webkit-text-fill-color:#f2f1ee;-webkit-box-shadow:0 0 0 40px #1b1b1d inset;caret-color:#f2f1ee}
   .auth-go{margin-top:6px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;color:var(--on-ink);font-weight:650;font-size:14.5px;
     padding:13px;border-radius:var(--r-lg);background:#f2f1ee;
@@ -1144,7 +1144,12 @@
   }
   @media(min-width:761px){.scrim{display:none}}
   /* touch — no hover: tools must always be visible */
-  @media(hover:none){.sec-tools,.s-item .more,.p-row .more{opacity:1}}
+  @media(hover:none){.sec-tools,.s-item .more,.p-row .more{opacity:1}
+    /* touch needs ~44px targets — grow the small controls on touch only, desktop unchanged */
+    .id-send,.id-attach{width:40px;height:40px}
+    #modeSeg button{padding-top:11px;padding-bottom:11px}
+    .s-item .more,.p-row .more{width:32px;height:32px}
+    .md-item .more,.chip button{min-width:30px;min-height:30px}}
   /* real iOS viewport */
   @supports(height:100dvh){.app,.main{height:100dvh}}
 

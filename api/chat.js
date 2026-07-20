@@ -242,8 +242,24 @@ function normalizeRoles(messages) {
   return out.length ? out : [{ role: 'user', content: String(messages[messages.length - 1]?.content || '…') }];
 }
 
+// Put a cache breakpoint at the end of the conversation so the whole prefix (system + all
+// prior turns, including a Brief's attached file context) is a cache hit on the next turn —
+// a 15-turn interview otherwise re-pays that file context every turn at full input price.
+// Handles both string and block-array content; a no-op on an empty conversation.
+function cacheLastTurn(messages) {
+  const msgs = normalizeRoles(messages);
+  if (!msgs.length) return msgs;
+  const last = msgs[msgs.length - 1];
+  const blocks = typeof last.content === 'string'
+    ? [{ type: 'text', text: last.content }]
+    : Array.isArray(last.content) ? last.content.map(b => ({ ...b })) : null;
+  if (!blocks || !blocks.length) return msgs;
+  blocks[blocks.length - 1] = { ...blocks[blocks.length - 1], cache_control: { type: 'ephemeral' } };
+  return [...msgs.slice(0, -1), { ...last, content: blocks }];
+}
+
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
-  const params = { model, max_tokens: maxTokens, messages: normalizeRoles(messages) };
+  const params = { model, max_tokens: maxTokens, messages: cacheLastTurn(messages) };
   // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
   // the dynamic part (tone / project voice) rides in a second block
   const system = [{ type: 'text', text: base, cache_control: { type: 'ephemeral' } }];

@@ -2018,7 +2018,14 @@
   // on(full) feeds streamAPI's onText; done(final) lets the reveal catch up before the caller
   // swaps in the final render, so there's no jump from a mid-reveal state to the finished doc.
   function mdReveal(el,opts){opts=opts||{};
-    const sr=smoothStreamer((txt,streaming)=>{el.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');if(opts.scroll)opts.scroll()});
+    // re-rendering the WHOLE growing document's markdown every animation frame is O(n²) over
+    // the stream — the tail of a long Crystallize visibly stutters. Cap the expensive full
+    // render to ~12fps while streaming; the final frame (streaming=false) always renders, so
+    // nothing is lost, and 12fps is plenty for text appearing.
+    let last=0;const nowMs=()=>(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
+    const sr=smoothStreamer((txt,streaming)=>{
+      const now=nowMs();if(streaming&&now-last<80)return;last=now;
+      el.innerHTML=renderMd(txt)+(streaming?'<span class="cursor"></span>':'');if(opts.scroll)opts.scroll()});
     return {on:t=>sr.push(t),done:t=>{sr.push(t||'');return new Promise(r=>sr.finish(r))}};}
   async function streamIdeaReply(s,restoreOnFail,nudge){
     _ideaBusy=true;setIdeaSendMode(true);
