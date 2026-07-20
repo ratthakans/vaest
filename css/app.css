@@ -586,10 +586,10 @@
 
   /* auth — Sign in / Sign up */
   /* auth — the landing's night, in liquid glass · vars re-scoped so every child resolves light */
-  .auth{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:24px;background:#050506;overflow:hidden;
+  .auth{position:fixed;inset:0;z-index:200;display:none;align-items:flex-start;justify-content:center;padding:24px;background:#050506;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
     --ink:#f2f1ee;--dim:#a1a09b;--mute:#77766f;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.2);--card:rgba(255,255,255,.05);--soft:rgba(255,255,255,.06);--cin-d:#ff8a5c;
     color:var(--ink)}
-  .auth::before{content:"";position:absolute;inset:-24%;pointer-events:none;
+  .auth::before{content:"";position:fixed;inset:-24%;pointer-events:none;
     background:
       radial-gradient(38% 46% at 78% 24%,rgba(64,150,255,.07),transparent 72%),
       radial-gradient(30% 40% at 20% 84%,rgba(255,90,31,.05),transparent 72%),
@@ -601,7 +601,7 @@
   .auth-x{position:absolute;top:18px;right:20px;width:32px;height:32px;border-radius:50%;
     display:grid;place-items:center;color:var(--mute);font-size:15px;transition:.14s;z-index:2}
   .auth-x:hover{color:var(--ink);background:rgba(255,255,255,.07)}
-  .auth-in{position:relative;z-index:2;width:100%;max-width:404px;animation:viewIn .5s var(--ease) both;
+  .auth-in{position:relative;z-index:2;width:100%;max-width:404px;margin-top:auto;margin-bottom:auto;animation:viewIn .5s var(--ease) both;
     background:rgba(255,255,255,.055);backdrop-filter:blur(28px) saturate(1.35);-webkit-backdrop-filter:blur(28px) saturate(1.35);
     border:1px solid rgba(255,255,255,.13);border-radius:var(--r-xl);padding:38px 34px 30px;
     box-shadow:0 34px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.1)}
