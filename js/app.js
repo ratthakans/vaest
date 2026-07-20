@@ -1010,6 +1010,37 @@
     if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
   $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
   $('dlgCancel').onclick=()=>dlgClose(null);
+  /* a11y — modal focus management. The overlays open by toggling `.show`; a keyboard or
+     screen-reader user was left behind them (focus never entered, Tab escaped, focus never
+     returned). One observer per overlay moves focus in on open, returns it on close, and a
+     single Tab handler traps focus in the topmost open modal. No per-open-function edits. */
+  (function(){
+    const IDS=['authView','npView','gateView','sumView','presView','pasteView','addPasteView','setView','voiceView','snapView','diffView','mdView','keysView','statsView','dlgView','pal'];
+    const overlays=IDS.map(id=>$(id)).filter(Boolean);
+    const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const vis=el=>[...el.querySelectorAll(FOCUSABLE)].filter(x=>x.offsetParent!==null);
+    let _return=null;
+    overlays.forEach(el=>{
+      el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+      new MutationObserver(()=>{
+        const shown=el.classList.contains('show');
+        if(shown&&!el._focusOn){el._focusOn=true;_return=document.activeElement;
+          setTimeout(()=>{if(!el.contains(document.activeElement)){const f=vis(el)[0];if(f)try{f.focus()}catch(e){}}},60);}
+        else if(!shown&&el._focusOn){el._focusOn=false;
+          const r=_return;_return=null;if(r&&r.focus&&document.body.contains(r))try{r.focus()}catch(e){}}
+      }).observe(el,{attributes:true,attributeFilter:['class']});
+    });
+    addEventListener('keydown',e=>{
+      if(e.key!=='Tab')return;
+      const open=overlays.filter(el=>el.classList.contains('show'));
+      const el=open[open.length-1];if(!el)return;
+      const f=vis(el);if(!f.length)return;
+      const first=f[0],last=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+      else if(!el.contains(document.activeElement)){e.preventDefault();first.focus()}
+    });
+  })();
   $('dlgView').onclick=e=>{if(e.target===$('dlgView'))dlgClose(null)};
   // ⌥↑ / ⌥↓ — switch sessions in the order shown in the rail
   addEventListener('keydown',e=>{
