@@ -123,7 +123,7 @@
   @keyframes tryflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
   @media(max-width:820px){
     .nav-in{display:flex;align-items:center;gap:14px}
-    .nav-links{position:fixed;inset:72px 0 auto 0;transform:translateY(-12px);flex-direction:column;align-items:flex-start;gap:0;margin:0;background:rgba(8,8,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:8px 0;opacity:0;visibility:hidden;transition:.24s var(--ease)}
+    .nav-links{position:fixed;inset:72px 0 auto 0;transform:translateY(-12px);flex-direction:column;align-items:flex-start;gap:0;margin:0;background:#0a0a0c;border-bottom:1px solid var(--line);padding:8px 0;opacity:0;visibility:hidden;transition:.24s var(--ease)}
     .nav.open .nav-links{transform:none;opacity:1;visibility:visible}
     .nav-links a{width:100%;padding:14px 44px;font-size:16px}
     .nav-burger{display:inline-flex}
@@ -135,6 +135,13 @@
   /* ── hero — statement over black, glass field right ── */
   .hero{position:relative;padding:16vh 0 14vh;border-bottom:1px solid var(--line);overflow:hidden}
   @media(max-width:640px){.hero{padding:11vh 0 10vh}}
+  /* touch: the nav and the purchase CTAs need a real hit area (measured 16-34px at 320px) */
+  @media(hover:none){
+    .nav-login{padding:14px 4px}
+    .nav-burger{padding:10px}
+    .cmp-cta{padding-top:13px;padding-bottom:13px}
+    .btn-try,.cmp-corner .ct{min-height:44px;display:inline-flex;align-items:center}
+  }
   .hero .wrap{position:relative;z-index:2}
   .hero .eye{display:block;margin-bottom:42px}
   .hero .hero-tick{width:36px;height:2px;border-radius:2px;background:var(--chroma);margin-bottom:26px}

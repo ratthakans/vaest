@@ -48,13 +48,20 @@ img{max-width:100%}
 @media(max-width:820px){
   .nav-in{display:flex;align-items:center;gap:14px}
   .nav-links{position:fixed;inset:72px 0 auto 0;transform:translateY(-12px);flex-direction:column;align-items:flex-start;gap:0;margin:0;
-    background:rgba(8,8,10,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:8px 0;opacity:0;visibility:hidden;transition:.24s var(--ease)}
+    background:#0a0a0c;border-bottom:1px solid var(--line);padding:8px 0;opacity:0;visibility:hidden;transition:.24s var(--ease)}
   .nav.open .nav-links{transform:none;opacity:1;visibility:visible}
   .nav-links a{width:100%;padding:14px 44px;font-size:16px}
   .nav-burger{display:inline-flex}
   .nav-right{margin-left:auto;gap:12px}
   .nav-right .btn-try{padding:9px 14px}
   .nav-login{font-size:13.5px} /* keep the /app route reachable on phones */
+  /* touch: the nav and the purchase CTAs need a real hit area (measured 16-34px at 320px) */
+  @media(hover:none){
+    .nav-login{padding:14px 4px}
+    .nav-burger{padding:10px}
+    .cmp-cta{padding-top:13px;padding-bottom:13px}
+    .btn-try,.cmp-corner .ct{min-height:44px;display:inline-flex;align-items:center}
+  }
 }
 
 /* ── prism field (reused, quiet) ── */
