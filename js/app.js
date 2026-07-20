@@ -804,6 +804,19 @@
     const raw=(e.dataTransfer&&e.dataTransfer.getData('text/plain'))||'';const i=raw.indexOf(':');if(i<0)return;
     const kind=raw.slice(0,i),id=raw.slice(i+1);
     if(kind==='s')moveSession(id,pid);else if(kind==='md')moveMD(id,pid)}
+  /* A5 — the document goes with you. A new Idea chat inherits the project (so the project's
+     refs and sibling work flow in) AND carries the document itself as an attached tile, so the
+     handoff still works for a session that belongs to no project. */
+  function continueInIdea(sid){
+    if(_busy){toast('Working…');return}
+    const src=sessions.find(x=>x.id===sid);if(!src||!src.canvas||!src.canvas.trim()){toast('No document to carry over yet');return}
+    const t=((src.canvas.match(/^#\s+(.+)$/m)||[])[1]||src.title||'Document').trim();
+    const s={id:uid('s'),title:'Ideas — '+t.slice(0,32),projectId:src.projectId||null,brief:'',
+      files:[{n:t.slice(0,60)+' (document)',c:capTxt(src.canvas,60000),paste:true}],
+      canvas:'',updatedAt:Date.now(),mode:'idea'};
+    sessions.unshift(s);currentSid=s.id;save();renderRail();openSession(s.id);closeRailMobile();
+    const inp=$('ideaInput');if(inp)setTimeout(()=>inp.focus(),60);
+    toast('New Idea chat — it already has the document'+(src.projectId?' and the project':''))}
   function toggleProject(id){const p=projects.find(x=>x.id===id);if(!p)return;p.collapsed=!p.collapsed;save();renderRail()}
   async function newProject(){const n=((await uiPrompt('Name the project','',{ok:'Create',placeholder:'Project name'}))||'').trim();if(!n)return;
     projects.push({id:uid('p'),name:n});save();renderRail()}
@@ -902,6 +915,8 @@
     if(projects.length){h+='<div class="cap">Move to project</div>';
       projects.forEach(p=>{if(p.id!==s.projectId)h+='<button onclick="moveSession(\''+sid+'\',\''+p.id+'\');hideCtx()">'+esc(p.name)+'</button>'})}
     if(s.projectId)h+='<button onclick="moveSession(\''+sid+'\',null);hideCtx()">Remove from project</button>';
+    // A5 — carry a finished document into a fresh Idea chat instead of re-explaining it
+    if(s.canvas&&s.canvas.trim())h+='<div class="sep"></div><button onclick="continueInIdea(\''+sid+'\');hideCtx()">Continue in Idea</button>';
     h+='<button onclick="duplicateSession(\''+sid+'\');hideCtx()">Duplicate</button>';
     h+='<div class="sep"></div><button class="danger" onclick="deleteSession(\''+sid+'\');hideCtx()">Delete session</button>';
     showCtx(e,h)}
