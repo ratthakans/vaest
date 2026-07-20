@@ -22,6 +22,12 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Enter a valid email address' });
     return;
   }
+  // Rate-limit FIRST, before the entitlement gate below — otherwise the distinct 403 for an
+  // entitled address turns this into an unauthenticated oracle for probing who is internal or
+  // on the invite list.
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
+  if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
+
   // Entitlement in this system is keyed on the email STRING alone: isInternal() grants
   // unlimited spend to anything @orions.agency, and INVITED/PLAN_MAP comp a full plan. This
   // endpoint creates users pre-confirmed (email_confirm: true skips the ownership round-trip),
@@ -31,9 +37,6 @@ export default async function handler(req, res) {
     res.status(403).json({ error: 'This address is provisioned by the studio — ask us to set it up, or sign in if it already exists.' });
     return;
   }
-
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
-  if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
 
   try {
     // create a confirmed user (admin API, service key)

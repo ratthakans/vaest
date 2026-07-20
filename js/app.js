@@ -2179,7 +2179,11 @@
       secEl.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();secEl.classList.remove('drop-tgt');window._dg=0;$('dropzone').classList.remove('on');
         const fs=[...(e.dataTransfer?.files||[])];if(fs.length)dropOnSection(secEl,fs)});
     });
-    $('mhTitle').addEventListener('input',()=>{const st=cur();if(st){st.title=$('mhTitle').innerText.trim()||'work';$('topTitle').textContent=st.title;schedulePersist();renderRail()}});
+    $('mhTitle').addEventListener('input',()=>{const st=cur();if(!st)return;
+      st.title=$('mhTitle').innerText.trim()||'work';$('topTitle').textContent=st.title;schedulePersist();
+      // update just this session's rail row — renderRail() rebuilds projects + 20 recents +
+      // the MD library on every keystroke, which is pointless while typing one title
+      const row=document.querySelector('.s-item[data-sid="'+st.id+'"] .tt');if(row)row.textContent=st.title});
     renderOutline();if(!_shareId)renderOwnerComments()}
   // DOM → inline markdown — keep **bold** *italic* `code` [link](url) on serialize
   function inlineMd(node){let out='';node.childNodes.forEach(n=>{
@@ -2195,6 +2199,15 @@
     out+=inlineMd(n)});
     return out}
   function wordCount(md){const t=String(md||'').replace(/[#>*`_\[\]()!-]/g,' ');const th=(t.match(/[\u0E00-\u0E7F]+/g)||[]).join('').length;const en=(t.match(/[A-Za-z0-9']+/g)||[]).length;return en+Math.round(th/4)}
+  // The document markdown as SENT TO A MODEL — with embedded base64 images collapsed to a
+  // short placeholder. An inline data: image is 150–400KB of gibberish that costs ~100–200K
+  // input tokens, can overflow the 200K context on its own, and can't be reproduced anyway.
+  // Use this for read-only prompts (Refine, Present) that never rewrite the document, so the
+  // placeholder can never round-trip back onto the canvas. (Mutation prompts still send the
+  // real genMd() until the map+restore path is built and verified.)
+  function promptMd(){
+    return genMd().replace(/!\[([^\]]*)\]\(data:image\/[^)]*\)/g, (_m, alt) => '['+(alt||'image')+' — embedded image, omitted]');
+  }
   function genMd(){
     let md='# '+($('mhTitle')?$('mhTitle').innerText.trim():'Document')+'\n\n';
     document.querySelectorAll('#doc .sec').forEach(sec=>{
@@ -2643,7 +2656,7 @@
     const waits=PERSONA_WAIT[personaKey()];let wi=0;
     const wEl=$('mastWait');wEl.textContent=waits[0];
     const wt=setInterval(()=>{wi++;const el=$('mastWait');if(el)el.textContent=waits[wi%waits.length]},2600);
-    const prompt='Here is the full document:\n\n'+genMd();
+    const prompt='Here is the full document:\n\n'+promptMd();
     // toneSys carries persona + project voice + taste memory (every approve/skip so far) —
     // Refine judged blind to all of it before this. The sources digest closes the loop:
     // the final gate knows what the work was built from, not just what it became.
@@ -2860,7 +2873,7 @@
       // C3 — pinned sections (chapters) become the deck's spine: a key slide each, in order
       const pins=(s&&s.pins)||{};const pinned=Object.keys(pins).filter(h=>pins[h]);
       const spine=pinned.length?('\n\nThe user pinned these sections as the spine — give each its own key slide, in this order, and treat the rest as support: '+pinned.join(' · ')):'';
-      const raw=await streamAPI('present',[{role:'user',content:'Turn this into a presentation:\n\n'+genMd()+spine}],toneSys());
+      const raw=await streamAPI('present',[{role:'user',content:'Turn this into a presentation:\n\n'+promptMd()+spine}],toneSys());
       let slides;try{slides=JSON.parse(raw.replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){
         const m=raw.match(/\[[\s\S]*\]/);slides=m?JSON.parse(m[0]):null}
       if(!Array.isArray(slides)||!slides.length)throw new Error('couldn’t shape the slides');
@@ -2933,10 +2946,16 @@
           ||(x.briefQA&&x.briefQA.length)||chatsOf(x).some(c=>c.ideas&&c.ideas.length);
         const localMeaningful=sessions.some(hasWork)||((library||[]).length>0);
         const tmpP=projects,tmpS=sessions,tmpC=currentSid,tmpU=usage;
+        // private sessions live only on this device — the cloud never carries them, so a
+        // cloud-wins overwrite must not drop them. Keep the local copies to re-attach.
+        const localPrivate=tmpS.filter(x=>x&&x.private);
         if(applyBlob(cloud)){
           const cloudTime=Math.max(0,...sessions.map(x=>x.updatedAt||0));
           if(localMeaningful&&cloudTime<localTime){projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU;cloudSave()}
-          else{if(!cur())currentSid=(sessions[0]||{}).id||null;
+          else{
+            // cloud won — but re-attach any local-only private sessions it couldn't contain
+            if(localPrivate.length){const have=new Set(sessions.map(x=>x.id));sessions=localPrivate.filter(x=>!have.has(x.id)).concat(sessions)}
+            if(!cur())currentSid=(sessions[0]||{}).id||null;
             if(!sessions.length){sessions=[{id:uid('s'),title:'New',projectId:null,brief:'',files:[],canvas:'',updatedAt:Date.now(),mode:'idea'}];currentSid=sessions[0].id}
             save();renderRail();const c2=cur();(c2.canvas&&c2.canvas.trim())?showCanvas():showHome()}
         }else{projects=tmpP;sessions=tmpS;currentSid=tmpC;usage=tmpU}
