@@ -1,4 +1,4 @@
-import { capFor, readUsageData, writeUsageRow, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
+import { capFor, readUsageData, writeUsageRow, updateUsage, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
 import { streamOpenAI } from '../lib/openai.js';
@@ -472,23 +472,23 @@ export default async function handler(req, res) {
     res.write(`\n[[USAGE]]${inTok},${outTok},${bucket}`);
     res.end();
     try {
-      // single read-modify-write: record token usage + real spend and, now that the document
-      // succeeded, bump the counters — merged so the writes don't clobber each other.
-      // Known + accepted: two calls finishing in the same instant can race this RMW and drop
-      // one call's metering (no row-level atomicity via REST). Loss is bounded by one call's
-      // cost, favors the customer, and every gate re-checks on the next call.
-      const d0 = await readUsageData(user.email);
-      let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
-      nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
-      // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
-      // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
-      if (route.openai && /opus/.test(mid)) {
-        const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
-        nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
-      }
-      if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
-      if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
-      await writeUsageRow(user.email, nextData);
+      // Record token usage + real spend and, now that the document succeeded, bump the
+      // counters. Runs through updateUsage so a credit pack applied by /api/confirm or the
+      // Stripe webhook mid-stream can't be clobbered by this write: on a lost race we
+      // re-read and re-apply the deltas to the winner's row instead of overwriting it.
+      await updateUsage(user.email, (d0) => {
+        let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
+        nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
+        // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
+        // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
+        if (route.openai && /opus/.test(mid)) {
+          const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
+          nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
+        }
+        if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
+        if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
+        return nextData;
+      });
     } catch (me) { console.error('post-stream metering failed:', me?.message || me); }
   } catch (e) {
     // sanitize — upstream errors can carry provider/model names; the client gets a neutral line

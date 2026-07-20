@@ -1,4 +1,4 @@
-import { verifyUser, readUsageData, writeUsageRow, applyBoost } from '../lib/plans.js';
+import { verifyUser, readUsageData, writeUsageRow, applyBoost, updateUsage } from '../lib/plans.js';
 import { getStripe, planForPrice, writeSub } from '../lib/billing.js';
 
 // Confirm a just-completed Checkout Session and activate the subscription immediately
@@ -34,9 +34,9 @@ export default async function handler(req, res) {
     // one-time usage boost → credit extra usage for this month (idempotent per session)
     if (s.mode === 'payment' && s.metadata && s.metadata.boost) {
       const packs = parseInt(s.metadata.packs, 10) || 1;
-      const d = await readUsageData(user.email);
-      const next = applyBoost(d, s.id, packs);
-      if (next !== d) await writeUsageRow(user.email, next);
+      // through updateUsage: a metering write landing at the same moment can no longer
+      // clobber the credit this customer just paid for
+      await updateUsage(user.email, (d) => { const next = applyBoost(d, s.id, packs); return next === d ? null : next; });
       res.status(200).json({ activated: true, boosted: true });
       return;
     }

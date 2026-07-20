@@ -1,4 +1,4 @@
-import { readUsageData, writeUsageRow, applyBoost } from '../lib/plans.js';
+import { readUsageData, writeUsageRow, applyBoost, updateUsage } from '../lib/plans.js';
 import { getStripe, planForPrice, readSub, writeSub } from '../lib/billing.js';
 
 // Stripe posts events here. We MUST verify the signature against the raw request
@@ -71,9 +71,7 @@ export default async function handler(req, res) {
           const email = ((s.metadata && s.metadata.email) || s.client_reference_id || '').toLowerCase();
           if (email && s.payment_status === 'paid') {
             const packs = parseInt(s.metadata.packs, 10) || 1;
-            const d = await readUsageData(email);
-            const next = applyBoost(d, s.id, packs);
-            if (next !== d) await writeUsageRow(email, next);
+            await updateUsage(email, (d) => { const next = applyBoost(d, s.id, packs); return next === d ? null : next; });
           }
           break;
         }
