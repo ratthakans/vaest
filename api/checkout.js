@@ -1,5 +1,5 @@
 import { verifyUser, readUsageData, packsLeft, MAX_PACKS_PER_MONTH } from '../lib/plans.js';
-import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub, subIsActive } from '../lib/billing.js';
+import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub, subIsActive, resolveAccess } from '../lib/billing.js';
 
 // Create a Stripe Checkout Session (subscription mode) for the signed-in user.
 // Body: { plan: 'basic'|'pro'|'director', kind?: 'individual'|'team', seats?: number }
@@ -19,6 +19,12 @@ export default async function handler(req, res) {
     const boostPrice = process.env.STRIPE_PRICE_BOOST || '';
     if (!boostPrice) { res.status(503).json({ error: 'boost not configured' }); return; }
     const want = Math.max(1, Math.min(10, parseInt((req.body || {}).packs, 10) || 1));
+    // A pack only credits creditDocs/creditRefines, which are read exclusively inside the
+    // doc/refine quota checks — and those are behind an active plan (chat.js 402s the free
+    // tier first). So a plan-less account can never spend a pack: refuse the sale rather than
+    // take money for a capability it can't reach.
+    const acc = await resolveAccess(user.email);
+    if (!acc.allowed) { res.status(402).json({ error: 'Credit packs top up a plan — choose a plan first, then add packs any time.', paywall: true }); return; }
     // enforce the monthly purchase cap (beyond it, upgrading is the better deal)
     const left = packsLeft(await readUsageData(user.email));
     if (left <= 0) { res.status(429).json({ error: `You’ve added the maximum ${MAX_PACKS_PER_MONTH} credit packs this month — upgrade your plan for more.` }); return; }
