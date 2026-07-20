@@ -151,6 +151,8 @@
       :'Already have an account<button type="button" onclick="toggleAuthMode()">Sign in</button>';
     $('authErr').textContent=''}
   function showAuth(msg){$('authView').classList.add('show');if(msg)$('authErr').textContent=msg;setTimeout(()=>$('authEmail').focus(),50)}
+  // Escape / ✕ / backdrop — always leave a way back to the work behind the sheet
+  function dismissAuth(){hideAuth();if(typeof renderAnonLimit==='function')renderAnonLimit()}
   function hideAuth(){$('authView').classList.remove('show')}
   // enter the free trial — home + Galdr only, log in / sign up top-right (ChatGPT-style)
   function startAnon(){
@@ -167,7 +169,7 @@
   // the wall: a few free messages, then sign up. Reason is shown as the auth headline.
   function anonWall(reason){
     if(_authMode!=='signup')toggleAuthMode();
-    showAuth(reason||'That’s the free trial — sign up (free) to keep going and save this chat')}
+    showAuth(reason||'That’s the free trial. Sign up (free) to keep this chat, carry on in Idea, and crystallize one document.')}
   // small tier hint under the Idea input — anonymous trial or free (no-plan) account
   function renderAnonLimit(){
     const el=$('anonLimit');if(!el)return;
@@ -257,7 +259,11 @@
       if(r.status===200){const d=await r.json();window.QUOTA=d;applyPlanUI();return d.allowed!==false}
       return true}catch(e){return true}}
   // fail-open: no plan info (offline / error / older server) → allow everything
-  function canRefine(){const q=window.QUOTA;return !q||!q.plan||q.plan.refine!==false}
+  function canRefine(){const q=window.QUOTA;
+    if(!q)return true;                      // access not resolved yet — don't flicker the UI
+    if(q.internal)return true;
+    if(!q.plan)return false;                // free tier: plan is null and Refine is paywalled
+    return q.plan.refine!==false}
   // reflect the plan in the UI — lock Refine (Norrsken) on Basic; server still enforces regardless
   function applyPlanUI(){
     const locked=!canRefine();
@@ -404,6 +410,9 @@
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Think / Refine and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile,library}}
+  // what goes to the cloud: the same blob minus anything marked private. Private means
+  // "stays on this device" — that has to be true of the upload, not of the moment.
+  function cloudBlob(){const b=stateBlob();b.sessions=(b.sessions||[]).filter(x=>!x.private);return b}
   // v4→v5 (idempotent): give every item a mode, split multi-chat idea sessions into separate
   // Idea items so 1 chat = 1 Recent, and lift saved sparks into the MD library. Safe to re-run:
   // once items carry a mode and no chats/sparks remain, it's a no-op.
@@ -420,14 +429,14 @@
         s.mode='crystallize';
         // research chats that fed this canvas become their own Idea items (nothing lost)
         liveChats.forEach(c=>out.push({id:uid('s'),mode:'idea',title:c.title||('Chat — '+(s.title||'')),
-          projectId:s.projectId||null,ideas:c.ideas,updatedAt:s.updatedAt||Date.now()}));
+          projectId:s.projectId||null,ideas:c.ideas,files:[],brief:'',canvas:'',updatedAt:s.updatedAt||Date.now()}));
         delete s.chats;delete s.ideas;
         out.push(s);
       }else{ // idea
         if(!liveChats.length){s.mode='idea';s.ideas=s.ideas||[];delete s.chats;out.push(s)}
         else liveChats.forEach((c,i)=>{
           if(i===0){s.mode='idea';s.ideas=c.ideas;if(c.title)s.title=c.title;delete s.chats;out.push(s)}
-          else out.push({id:uid('s'),mode:'idea',title:c.title||s.title||'Idea',projectId:s.projectId||null,ideas:c.ideas,updatedAt:s.updatedAt||Date.now()})});
+          else out.push({id:uid('s'),mode:'idea',title:c.title||s.title||'Idea',projectId:s.projectId||null,ideas:c.ideas,files:[],brief:'',canvas:'',updatedAt:s.updatedAt||Date.now()})});
       }
     });
     sessions=out;
@@ -478,10 +487,13 @@
         if(!r.ok)return null;const rows=await r.json();return (rows[0]&&rows[0].data)||null};
       const viaJwt=AUTH&&AUTH.access_token?await get(AUTH.access_token):null;
       return viaJwt||await get(SB.key)}catch(e){return null}}
-  let _ct;function cloudSave(){const cs=cur();if(cs&&cs.private){setSync('ok');return}clearTimeout(_ct);_ct=setTimeout(async()=>{try{
+  let _ct;function cloudSave(){
+    // the payload is the WHOLE workspace, so privacy has to be decided per-item, not by
+    // whatever is on screen — and we must never paint the dot green for a write we skipped
+    if((sessions||[]).every(x=>x.private)){setSync('local');return}clearTimeout(_ct);_ct=setTimeout(async()=>{try{
     await ensureAuth();
     const post=b=>fetch(SB.url+'/rest/v1/vaest_state',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+b,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
-      body:JSON.stringify({email:SB.who,data:stateBlob(),updated_at:new Date().toISOString()})});
+      body:JSON.stringify({email:SB.who,data:cloudBlob(),updated_at:new Date().toISOString()})});
     let r=await post((AUTH&&AUTH.access_token)||SB.key);
     if(!r.ok)r=await post(SB.key); // pre-migration fallback
     setSync(r.ok?'ok':'off')}catch(e){setSync('off')}},700)}
@@ -579,7 +591,7 @@
   function handleUpload(e){const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)addFiles(fs)}
   function removeFile(i){const s=cur();if(!s)return;s.files.splice(i,1);s.updatedAt=Date.now();save();renderChips()}
   function renderChips(){const s=cur();
-    $('chips').innerHTML=(s&&s.files.length)?s.files.map((f,i)=>
+    $('chips').innerHTML=(s&&s.files&&s.files.length)?s.files.map((f,i)=>
       '<span class="chip'+(f.paste?' paste':'')+'" onclick="openPaste('+i+')" title="Click to view"><b>'+(f.paste?'IDEA':esc((f.n.split('.').pop()||'').toUpperCase().slice(0,4)))+'</b><span>'+esc(f.n)+'</span><button onclick="event.stopPropagation();removeFile('+i+')" title="Remove">✕</button></span>').join(''):'';
     renderIdeaFiles()}
   // B — the same attachment pool, shown in the Idea composer (one pool, three surfaces)
@@ -994,7 +1006,7 @@
       sel.removeAllRanges();sel.addRange(r);
       if(typeof updateSelBar==='function')updateSelBar(); // and offer the toolbar right away
     }});
-  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();closeSummingPicker();closeAddPaste();$('keysView').classList.remove('show');if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
+  addEventListener('keydown',e=>{if(e.key==='Escape'){hideCtx();dismissAuth();$('expMenu').classList.remove('show');closeSnap();closeStats();closeVoice();closeDiff();closeSettings();closePaste();closeSummingPicker();closeAddPaste();$('keysView').classList.remove('show');if($('dlgView').classList.contains('show'))dlgClose(null);closePresent()}
     if(e.key==='Enter'&&$('dlgView').classList.contains('show')&&document.activeElement!==$('dlgCancel')){e.preventDefault();dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true)}});
   $('dlgOk').onclick=()=>dlgClose($('dlgIn').style.display!=='none'?$('dlgIn').value:true);
   $('dlgCancel').onclick=()=>dlgClose(null);
@@ -1645,6 +1657,11 @@
   async function startBrief(){
     if(_briefBusy)return;
     const s=cur();if(!s)return;
+    // check the wall BEFORE tearing down the start screen — Brief is paid at every tier,
+    // and the old order left the user with an empty thread and their text relocated
+    if(ANON){anonWall('Brief is part of a plan — it interviews you, then compiles the brief');return}
+    if(window.QUOTA&&!window.QUOTA.internal&&!window.QUOTA.plan){
+      showNotInvited('Brief is part of a plan — the free account covers the Idea chat and one Crystallize');return}
     const v=($('briefIn')&&$('briefIn').value.trim())||'';
     if(!v&&!(s.files&&s.files.length)){toast('Paste or type a rough brief, or attach a file');return}
     s.mode='brief';s.briefQA=[{r:'user',c:v||'(see attached files)',ts:Date.now()}];s.briefSeed=v;
@@ -2833,6 +2850,12 @@
     if(_busy){toast('Working…');return}
     const s=cur();if(!s||!s.canvas.trim())return;
     const btn=$('presGo');btn.disabled=true;btn.textContent='Building the deck…';setBusy(true);
+    // open the tab INSIDE the click, before any await — after the stream the browser no
+    // longer treats this as a user gesture and bins it, throwing away a paid generation
+    const w=window.open('','_blank');
+    if(!w){btn.disabled=false;btn.textContent='Build presentation';setBusy(false);
+      toast('Allow pop-ups for this site, then press Build again — nothing was spent');return}
+    try{w.document.write('<!doctype html><meta charset=utf-8><title>Building…</title><body style="background:#050506;color:#a8a7a1;font:14px/1.6 -apple-system,sans-serif;display:grid;place-items:center;height:100vh;margin:0">Building the deck…</body>')}catch(e){}
     try{
       // C3 — pinned sections (chapters) become the deck's spine: a key slide each, in order
       const pins=(s&&s.pins)||{};const pinned=Object.keys(pins).filter(h=>pins[h]);
@@ -2841,11 +2864,9 @@
       let slides;try{slides=JSON.parse(raw.replace(/^```json\s*|\s*```$/g,'').trim())}catch(e){
         const m=raw.match(/\[[\s\S]*\]/);slides=m?JSON.parse(m[0]):null}
       if(!Array.isArray(slides)||!slides.length)throw new Error('couldn’t shape the slides');
-      const w=window.open('','_blank');
-      if(!w){toast('Allow popups, then try again');return}
-      w.document.write(buildDeckHTML(slides,$('mhTitle')?$('mhTitle').innerText.trim():s.title));w.document.close();w.focus();
+      w.document.open();w.document.write(buildDeckHTML(slides,$('mhTitle')?$('mhTitle').innerText.trim():s.title));w.document.close();w.focus();
       closePresent();toast('Deck ready — use ⌘P → Save as PDF ('+_presOrient+')')}
-    catch(e){toast('Presentation failed: '+e.message)}
+    catch(e){try{w.close()}catch(_){}toast('Presentation failed: '+e.message)}
     finally{btn.disabled=false;btn.textContent='Build presentation';setBusy(false)}}
   function buildDeckHTML(slides,title){
     const land=_presOrient==='landscape';
@@ -2906,7 +2927,11 @@
       if(cloud){
         const localTime=Math.max(0,...sessions.map(x=>x.updatedAt||0));
         // local counts as "has content" when it has a real canvas/files/brief — if empty, cloud always wins (avoids overwrite)
-        const localMeaningful=sessions.some(x=>(x.canvas&&x.canvas.trim())||x.files.length||(x.brief&&x.brief.trim()));
+        // count every kind of work, not just a canvas: Idea chats and Brief interviews ARE
+        // the product for most users, and .files can be absent on migrated items
+        const hasWork=x=>(x.canvas&&x.canvas.trim())||(x.files&&x.files.length)||(x.brief&&x.brief.trim())
+          ||(x.briefQA&&x.briefQA.length)||chatsOf(x).some(c=>c.ideas&&c.ideas.length);
+        const localMeaningful=sessions.some(hasWork)||((library||[]).length>0);
         const tmpP=projects,tmpS=sessions,tmpC=currentSid,tmpU=usage;
         if(applyBlob(cloud)){
           const cloudTime=Math.max(0,...sessions.map(x=>x.updatedAt||0));

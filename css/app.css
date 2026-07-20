@@ -262,9 +262,9 @@
   .sth-hd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:650;color:var(--ink);padding:10px 0 4px}
   .sth-hd b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .sth-count{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute)}
-  .sth-stream{font-size:13.5px;line-height:1.75;color:var(--dim);padding:6px 0 8px}
+  .sth-stream{font-family:var(--body);font-size:13.5px;line-height:1.75;color:var(--dim);padding:6px 0 8px}
   .sth-i{padding:10px 0;border-top:1px solid var(--line);animation:pushIn .34s var(--ease) both}
-  .sth-i .sth-t{font-size:13.5px;line-height:1.7;color:var(--ink)}
+  .sth-i .sth-t{font-family:var(--body);font-size:13.5px;line-height:1.7;color:var(--ink)}
   .sth-i.done .sth-t{color:var(--mute)}
   .sth-i .mi-act{display:flex;gap:8px;margin-top:9px}
   .sth-foot{display:flex;border-top:1px solid var(--line);padding-top:4px;margin-top:2px}
@@ -392,7 +392,7 @@
   .mi.done .mi-dot{background:var(--mute)}
   .mi.fixed .mi-dot{background:var(--ok)}
   .mi-b{flex:1;min-width:0}
-  .mi-t{font-size:14px;line-height:1.6;color:var(--ink)}
+  .mi-t{font-family:var(--body);font-size:14px;line-height:1.6;color:var(--ink)}
   .mi-t strong{font-weight:700;color:var(--ink)}
   .mi-act{display:flex;gap:8px;margin-top:10px}
   .mi-ap{background:var(--ink);color:var(--on-ink);font-size:12px;font-weight:650;padding:7px 14px;border-radius:var(--r-sm);transition:.14s}
@@ -534,7 +534,7 @@
   @keyframes selIn{from{opacity:0;transform:translate(-50%,-100%) scale(.94)}to{opacity:1}}
   .sel-bar button{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:550;color:#e6e2da;
     padding:7px 11px;border-radius:var(--r-sm);white-space:nowrap;transition:background .12s,color .12s}
-  .sel-bar button:hover{background:rgba(245,243,238,.13);color:#fff}
+  .sel-bar button:hover{background:rgba(245,243,238,.13);color:var(--ink)}
   .sel-bar .sb-div{width:1px;height:15px;background:rgba(245,243,238,.15);margin:0 3px;flex:none}
   .sel-bar .sb-ask{background:transparent;border:none;outline:none;color:#e6e2da;font-family:var(--ui);font-size:12.5px;width:150px;padding:7px 8px}
   .sel-bar .sb-ask::placeholder{color:#79766e}
@@ -598,6 +598,9 @@
   @keyframes agl{0%,100%{transform:none}33%{transform:translate(-2.5%,1.8%) scale(1.07)}66%{transform:translate(2%,-1.5%) scale(1.04)}}
   .auth::after{content:none}
   .auth.show{display:flex}
+  .auth-x{position:absolute;top:18px;right:20px;width:32px;height:32px;border-radius:50%;
+    display:grid;place-items:center;color:var(--mute);font-size:15px;transition:.14s;z-index:2}
+  .auth-x:hover{color:var(--ink);background:rgba(255,255,255,.07)}
   .auth-in{position:relative;z-index:2;width:100%;max-width:404px;animation:viewIn .5s var(--ease) both;
     background:rgba(255,255,255,.055);backdrop-filter:blur(28px) saturate(1.35);-webkit-backdrop-filter:blur(28px) saturate(1.35);
     border:1px solid rgba(255,255,255,.13);border-radius:var(--r-xl);padding:38px 34px 30px;
@@ -870,7 +873,7 @@
   .sum-r.on-topic .sum-nm{font-family:var(--mono);font-size:12px;letter-spacing:.02em}
   .sum-sub{margin-left:auto;flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--mute);text-transform:uppercase}
   .set-link{font-size:13px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
-  .set-link:hover{color:#fff}
+  .set-link:hover{color:var(--ink)}
   /* API keys pane */
   .api-key{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
   .api-key:last-child{border-bottom:none}
@@ -1087,7 +1090,7 @@
   .it-p{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-top:1px solid var(--line);animation:pushIn .34s var(--ease) both}
   .it-p:first-of-type{border-top:none}
   .it-t{flex:1;font-family:var(--body);font-size:14.5px;line-height:1.65;color:#e6e3dc}
-  .it-t strong{color:#fff;font-weight:600}
+  .it-t strong{color:var(--ink);font-weight:600}
   .it-go{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);border:1px solid var(--line2);border-radius:var(--r-pill);padding:5px 12px;transition:.14s;white-space:nowrap}
   .it-go:hover{background:rgba(255,255,255,.08);border-color:var(--ink)}
   .it-acts{flex:none;display:flex;align-items:center;gap:6px}

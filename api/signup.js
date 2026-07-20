@@ -1,4 +1,4 @@
-import { SB, SERVICE_KEY, sbFetch } from '../lib/plans.js';
+import { SB, SERVICE_KEY, sbFetch, isInternal, INVITED, PLAN_MAP } from '../lib/plans.js';
 import { rateLimit } from '../lib/ratelimit.js';
 
 // basic shape check — also rejects a ':' so an email can never collide with the vaest_state
@@ -22,6 +22,16 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Enter a valid email address' });
     return;
   }
+  // Entitlement in this system is keyed on the email STRING alone: isInternal() grants
+  // unlimited spend to anything @orions.agency, and INVITED/PLAN_MAP comp a full plan. This
+  // endpoint creates users pre-confirmed (email_confirm: true skips the ownership round-trip),
+  // so without this gate anyone could POST x@orions.agency and mint themselves an unlimited
+  // account. Entitled addresses are provisioned by the studio, never self-served.
+  if (isInternal(e) || INVITED.has(e) || Object.prototype.hasOwnProperty.call(PLAN_MAP, e)) {
+    res.status(403).json({ error: 'This address is provisioned by the studio — ask us to set it up, or sign in if it already exists.' });
+    return;
+  }
+
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
   if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
 
