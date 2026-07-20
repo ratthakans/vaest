@@ -3049,7 +3049,15 @@
     const data=await loadShare(id);
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
-    if(!data){$('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">This link is invalid or has been revoked</div></div>';return}
+    if(!data){
+      // A stranger opened a dead link. The early return used to happen BEFORE the topbar was
+      // swapped for read-only chrome, so they were shown the studio's own toolbar — Home,
+      // Add files, Paste, Undo, Refine, Export — on a public page. Replace it first.
+      $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><span class="sh-lbl">VÆST</span></div>'
+        +'<div class="top-title" style="flex:1"></div>'
+        +'<a class="tb dark sh-open" href="/app" style="text-decoration:none">Open VÆST →</a>';
+      $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">This link is invalid or has been revoked</div></div>';
+      return}
     renderDoc(data.canvas||'');
     // disable editing + show read-only banner
     document.querySelectorAll('#doc [contenteditable]').forEach(e=>e.setAttribute('contenteditable','false'));
