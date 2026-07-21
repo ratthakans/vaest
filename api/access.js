@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     // meter works before there's a plan (plus whether the one free Crystallize is unspent)
     try {
       const used = ud.month === month ? (ud.used || 0) : 0;
-      const FREE_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 400_000;
+      const FREE_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 150_000; // must match api/chat.js — the rail meter reads this
       const now = new Date();
       usage = {
         pct: Math.min(100, Math.round(used / FREE_CAP * 100)),

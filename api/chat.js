@@ -23,7 +23,10 @@ export async function getAnthropic() {
 // the point of Ø Think is a second opinion the author wouldn't have reached on its own.
 const GEMINI_MODEL = 'gemini-flash-latest';
 export const ROUTE = {
-  idea:      { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 4096 },
+  // One engine for every Idea chat, paid or not — see the note at the free-tier allowance.
+  // Two cheaper engines were tried on the free path and both wrote Thai a studio could not
+  // show a client, so the trial either runs on the real thing or misrepresents what it sells.
+  idea:      { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: 4096 },
   briefchat: { model: 'claude-opus-4-8', fallback: 'claude-haiku-4-5-20251001', max: 1536 }, // the interview — same brain that compiles the brief asks the questions
   briefdoc:  { model: 'claude-opus-4-8' },                                        // compile the gathered answers into a brief
   briefalign:{ model: 'claude-opus-4-8' },                                        // reshape the brief to match a reference the user provides
@@ -323,18 +326,17 @@ export default async function handler(req, res) {
     res.setHeader('X-Engine', 'GALDR');
     if (typeof res.flushHeaders === 'function') res.flushHeaders();
     try {
-      // Haiku primary, not Gemini Flash. The trial used to run on the cheapest engine we had,
-      // and it could not spell Thai — it returned "แคฟ่" for "คาเฟ่" three times in one reply,
-      // and no amount of prompt instruction fixed it because the engine cannot see its own
-      // misspelling. These five messages are the entire basis on which a Thai studio decides
-      // whether this product has taste, so they cannot be the worst Thai in the system.
-      try { await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, anonSys, trimmed, 2048); }
+      // The same engine every signed-in Idea chat uses. Five messages is the entire basis on
+      // which a studio decides whether this product has taste — they cannot be the worst Thai
+      // in the system, which is what the two cheaper engines tried here both produced. Bounded
+      // by the 12/hour per-IP ceiling above and 2048 output tokens; never metered (pure CAC).
+      try { await streamAnthropic(res, 'claude-sonnet-5', TASK.idea, anonSys, trimmed, 2048); }
       catch (ae) {
         // a brand-new visitor's very first message must not dead-end on a blip (503s happen).
         // Only if nothing streamed yet.
         if (res.__wrote) throw ae;
-        console.error('anon haiku failed, falling back to gemini:', ae?.message || ae);
-        await streamGemini(res, TASK.idea, anonSys, trimmed, 2048);
+        console.error('anon sonnet failed, falling back to haiku:', ae?.message || ae);
+        await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, anonSys, trimmed, 2048);
       }
       res.write('\n[[USAGE]]0,0,galdr');
       res.end();
@@ -373,7 +375,12 @@ export default async function handler(req, res) {
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
   // plan-scaled ceiling; capFor (env MONTHLY_CAP) remains the fallback for comp/invited
   // accounts whose plan object predates capTokens.
-  const FREE_MONTHLY_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 400_000;
+  // 150K, not 400K. The free tier runs on the same engine paying members get, because Thai
+  // written by anything cheaper is not something a studio would show a client — and the trial
+  // is where taste is judged. Fewer replies of real quality beat more replies that read wrong:
+  // nobody subscribes on their fortieth message, they subscribe on their third. The smaller
+  // allowance is what pays for the better engine — same ฿/account either way.
+  const FREE_MONTHLY_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 150_000;
   const cap = freeTier ? FREE_MONTHLY_CAP : (access.plan && access.plan.capTokens) || capFor(user.email);
   if (u.used >= cap) {
     if (freeTier) { res.status(402).json({ error: 'Your free Galdr allowance is used up this month — pick a plan for the whole studio', paywall: true }); return; }
@@ -431,15 +438,10 @@ export default async function handler(req, res) {
   }
 
   let route = ROUTE[mode] || ROUTE.summing;
-  // Idea chat: paid members get Sonnet 5 (a deeper sparring partner). Same engine identity to
-  // the user (GALDR) — just a bigger mind underneath once you pay. Billed at the accurate
-  // `sonnet` rate so the 30% margin floor holds.
-  if (mode === 'idea' && !freeTier) route = { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: route.max };
-  // Free tier off Flash for the same reason as the anonymous trial: a signed-in account that
-  // hasn't paid yet is still deciding, and Flash's Thai is misspelled. Haiku is the floor for
-  // anything a prospective customer reads. (`tag` stays on Flash — it emits a 1–3 word label
-  // nobody reads as prose.)
-  if (mode === 'idea' && freeTier) route = { model: 'claude-haiku-4-5-20251001', fallback: null, gemini: false, max: route.max };
+  // Idea needs no per-tier override any more: ROUTE.idea is the one engine everyone gets. What a
+  // plan buys is MORE of the same quality (1.5M+ tokens against the free 150K), not a better
+  // brain — an easier promise to keep, and a truer one. Billed at the accurate `sonnet` rate so
+  // the 30% floor holds. (`tag` stays on Flash — a 1–3 word label nobody reads as prose.)
   const base = TASK[mode] || TASK.summing;
   // the free Crystallize streams a tighter document — caps its worst-case cost near ฿5
   const maxTok = freeSumming ? 3072 : (route.max || 8192);
