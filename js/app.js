@@ -2849,10 +2849,16 @@
       const hEl=sec.querySelector('.sec-h');
       body+='<section>'+(hEl?('<div class="eye">'+String(++n).padStart(2,'0')+'</div><h2>'+esc(hEl.innerText.trim())+'</h2>'):'')
         +'<div class="c">'+sec.querySelector('.sec-c').innerHTML+'</div></section>'});
-    const CSS=(forPrint?'@page{size:A4 portrait;margin:0}':'')
+    // Vertical margins belong on @page, which repeats on every sheet. They used to live in
+    // .page's padding — and padding on one long block only applies once, at the very top and
+    // very bottom of the whole flow. Measured on a 3-page export: page 2 started 7.7mm from
+    // the paper edge and page 3 just 3.6mm, inside the non-printable margin of most printers,
+    // so a multi-page client document was being cut off. Horizontal padding is per-line and
+    // was always fine, so it stays on the wrapper.
+    const CSS=(forPrint?'@page{size:A4 portrait;margin:20mm 0}':'')
       +'*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0}'
       +'body{font-family:"Newsreader","IBM Plex Sans Thai Looped",Georgia,serif;color:#26251f;background:#fdfdf9;line-height:1.85;font-size:'+(forPrint?'11.5pt':'17px')+'}'
-      +'.page{padding:'+(forPrint?'22mm 20mm 18mm':'clamp(30px,7vw,80px) clamp(22px,7vw,80px)')+';max-width:'+(forPrint?'none':'760px')+';margin:0 auto}'
+      +'.page{padding:'+(forPrint?'0 20mm':'clamp(30px,7vw,80px) clamp(22px,7vw,80px)')+';max-width:'+(forPrint?'none':'760px')+';margin:0 auto}'
       +'.cover{border-bottom:2px solid #0e0e0e;padding-bottom:18px;margin-bottom:6px'+(forPrint?';display:flex;flex-direction:column;justify-content:flex-end;min-height:72vh;page-break-after:always':'')+'}'
       +'.cover .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:'+(forPrint?'9pt':'11px')+';letter-spacing:.24em;text-transform:uppercase;color:#8e3a24;font-weight:600}'
       +'.cover h1{font-family:"Newsreader",Georgia,serif;font-style:italic;font-weight:500;font-size:'+(forPrint?'32pt':'clamp(34px,6vw,54px)')+';line-height:1.05;margin:12px 0 0;letter-spacing:-.01em}'
