@@ -306,7 +306,10 @@ export default async function handler(req, res) {
     if (mode !== 'idea') { res.status(401).json({ error: 'Sign up to use this — the free trial covers the Idea chat', signup: true }); return; }
     const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
     if (await rateLimit('anonburst:' + ip, 6, 60)) { res.status(429).json({ error: 'One at a time — give it a few seconds' }); return; }
-    if (await rateLimit('anon:' + ip, 40, 3600)) { res.status(429).json({ error: 'You’ve used the free trial for now — sign up to keep going', signup: true }); return; }
+    // 12/hour, not 40: an honest visitor stops at the client's 5-message trial, so the old
+    // ceiling only ever bought head-room for abuse — and that head-room is what forced the
+    // trial onto the cheapest engine. Tightening it is what pays for the better one.
+    if (await rateLimit('anon:' + ip, 12, 3600)) { res.status(429).json({ error: 'You’ve used the free trial for now — sign up to keep going', signup: true }); return; }
     // anonymous can't push large or image context — text-only, last few turns, capped length
     const trimmed = messages.slice(-8).map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -320,14 +323,18 @@ export default async function handler(req, res) {
     res.setHeader('X-Engine', 'GALDR');
     if (typeof res.flushHeaders === 'function') res.flushHeaders();
     try {
-      try { await streamGemini(res, TASK.idea, anonSys, trimmed, 2048); }
-      catch (ge) {
-        // a brand-new visitor's very first message must not dead-end on a Gemini blip (503s happen).
-        // Fall back to Haiku — the cheapest engine — only if nothing streamed yet. Cost stays tiny:
-        // anon is capped at the client's free-message limit plus the per-IP hourly limit above.
-        if (res.__wrote) throw ge;
-        console.error('anon gemini failed, falling back to haiku:', ge?.message || ge);
-        await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, anonSys, trimmed, 1024);
+      // Haiku primary, not Gemini Flash. The trial used to run on the cheapest engine we had,
+      // and it could not spell Thai — it returned "แคฟ่" for "คาเฟ่" three times in one reply,
+      // and no amount of prompt instruction fixed it because the engine cannot see its own
+      // misspelling. These five messages are the entire basis on which a Thai studio decides
+      // whether this product has taste, so they cannot be the worst Thai in the system.
+      try { await streamAnthropic(res, 'claude-haiku-4-5-20251001', TASK.idea, anonSys, trimmed, 2048); }
+      catch (ae) {
+        // a brand-new visitor's very first message must not dead-end on a blip (503s happen).
+        // Only if nothing streamed yet.
+        if (res.__wrote) throw ae;
+        console.error('anon haiku failed, falling back to gemini:', ae?.message || ae);
+        await streamGemini(res, TASK.idea, anonSys, trimmed, 2048);
       }
       res.write('\n[[USAGE]]0,0,galdr');
       res.end();
@@ -424,10 +431,15 @@ export default async function handler(req, res) {
   }
 
   let route = ROUTE[mode] || ROUTE.summing;
-  // Idea chat: paid members get Sonnet 5 (a deeper sparring partner); anonymous + free-tier
-  // stay on Galdr/Gemini Flash. Same engine identity to the user (GALDR) — just a bigger mind
-  // underneath once you pay. Billed at the accurate `sonnet` rate so the 30% margin floor holds.
+  // Idea chat: paid members get Sonnet 5 (a deeper sparring partner). Same engine identity to
+  // the user (GALDR) — just a bigger mind underneath once you pay. Billed at the accurate
+  // `sonnet` rate so the 30% margin floor holds.
   if (mode === 'idea' && !freeTier) route = { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: route.max };
+  // Free tier off Flash for the same reason as the anonymous trial: a signed-in account that
+  // hasn't paid yet is still deciding, and Flash's Thai is misspelled. Haiku is the floor for
+  // anything a prospective customer reads. (`tag` stays on Flash — it emits a 1–3 word label
+  // nobody reads as prose.)
+  if (mode === 'idea' && freeTier) route = { model: 'claude-haiku-4-5-20251001', fallback: null, gemini: false, max: route.max };
   const base = TASK[mode] || TASK.summing;
   // the free Crystallize streams a tighter document — caps its worst-case cost near ฿5
   const maxTok = freeSumming ? 3072 : (route.max || 8192);
