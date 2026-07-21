@@ -2978,6 +2978,13 @@
       +'.quote cite{display:block;margin-top:20px;font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:12px;letter-spacing:.1em;color:#83827b}'
       +'.close h2{font-size:'+(land?'40px':'34px')+'}.sl-foot{position:absolute;left:'+(land?'24mm':'22mm')+';bottom:'+(land?'16mm':'20mm')+';font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;color:#66655f}'
       +'@media screen{body{padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px}.sl{box-shadow:0 20px 60px rgba(0,0,0,.5);border-radius:6px}}'
+      // Thai stacks vowels above and tone marks above those, so the tight line-heights tuned
+      // for Latin display type clip the marks and let them collide between lines. Measured:
+      // six of nine Thai blocks needed more height than their box allowed. Loosen only when
+      // the deck actually IS Thai — docLang() sets that on <html>.
+      +'html[lang="th"] .sl h1{line-height:1.2}html[lang="th"] .sl h2{line-height:1.28}'
+      +'html[lang="th"] .sl li{line-height:1.55}html[lang="th"] .quote blockquote{line-height:1.45}'
+      +'html[lang="th"] .sl .sub,html[lang="th"] .sl .note{line-height:1.5}'
       +'</style></head><body>'+slides.map(slideHTML).join('')+'</body></html>';
   }
 
