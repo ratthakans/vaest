@@ -48,6 +48,11 @@
     color:var(--dim);background:rgba(255,255,255,.06);border:1px solid var(--line);backdrop-filter:blur(8px);transition:.25s var(--ease)}
   .rail-toggle:hover{background:rgba(255,255,255,.1);color:var(--ink)}
   .main.has-top .rail-toggle{display:none}
+  /* the mode switch lives in the rail — which is off-screen on a phone, so the three ways of
+     working were invisible there. This copy rides in the main column below the burger row;
+     desktop never sees it (the rail seg is right there). */
+  .seg.top-seg{display:none} /* .seg sets inline-flex further down — needs to outrank it */
+  .main.has-top .top-seg{display:none!important} /* canvas open — the topbar owns this strip */
 
   /* ===== topbar (canvas state) ===== */
   .top{display:flex;align-items:center;gap:7px;padding:13px 22px;border-bottom:1px solid var(--line);flex:none;background:rgba(5,5,6,.72);backdrop-filter:blur(16px) saturate(1.2);z-index:5;transition:transform var(--slow) var(--ease),opacity var(--slow) var(--ease)}
@@ -771,7 +776,10 @@
   .cv-tab .tx:hover{opacity:1}
   .cv-tab.addt{padding:6px 12px;color:var(--mute);border-style:dashed}
   .cv-tab.addt:hover{color:var(--ink)}
-  .id-use{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--mute);border:1px solid var(--line);border-radius:var(--r-xs);padding:2px 8px;float:right}
+  /* no margin-left:auto / float here — the buttons used to hang off the message header and
+     needed pushing right. They now sit in the .id-acts flex row, where an auto margin on every
+     child spreads them evenly across the full width instead of grouping them. */
+  .id-use{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--mute);border:1px solid var(--line);border-radius:var(--r-xs);padding:2px 8px}
   .id-use:hover{color:var(--ink);border-color:var(--line2)}
   .id-m .who{display:flex;align-items:center;gap:8px}
   .cmt .cr.ca{margin-left:auto;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-decoration:none;font-weight:700}
@@ -1007,13 +1015,16 @@
   .id-thread{max-height:300px;overflow-y:auto;padding:6px 14px;display:block}
   /* first-run empty state — suggested starters */
   /* per-message actions — copy / regenerate / save */
-  .id-acts{margin-left:auto;display:flex;align-items:center;gap:6px}
-  .id-use.ghost{opacity:.55;font-size:11px;padding:2px 7px}
-  .id-m:hover .id-use.ghost{opacity:1}
+  /* a row under the reply — where you finish reading is where you decide */
+  .id-acts{display:flex;align-items:center;gap:6px;margin-top:12px;min-height:24px}
+  .id-use.ghost{opacity:0;font-size:11px;padding:2px 7px;transition:opacity .18s var(--ease)}
+  .id-m:hover .id-use.ghost,.id-use.ghost:focus-visible{opacity:.62}
+  .id-m:hover .id-use.ghost:hover{opacity:1}
+  .id-approved{margin-left:2px}
   /* the decision on a fresh idea — Approve leans the taste, Rewrite tries another angle */
   .id-use.approve{color:var(--on-ink);background:var(--ink);border-color:var(--ink);opacity:1;font-size:10px;font-weight:600}
   .id-use.approve:hover{background:#fff;color:var(--on-ink)}
-  .id-approved{float:right;margin-left:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--cin-d);padding:2px 0}
+  .id-approved{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--cin-d);padding:2px 0}
   /* memory-horizon notice when the chat runs past what Galdr sees */
   .id-horizon{font-size:11px;color:var(--mute);text-align:center;padding:8px 8px 10px;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.5}
   /* R1 — quiet serif starters on the empty Idea state (a vertical list, never a card strip) */
@@ -1141,13 +1152,20 @@
     .app.rail-open .rail{transform:none}
     .scrim{position:fixed;inset:0;background:rgba(0,0,0,0.58);z-index:70;opacity:0;visibility:hidden;transition:.25s}
     .app.rail-open .scrim{opacity:1;visibility:visible}
+    /* clears the burger (top 15 + 44) and the anon Log in / Sign up pill above it */
+    .seg.top-seg{display:inline-flex;flex:none;margin:66px 0 0 16px;align-self:flex-start}
+    /* the only route to the rail at this width, and it was the smallest control on screen.
+       Keyed to width, not @media(hover:none) — a narrow window on a touch laptop needs it too. */
+    .rail-toggle{width:44px;height:44px}
   }
   @media(min-width:761px){.scrim{display:none}}
   /* touch — no hover: tools must always be visible */
   @media(hover:none){.sec-tools,.s-item .more,.p-row .more{opacity:1}
     /* touch needs ~44px targets — grow the small controls on touch only, desktop unchanged */
-    .id-send,.id-attach{width:40px;height:40px}
-    #modeSeg button{padding-top:11px;padding-bottom:11px}
+    .id-send,.id-attach{width:44px;height:44px}
+    .mode-seg button{padding-top:11px;padding-bottom:11px}
+    /* no hover on touch: every per-reply action must be visible without one */
+    .id-acts .id-use.ghost{opacity:1}
     .s-item .more,.p-row .more{width:32px;height:32px}
     .md-item .more,.chip button{min-width:30px;min-height:30px}}
   /* real iOS viewport */

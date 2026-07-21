@@ -15,6 +15,14 @@
 <div class="app" id="app">
   <main class="main">
     <button class="rail-toggle" onclick="toggleRail()" title="Menu" aria-label="Menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+    <!-- mobile only: the rail carries the mode switch, and the rail is off-screen on a phone —
+         so the three ways of working would be invisible until you found the menu -->
+    <div class="seg mode-seg top-seg" id="modeSegTop" role="tablist" aria-label="Mode">
+      <span class="seg-thumb"></span>
+      <button data-m="idea" onclick="setMode('idea')" role="tab" aria-selected="false">Idea</button>
+      <button data-m="brief" onclick="setMode('brief')" role="tab" aria-selected="false">Brief</button>
+      <button data-m="crystallize" onclick="setMode('crystallize')" role="tab" aria-selected="false">Crystallize</button>
+    </div>
     <!-- anonymous trial — log in / sign up, top-right, ChatGPT-style -->
     <div class="anon-bar" id="anonBar" style="display:none">
       <button class="anon-login" onclick="anonLogin()">Log in</button>
@@ -82,6 +90,8 @@
               <button class="bb-attach" id="brefBtn" title="A brief you want this one to resemble — shape and tone only" onclick="toggleBriefRef()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4" stroke-opacity=".55"/></svg> Ref</button>
               <button class="go" id="briefGoBtn" onclick="startBrief()">Analyse brief <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
             </div>
+            <!-- tier hint — the gate is named before the work, not after it -->
+            <div class="anon-limit" id="briefLimit" style="display:none"></div>
             <!-- Ref = the shape to resemble. Kept apart from Attach (material) on purpose. -->
             <div class="bref-panel" id="brefPanel" style="display:none">
               <div class="bref-eye">A brief you want this one to resemble. VÆST matches its <b>shape, sections and tone</b> — your content stays yours, and it guides the interview from the first question.</div>
@@ -125,6 +135,8 @@
             <button class="bb-chain" id="chainBtn" onclick="toggleChain()" title="Run Refine automatically after Crystallize">+ Refine</button>
             <button class="go" id="sumBtn" onclick="runSumming()" title="or ⌘⏎">Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
           </div>
+          <!-- tier hint — the gate is named before the work, not after it -->
+          <div class="anon-limit" id="cryLimit" style="display:none"></div>
         </div>
         </div>
 
@@ -147,7 +159,7 @@
         <div class="r-wm">V<i>Æ</i>ST</div>
       </div>
       <!-- mode — top of the rail, above New (three ways of working) -->
-      <div class="seg rail-seg" id="modeSeg" role="tablist">
+      <div class="seg rail-seg mode-seg" id="modeSeg" role="tablist">
         <span class="seg-thumb" id="segThumb"></span>
         <button data-m="idea" onclick="setMode('idea')" role="tab" aria-selected="false">Idea</button>
         <button data-m="brief" onclick="setMode('brief')" role="tab" aria-selected="false">Brief</button>

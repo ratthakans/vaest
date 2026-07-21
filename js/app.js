@@ -170,21 +170,30 @@
   function anonWall(reason){
     if(_authMode!=='signup')toggleAuthMode();
     showAuth(reason||'That’s the free trial. Sign up (free) to keep this chat, carry on in Idea, and crystallize one document.')}
-  // small tier hint under the Idea input — anonymous trial or free (no-plan) account
+  // small tier hint under each mode's input — anonymous trial or free (no-plan) account.
+  // Crystallize and Brief are gated at submit; naming the gate here means the user learns it
+  // BEFORE writing a brief, not after (the old order took the work away once it was done).
   function renderAnonLimit(){
-    const el=$('anonLimit');if(!el)return;
+    const set=(id,html)=>{const el=$(id);if(!el)return;
+      if(html==null){el.style.display='none';return}
+      el.style.display='';el.innerHTML=html};
     if(ANON){
-      const left=anonLeft();el.style.display='';
-      el.innerHTML=left>0
+      const left=anonLeft();
+      set('anonLimit',left>0
         ?'<span class="al-n">'+left+'</span> free · <button onclick="anonSignup()">Sign up</button>'
-        :'Free messages used · <button onclick="anonSignup()">Sign up</button>';
+        :'Free messages used · <button onclick="anonSignup()">Sign up</button>');
+      set('cryLimit','Crystallize needs a free account · <button onclick="anonSignup()">Sign up</button>');
+      // not "Sign up" — a free account does NOT unlock Brief, and offering it here would promise
+      // something the next screen takes back
+      set('briefLimit','Brief is part of a paid plan · <button onclick="showNotInvited()">See plans</button>');
       return}
-    // signed-in, no plan → free tier: Galdr with a monthly allowance
+    // signed-in, no plan → free tier: Galdr chat + one lifetime Crystallize; Brief is paid
     if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
-      el.style.display='';
-      el.innerHTML='Free · Galdr + one Crystallize · <button onclick="showNotInvited()">See plans</button>';
+      set('anonLimit','Free · Galdr + one Crystallize · <button onclick="showNotInvited()">See plans</button>');
+      set('cryLimit',null);
+      set('briefLimit','Brief is part of a paid plan · <button onclick="showNotInvited()">See plans</button>');
       return}
-    el.style.display='none'}
+    set('anonLimit',null);set('cryLimit',null);set('briefLimit',null)}
   // capture the trial chat so it survives the jump into a real account
   function snapshotAnonChats(){
     try{return sessions.filter(s=>chatsOf(s).some(c=>c.ideas.length))
@@ -855,8 +864,10 @@
     projects=projects.filter(x=>x.id!==id);save();renderRail()}
 
   function fmtAgo(ts){if(!ts)return '';const d=Date.now()-ts;const m=Math.floor(d/6e4),h=Math.floor(d/36e5),day=Math.floor(d/864e5);
-    if(m<1)return 'just now';if(m<60)return m+' min ago';if(h<24)return h+' hr ago';if(day<7)return day+' days ago';
-    return Math.floor(day/7)+' weeks ago'}
+    if(m<1)return 'just now';if(m<60)return m+' min ago';if(h<24)return h+' hr ago';
+    const unit=(n,w)=>n+' '+w+(n===1?'':'s')+' ago';
+    if(day<7)return unit(day,'day');
+    return unit(Math.floor(day/7),'week')}
   let _cmtCounts={};
   function sItem(s){const n=_cmtCounts[s.id]||0;const m=inferMode(s);
     return '<div class="s-item mode-'+m+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" draggable="true" ondragstart="onRailDrag(event,\'s\',\''+s.id+'\')" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
@@ -878,7 +889,7 @@
     return '<svg class="mi-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 20l1.8-5.1A7.5 7.5 0 1 1 20 11.5z"/></svg>';
   }
   function renderRail(){
-    { const cm=cur()?inferMode(cur()):null; document.querySelectorAll('#modeSeg button').forEach(b=>{const on=b.dataset.m===cm;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)}); updateSegThumb(); }
+    { const cm=cur()?inferMode(cur()):null; document.querySelectorAll('.mode-seg button').forEach(b=>{const on=b.dataset.m===cm;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)}); updateSegThumb(); }
     if(!window._railSettled){window._railSettled=true;setTimeout(()=>{const r=document.querySelector('.rail');if(r)r.classList.add('settled')},750)}
     if(typeof paintAvatar==='function'){paintAvatar();const w=$('whoLbl');if(w&&AUTH)w.textContent=(profile&&profile.name)||AUTH.email}
     // Projects — folders holding their items
@@ -1758,11 +1769,14 @@
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
     finally{setBusy(false)}}
-  // segmented thumb — measure the active button, slide the pill under it
+  // segmented thumb — measure the active button, slide the pill under it.
+  // Two segs exist (rail on desktop, topbar on mobile); only one is laid out at a time, so the
+  // hidden one measures 0 — skip it rather than parking its thumb at the wrong offset.
   function updateSegThumb(){ // measure synchronously — rAF stalls in hidden tabs
-    const seg=$('modeSeg');if(!seg)return;
-    const on=seg.querySelector('button.on'),th=$('segThumb');if(!on||!th)return;
-    th.style.width=on.offsetWidth+'px';th.style.transform='translateX('+on.offsetLeft+'px)'}
+    document.querySelectorAll('.mode-seg').forEach(seg=>{
+      const on=seg.querySelector('button.on'),th=seg.querySelector('.seg-thumb');
+      if(!on||!th||!on.offsetWidth)return;
+      th.style.width=on.offsetWidth+'px';th.style.transform='translateX('+on.offsetLeft+'px)'})}
   addEventListener('resize',()=>updateSegThumb());
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>updateSegThumb());
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
@@ -1774,7 +1788,7 @@
     $('brief').value=s?s.brief:'';
     const mode=inferMode(s);
     // switcher active state + the matching surface
-    document.querySelectorAll('#modeSeg button').forEach(b=>{const on=b.dataset.m===mode;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});updateSegThumb();
+    document.querySelectorAll('.mode-seg button').forEach(b=>{const on=b.dataset.m===mode;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});updateSegThumb();
     document.querySelectorAll('.mode-pane').forEach(p=>{const on=p.dataset.pane===mode;
       if(on&&p.style.display==='none'){p.style.display='';p.classList.remove('pane-in');void p.offsetWidth;p.classList.add('pane-in')} // fade the pane in on a real switch
       else p.style.display=on?'':'none'});
@@ -1944,16 +1958,27 @@
     const overHorizon=ideas.length>IDEA_CTX;
     th.innerHTML=(overHorizon?'<div class="id-horizon">Galdr’s working from the recent thread · ✚ Save an earlier reply to keep it</div>':'')
       +ideas.map((m,i)=>{const isAI=m.r!=='user';const isLastAI=isAI&&i===ideas.length-1;
+      // actions sit AFTER the reply, not in its header: a reply runs past a screenful, so the
+      // header row is scrolled away by the time you've read enough to decide anything.
+      // Only the decision stays lit — Think / copy / Save-on-latest fade in on hover (always
+      // visible on touch, see @media(hover:none)) so a ten-turn thread isn't fifty chips.
+      // the lit controls come FIRST: a ghost at opacity:0 still occupies its box, so leading with
+      // them left a hole and pushed the decision out to the right margin, away from the text edge
+      const decision=!isLastAI||m.approved?''
+        :'<button class="id-use approve" onclick="approveIdea('+i+')" title="Keep this direction — VÆST leans this way">Approve</button>'
+         +'<button class="id-use" onclick="regenIdea()" title="Try a different angle">Rewrite</button>';
+      const acts=!isAI?''
+        :'<div class="id-acts">'
+          +decision
+          +(m.approved?'<span class="id-approved">Approved ✓</span>':'')
+          // on any earlier reply the keep-it action is Save, and it stays lit
+          +(!isLastAI?'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
+          +'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>'
+          +'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>'
+          +(isLastAI?'<button class="id-use ghost" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
+        +'</div>';
       return '<div class="id-m '+(isAI?'ai':'you')+'" data-i="'+i+'"><div class="who">'+(isAI?'VÆST':'YOU')
-      +'<span class="id-acts">'
-      +(isAI?'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>':'')
-      +(isAI?'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>':'')
-      +(isAI?'<button class="id-use'+(isLastAI?' ghost':'')+'" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
-      // once you have an idea, the decision: Rewrite (another angle) or Approve (keep it — teaches VÆST's taste)
-      +(isLastAI&&!m.approved?'<button class="id-use ghost" onclick="regenIdea()" title="Try a different angle">Rewrite</button>':'')
-      +(isLastAI&&!m.approved?'<button class="id-use approve" onclick="approveIdea('+i+')" title="Keep this direction — VÆST leans this way">Approve</button>':'')
-      +(isAI&&m.approved?'<span class="id-approved">Approved ✓</span>':'')
-      +'</span></div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div></div>'}).join('');
+      +'</div><div class="tx">'+(isAI?renderMd(m.c):esc(m.c).replace(/\n/g,'<br>'))+'</div>'+acts+'</div>'}).join('');
     th.scrollTop=th.scrollHeight;
     // one-time nudge: teach ✚ Save while the thread's building, before early replies drift past
     // the memory horizon. Fires once per user (localStorage), never nags.

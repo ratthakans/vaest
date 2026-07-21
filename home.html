@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Noto+Serif+Thai:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/nav.css">
 <style>
   :root{
@@ -105,7 +105,10 @@
   .spec .n .u,.step .si,.e-card .em,.ba-col.after .ba-tag,.d-sec .no,.d-chip b,.d-ref .ok,.wl-msg,.lbl::before{background-size:100% 100%}
 
   /* ── nav ── */
-  .hero{position:relative;padding:16vh 0 14vh;border-bottom:1px solid var(--line);overflow:hidden}
+  /* #111114 is the app's --paper: the landing ground and the working surface now match,
+     settling back to the page's #050506 before the next section starts */
+  .hero{position:relative;padding:16vh 0 14vh;border-bottom:1px solid var(--line);overflow:hidden;
+    background:linear-gradient(180deg,#111114 0%,#0d0d10 58%,#050506 100%)}
   @media(max-width:640px){.hero{padding:11vh 0 10vh}}
   /* touch: the nav and the purchase CTAs need a real hit area (measured 16-34px at 320px) */
   @media(hover:none){
@@ -117,8 +120,12 @@
   .hero .wrap{position:relative;z-index:2}
   .hero .eye{display:block;margin-bottom:42px}
   .hero .hero-tick{width:36px;height:2px;border-radius:2px;background:var(--chroma);margin-bottom:26px}
-  .hero h1{font-weight:650;font-size:clamp(42px,7.2vw,102px);line-height:1.02;letter-spacing:-.038em;max-width:13ch}
-  .hero h1 .dot{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  /* the hero speaks in the app's voice — Newsreader on warm charcoal, the same question the
+     product opens with. The old Inter/near-black/accent-dot hero looked like a different
+     company than the thing behind the Try-free button. */
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(44px,7.4vw,104px);
+    line-height:1.06;letter-spacing:-.022em;max-width:13ch;color:#e6e0d3}
+  html[lang="th"] .hero h1,.hero h1:lang(th){line-height:1.24} /* Thai stacks tone marks — Latin display leading clips them */
   .hero .sub{font-family:var(--th);font-size:clamp(16px,1.65vw,20px);line-height:1.75;color:var(--dim);max-width:47ch;margin:48px 0 46px}
   .hero .sub b{color:var(--ink);font-weight:600}
   .hero .row{display:flex;flex-wrap:wrap;gap:14px 34px;align-items:center}
@@ -374,9 +381,9 @@
   <div class="wrap">
     <div class="hero-tick"></div>
     <span class="eye">VÆST — a studio instrument by ORIONS.Agency</span>
-    <h1>Aesthetic Intelligence<span class="dot">.</span></h1>
-    <p class="sub th">Drop your brief, files, spreadsheets, moodboards into VÆST and hit Crystallize — you get <b>one document</b> that’s sharp, readable, editable sentence by sentence, and passes a final taste check before it ships.</p>
-    <p class="hero-vs th">ChatGPT gives you an answer. VÆST gives you a document you can send a client — with taste, a second opinion, and a link they can comment on.</p>
+    <h1>What are we making?</h1>
+    <p class="sub th">The question VÆST opens with. You bring the brief, the files, the half-formed direction — and get back <b>one document</b>: sharp, editable sentence by sentence, in your studio’s voice, ready to send.</p>
+    <p class="hero-vs th">An answer is not a deliverable. VÆST gives you the document, a second opinion on it, and a link the client can comment on.</p>
     <div class="row">
       <a class="btn" href="/" id="heroCta">Try it free →</a>
       <a class="lnk" href="#how">See how it works ↓</a>
