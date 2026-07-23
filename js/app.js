@@ -855,7 +855,9 @@
     if(_renaming)return;
     if(_busy){toast('Working…');return}
     if(_briefBusy){toast('VÆST is still answering — one moment');return}
-    const s=sessions.find(x=>x.id===id);if(!s)return;currentSid=id;save();renderRail();
+    const s=sessions.find(x=>x.id===id);if(!s)return;
+    flushPersist(); // land any half-typed canvas edit BEFORE currentSid moves off it
+    currentSid=id;save();renderRail();
     if(s.canvas&&s.canvas.trim())showCanvas();else showHome();closeRailMobile()}
   let trash=[];
   async function deleteSession(id){
@@ -1837,7 +1839,9 @@
   addEventListener('resize',()=>updateSegThumb());
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>updateSegThumb());
   const HOME_TITLE={idea:'What are we thinking?',brief:'Let’s get the brief right.',crystallize:'What are we making?'};
-  function showHome(){const s=cur();
+  function showHome(){
+    flushPersist(); // Home / back-to-desk: land the edit before the canvas is torn down
+    const s=cur();
     $('home').style.display='';$('cvView').style.display='none';$('topbar').style.display='none';const _tt=$('toTop');if(_tt)_tt.classList.remove('show');
     const ab=$('anonBar');if(ab)ab.style.display=ANON?'':'none'; // restore the anon bar on the home
     const afb=$('aboutFab');if(afb)afb.style.display=ANON?'':'none'; // "Meet VÆST" invite — new visitors only
@@ -2364,7 +2368,28 @@
         md+='\n'});
     });
     return md.replace(/\n{3,}/g,'\n\n').trim()+'\n'}
-  let _pt;function schedulePersist(){clearTimeout(_pt);_pt=setTimeout(()=>{const s=cur();if(s&&!_busy&&$('cvView').style.display!=='none'&&$('doc').querySelector('.sec')){setCanvasMd(s,genMd());s.updatedAt=Date.now();save();savedTick()}},700)}
+  // Canvas edits persist on a 700ms debounce. The timer used to resolve cur() when it FIRED,
+  // so anything typed in the last 700ms before leaving the document was silently dropped: the
+  // user switched session (or hit Home, or closed the tab), the canvas repainted to the new
+  // document, and the timer then wrote that document back over itself. Measured: an edit
+  // followed by a switch at 200ms was lost every time; at 900ms it survived. No warning, no
+  // "Saved ✓" — the work simply wasn't there when you came back.
+  // The pending edit now remembers WHICH session it belongs to, and every exit flushes it
+  // first, while the DOM still holds that session's document.
+  let _pt,_ptSid=null;
+  function schedulePersist(){_ptSid=currentSid;clearTimeout(_pt);_pt=setTimeout(flushPersist,700)}
+  function flushPersist(){
+    clearTimeout(_pt);
+    const sid=_ptSid;_ptSid=null;
+    if(!sid||_busy)return;
+    const s=sessions.find(x=>x.id===sid);if(!s)return;
+    // only write if the canvas on screen is still the one that was edited
+    if(sid!==currentSid||$('cvView').style.display==='none'||!$('doc').querySelector('.sec'))return;
+    setCanvasMd(s,genMd());s.updatedAt=Date.now();save();savedTick()}
+  // closing the tab or backgrounding it is an exit too — pagehide is the one event that still
+  // fires reliably on mobile Safari, where "close the tab" is most often how a session ends
+  addEventListener('pagehide',flushPersist);
+  addEventListener('visibilitychange',()=>{if(document.hidden)flushPersist()});
   let _si;function savedTick(){const el=$('saveInd');if(!el)return;el.textContent='Saved ✓';el.classList.add('show');clearTimeout(_si);_si=setTimeout(()=>el.classList.remove('show'),1600)}
 
   /* ═══ version snapshots ═══ */
