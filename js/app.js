@@ -1483,6 +1483,35 @@
     const blob=new Blob([JSON.stringify(stateBlob(),null,2)],{type:'application/json'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vaest-data-'+new Date().toISOString().slice(0,10)+'.json';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Exported your data')}
+  // Permanent account deletion. Two gates on purpose: a danger confirm, then typing the address
+  // back — the second one is what a mis-click cannot pass, and it is the same string the server
+  // checks, so the client cannot wave it through.
+  async function deleteAccount(){
+    if(!AUTH){showAuth('Sign in first');return}
+    const email=AUTH.email;
+    if(!await uiConfirm('Delete your VÆST account?\n\nYour workspace, documents, share links and API keys go with it. This cannot be undone — Export everything first if you want a copy.',{ok:'Continue',danger:true}))return;
+    const typed=await uiPrompt('Type '+email+' to confirm','',{ok:'Delete permanently',placeholder:email});
+    if(typed===null)return;
+    if(String(typed).trim().toLowerCase()!==email){toast('That didn’t match — nothing was deleted');return}
+    try{
+      if(!await ensureAuth()){showAuth('Sign in again');return}
+      // POST, not DELETE: the confirmation travels in the body, and a body on DELETE is the
+      // kind of thing a runtime is allowed to drop. This path is destructive and I cannot
+      // rehearse it against a real account, so it uses the method that cannot lose the body.
+      const r=await fetch('/api/account',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
+        body:JSON.stringify({confirm:email})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok){
+        // an active subscription is a stop, not a failure — say what to do about it
+        if(d.subscription){await uiConfirm(d.error,{ok:'Close',cancel:''});return}
+        toast(d.error||'Couldn’t delete the account');return}
+      // wipe this device too, then land them on a signed-out app
+      try{Object.keys(localStorage).filter(k=>k.indexOf(STORE)===0||k===AUTH_STORE).forEach(k=>localStorage.removeItem(k))}catch(e){}
+      saveAuth(null);
+      alert('Your account has been deleted. Thank you for trying VÆST.');
+      location.href='/home';
+    }catch(e){toast('Couldn’t reach the server — nothing was deleted')}}
   async function wipeCloud(){
     if(!await uiConfirm('Delete your cloud copy? What’s on this device stays; other devices will lose the sync.',{ok:'Delete cloud',danger:true}))return;
     try{await ensureAuth();

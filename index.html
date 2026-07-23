@@ -475,6 +475,9 @@
         <button class="set-link" onclick="exportAllData()">Export everything (JSON) →</button><br>
         <button class="set-link" style="margin-top:10px;color:var(--cin-d)" onclick="wipeCloud()">Delete my cloud copy →</button>
         <div class="set-note">Deleting the cloud copy keeps what's on this device. <a href="/privacy.html" style="color:var(--dim)">Privacy policy</a></div>
+        <!-- the other half of Export: leaving should not require asking a human for permission -->
+        <button class="set-link" style="margin-top:16px;color:var(--cin-d)" onclick="deleteAccount()">Delete my account permanently →</button>
+        <div class="set-note">Removes your workspace, saved documents, share links and API keys, then the login itself. This cannot be undone — export first if you want a copy.</div>
       </div>
       <div class="set-pane" data-sp="api">
         <div class="set-lbl">API keys</div>
