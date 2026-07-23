@@ -625,7 +625,18 @@
     padding:13px;border-radius:var(--r-lg);background:#f2f1ee;
     box-shadow:0 10px 30px rgba(0,0,0,.35);transition:transform var(--slow) var(--ease),background var(--base)}
   .auth-go:hover{background:#fff;transform:translateY(-1px)}
+  /* Google — quieter than .auth-go on purpose: the filled button is whichever action the form
+     is currently for, and this sits above it as the calmer, faster alternative */
+  .auth-goog{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:var(--r-lg);
+    font-family:var(--ui);font-size:14px;font-weight:550;color:var(--ink);background:rgba(255,255,255,.04);
+    transition:border-color var(--base) var(--ease),background var(--base) var(--ease)}
+  .auth-goog:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.075)}
+  .auth-goog svg{flex:none}
+  .auth-or{display:flex;align-items:center;gap:12px;margin:15px 0 14px;font-size:11.5px;color:var(--mute)}
+  .auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.09)}
   .auth-err{font-size:12.5px;color:var(--cin-d);min-height:18px;line-height:1.5}
+  .auth-err.ok{color:var(--dim)} /* "check your inbox" is the happy path, not a failure */
   .auth-sw{margin-top:18px;font-size:13px;color:var(--dim)}
   /* plan sheet — Claude-style: three cards, one clearly recommended, three bullets each */
   .auth-in.plans{max-width:880px}
@@ -651,7 +662,11 @@
   .pl-cta:hover{background:rgba(255,255,255,.08)}
   .pl-card.hot .pl-cta{background:var(--ink);color:#0a0a0c;border-color:transparent}
   .pl-card.hot .pl-cta:hover{background:#fff}
-  .pl-foot{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:24px;font-size:12px;color:var(--mute)}
+  /* legible, not shouted — the reader should be able to finish it without effort */
+  .pl-terms{max-width:62ch;margin:22px auto 0;text-align:center;font-size:12px;line-height:1.75;color:var(--mute)}
+  .pl-terms a{color:var(--dim);border-bottom:1px solid rgba(255,255,255,.18)}
+  .pl-terms a:hover{color:var(--ink);border-color:var(--ink)}
+  .pl-foot{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--mute)}
   .pl-foot b{color:var(--dim);font-weight:600}
   .pl-foot button,.pl-foot a{font-size:12px;color:var(--dim);text-decoration:none;transition:color .14s}
   .pl-foot button:hover,.pl-foot a:hover{color:var(--ink)}

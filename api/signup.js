@@ -1,15 +1,22 @@
-import { SB, SERVICE_KEY, sbFetch, isInternal, INVITED, PLAN_MAP } from '../lib/plans.js';
+import { SB, sbFetch, isInternal, INVITED, PLAN_MAP } from '../lib/plans.js';
 import { rateLimit } from '../lib/ratelimit.js';
 
 // basic shape check — also rejects a ':' so an email can never collide with the vaest_state
 // keyspace prefixes (usage:/sub:/share:/apikey:/errlog:) that key privileged rows
 const EMAIL_RE = /^[^\s@:]+@[^\s@:]+\.[^\s@:]+$/;
 
-// Server-side sign-up that skips the email-confirmation round-trip. Payment is the real
-// gate (you can't use VÆST without an active plan), so we create a pre-confirmed user via
-// the admin API and return a session immediately — no "check your email, then sign in"
-// detour at the exact moment someone is ready to pay. Works regardless of the project's
-// "Confirm email" setting. Password reset still verifies ownership by its own email link.
+// Server-side sign-up. This used to create PRE-CONFIRMED users, on the reasoning that "payment
+// is the real gate, so proving the address doesn't matter" — true when nothing was free, and
+// false the moment a free tier existed. Unconfirmed accounts now cost real money and can be
+// minted from any string that looks like an email, including someone else's, which also locks
+// the real owner out of ever registering it.
+//
+// So the account is created UNCONFIRMED and no session is returned. Supabase's own /signup
+// sends the confirmation mail (requires "Confirm email" ON in Auth settings — with it off this
+// still works, users simply arrive already confirmed). api/chat.js independently refuses to
+// spend on an unverified account, so neither layer is load-bearing alone.
+//
+// Google sign-in skips all of this: the provider has already proved the address.
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
   const { email, password } = req.body || {};
@@ -25,6 +32,7 @@ export default async function handler(req, res) {
   // Rate-limit FIRST, before the entitlement gate below — otherwise the distinct 403 for an
   // entitled address turns this into an unauthenticated oracle for probing who is internal or
   // on the invite list.
+  const origin = req.headers.origin || 'https://vaest.orions.agency';
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
   if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
 
@@ -39,11 +47,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    // create a confirmed user (admin API, service key)
-    const cr = await sbFetch(`/auth/v1/admin/users`, {
+    // Supabase's own sign-up: creates the user unconfirmed and sends the confirmation mail,
+    // rather than the admin API which creates users silently and mails nothing.
+    const cr = await sbFetch(`/auth/v1/signup`, {
       method: 'POST',
-      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: e, password, email_confirm: true }),
+      headers: { apikey: SB.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: e, password, options: { email_redirect_to: `${origin}/` } }),
     });
     if (!cr.ok) {
       const d = await cr.json().catch(() => ({}));
@@ -55,15 +64,12 @@ export default async function handler(req, res) {
       res.status(400).json({ error: d.msg || d.error_description || 'Sign-up failed' });
       return;
     }
-    // sign them in → hand back a session
-    const tk = await sbFetch(`/auth/v1/token?grant_type=password`, {
-      method: 'POST',
-      headers: { apikey: SB.key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: e, password }),
-    });
-    const session = await tk.json().catch(() => ({}));
-    if (!tk.ok || !session.access_token) { res.status(200).json({ pending: true }); return; } // created; client falls back to sign in
-    res.status(200).json(session);
+    // With "Confirm email" ON, Supabase returns the user and NO session — that is the intended
+    // path, and the client shows "check your inbox". With it OFF a session comes back and we
+    // pass it through, so the setting can be flipped either way without a code change.
+    const d = await cr.json().catch(() => ({}));
+    if (d.access_token) { res.status(200).json(d); return; }
+    res.status(200).json({ verify: true, email: e });
   } catch (err) {
     console.error('signup error:', err?.message || err);
     res.status(500).json({ error: 'Sign-up failed, try again' });

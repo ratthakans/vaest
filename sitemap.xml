@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- "/" is the app, not a landing page: it was listed at priority 1.0 while /home — the actual
+     marketing page, and the only one written to be found — was missing entirely. Google was
+     being pointed at a login wall and away from the pitch. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://vaest.orions.agency/</loc><priority>1.0</priority></url>
+  <url><loc>https://vaest.orions.agency/home</loc><priority>1.0</priority></url>
   <url><loc>https://vaest.orions.agency/concept</loc><priority>0.9</priority></url>
   <url><loc>https://vaest.orions.agency/product</loc><priority>0.9</priority></url>
   <url><loc>https://vaest.orions.agency/features</loc><priority>0.8</priority></url>

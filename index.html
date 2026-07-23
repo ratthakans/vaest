@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>VÆST · ORIONS</title>
+<!-- The app is not a search result, and every read-only share link is a URL under this same
+     path (/?s=…). robots.txt disallowed /app, but /app 307s to / — which was Allowed — so a
+     client's document could be indexed if its link ever reached a crawler. Marketing lives at
+     /home and is indexed there; nothing here should be. -->
+<meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050506">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -203,6 +208,13 @@
       <div class="wm">V<i>Æ</i>ST</div>
     </div>
     <div class="auth-h" id="authTitle">Sign in</div>
+    <!-- Google first: it is the one path where the address arrives already proved, so it is
+         also the only one with no confirm step. -->
+    <button type="button" class="auth-goog" onclick="googleAuth()">
+      <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.6v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.1z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.3C2.8 17.1 2 20.4 2 24s.8 6.9 2.3 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.1 30 2 24 2 15.4 2 7.9 6.9 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-or"><span>or</span></div>
     <form class="auth-f" onsubmit="event.preventDefault();submitAuth()">
       <input type="email" id="authEmail" placeholder="Email" autocomplete="email" required>
       <input type="password" id="authPass" placeholder="Password (min 6 characters)" autocomplete="current-password" minlength="6" required>
@@ -275,12 +287,19 @@
         <div class="pl-price">฿3,490 <i>/ month</i></div>
         <ul class="pl-list">
           <li>Everything in Pro</li>
-          <li>6× usage</li>
-          <li>Priority queue</li>
+          <li>6× usage — 120 documents a month</li>
+          <li>Direct line to the studio</li>
         </ul>
-        <div class="pl-eng">All four engines · highest volume · first in line</div>
+        <div class="pl-eng">All four engines · highest volume</div>
         <button class="pl-cta" onclick="startCheckout('director')">Get Director</button>
       </div>
+    </div>
+    <!-- the terms of the sale, at the point of sale — /home carried them, the screen that
+         actually takes the card did not, and the two disagreed about VAT -->
+    <div class="pl-terms">
+      Billed monthly · cancel anytime · prices exclude VAT · you can start using it the moment payment clears.
+      By subscribing you agree to the <a href="/terms" target="_blank" rel="noopener">Terms</a>
+      and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.
     </div>
     <div class="pl-foot">
       <span>Signed in as <b id="giEmail"></b></span>

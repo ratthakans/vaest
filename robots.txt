@@ -1,5 +1,11 @@
 User-agent: *
 Allow: /
+
+# The app, and every read-only share link, live under "/" with a ?s= query. Disallowing /app
+# alone was not enough: /app 307s to /, so the URL a client actually receives sits on an
+# allowed path. Both forms are refused here, and / also carries a noindex meta tag.
 Disallow: /app
+Disallow: /?s=
+Disallow: /*?s=
 
 Sitemap: https://vaest.orions.agency/sitemap.xml

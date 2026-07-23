@@ -113,14 +113,51 @@
     if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Wrong email or password');
     applySession(d)}
   async function authSignup(email,pass){
-    // server-side signup: auto-confirmed, returns a session immediately (no email round-trip)
     const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
     const d=await r.json().catch(()=>({}));
     if(r.status===409)throw new Error(d.error||'Account exists — sign in instead');
     if(!r.ok)throw new Error(d.error||'Sign-up failed');
     if(d.access_token){applySession(d);return 'ok'}
-    return 'confirm' // fallback — created but no session; ask them to sign in
+    return 'confirm' // created, unconfirmed — the address has to be proved before we spend on it
   }
+  // ── Google sign-in ── the provider has already proved the address, so these accounts skip
+  // the confirm step entirely. Supabase hands control to Google and returns to origin+'/'
+  // with either #access_token=… (implicit) or ?code=… (PKCE) — catchOAuthReturn handles both.
+  function googleAuth(){
+    try{sessionStorage.setItem('vaest_oauth','1')}catch(e){} // marks the return trip as ours
+    location.href=SB.url+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/')}
+  // Build a session from a bare token — the implicit flow returns no user object, so ask for it.
+  async function sessionFromToken(access_token,refresh_token,expires_in){
+    const r=await fetch(SB.url+'/auth/v1/user',{headers:{apikey:SB.key,Authorization:'Bearer '+access_token}});
+    if(!r.ok)return false;
+    const u=await r.json();
+    if(!u||!u.email)return false;
+    saveAuth({access_token,refresh_token:refresh_token||null,
+      expires_at:Date.now()+((+expires_in||3600)-90)*1000,email:String(u.email).toLowerCase()});
+    return true}
+  // Runs before the recovery check, but only claims a return we started: a password-reset link
+  // also arrives as #access_token / ?code, and swallowing it here would skip the set-password
+  // screen and strand the user signed in with a password they still can't remember.
+  async function catchOAuthReturn(){
+    let ours=false;try{ours=sessionStorage.getItem('vaest_oauth')==='1';sessionStorage.removeItem('vaest_oauth')}catch(e){}
+    if(!ours)return false;
+    const hp=new URLSearchParams((location.hash||'').replace(/^#/,''));
+    const qp=new URLSearchParams(location.search||'');
+    const clean=()=>history.replaceState(null,'',location.pathname);
+    try{
+      if(hp.get('error')||qp.get('error')){
+        clean();showAuth(hp.get('error_description')||qp.get('error_description')||'Google sign-in was cancelled');return false}
+      if(hp.get('access_token')){
+        const ok=await sessionFromToken(hp.get('access_token'),hp.get('refresh_token'),hp.get('expires_in'));
+        clean();return ok}
+      const code=qp.get('code');
+      if(code){
+        const r=await fetch(SB.url+'/auth/v1/token?grant_type=pkce',{method:'POST',headers:authHeaders(),body:JSON.stringify({auth_code:code})});
+        const d=await r.json().catch(()=>({}));
+        if(r.ok&&d.access_token){applySession(d);clean();return true}
+        clean();showAuth('Google sign-in didn’t complete — try again')}
+    }catch(e){clean()}
+    return false}
   async function authRefresh(){
     if(!AUTH||!AUTH.refresh_token)return false;
     try{const r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:authHeaders(),body:JSON.stringify({refresh_token:AUTH.refresh_token})});
@@ -149,7 +186,7 @@
     $('authSw').innerHTML=_authMode==='login'
       ?'No account yet<button type="button" onclick="toggleAuthMode()">Sign up</button>'
       :'Already have an account<button type="button" onclick="toggleAuthMode()">Sign in</button>';
-    $('authErr').textContent=''}
+    $('authErr').textContent='';$('authErr').classList.remove('ok')}
   function showAuth(msg){$('authView').classList.add('show');if(msg)$('authErr').textContent=msg;setTimeout(()=>$('authEmail').focus(),50)}
   // Escape / ✕ / backdrop — always leave a way back to the work behind the sheet
   function dismissAuth(){hideAuth();if(typeof renderAnonLimit==='function')renderAnonLimit()}
@@ -210,11 +247,13 @@
   async function submitAuth(){
     const email=$('authEmail').value.trim().toLowerCase(),pass=$('authPass').value;
     if(!email||pass.length<6){$('authErr').textContent='Enter an email and a password of at least 6 characters';return}
-    const go=$('authGo');go.disabled=true;go.textContent='One sec…';$('authErr').textContent='';
+    const go=$('authGo');go.disabled=true;go.textContent='One sec…';$('authErr').textContent='';$('authErr').classList.remove('ok');
     try{
       if(_authMode==='login'){await authLogin(email,pass)}
       else{const res=await authSignup(email,pass);
-        if(res==='confirm'){$('authErr').textContent='Signed up — check your email to confirm, then sign in';
+        // the normal outcome now, not a fallback — say it in the success voice, not the error one
+        if(res==='confirm'){const er=$('authErr');er.classList.add('ok');
+          er.textContent='Check '+email+' — confirm the link, then sign in. (Google skips this step.)';
           _authMode='signup';toggleAuthMode();go.disabled=false;return}}
       endAnon(); // if we were on the free trial, carry the chat into the account
       if(await checkAccess()){hideAuth();await boot()}
@@ -222,6 +261,20 @@
       else{hideAuth();await boot();renderAnonLimit()} // free account — Galdr stays usable; engines wall on use
     }catch(e){$('authErr').textContent=e.message}
     finally{go.disabled=false;go.textContent=_authMode==='login'?'Sign in':'Sign up'}}
+
+  /* unconfirmed address — offer the two ways out (resend, or switch to Google) and nothing else */
+  let _resent=0;
+  async function verifyWall(msg){
+    const email=(AUTH&&AUTH.email)||'';
+    const ok=await uiConfirm((msg||'Confirm your email to start.')+(email?'\n\nWe sent a link to '+email+'.':''),
+      {ok:'Resend the link',cancel:'Close'});
+    if(!ok)return;
+    if(Date.now()-_resent<60000){toast('Just sent one — give it a minute, and check spam');return}
+    _resent=Date.now();
+    try{const r=await fetch(SB.url+'/auth/v1/resend',{method:'POST',headers:authHeaders(),
+        body:JSON.stringify({type:'signup',email,options:{email_redirect_to:location.origin+'/'}})});
+      toast(r.ok?'Sent — check '+email:'Couldn’t resend just now. Signing in with Google skips this step.')}
+    catch(e){toast('Couldn’t resend just now. Signing in with Google skips this step.')}}
 
   /* reset password */
   async function forgotPassword(){
@@ -536,7 +589,11 @@
     if(r.status===401){
       if(ANON){anonWall();throw new Error('Sign up to continue')}
       showAuth('Session expired — sign in again');throw new Error('Session expired')}
-    if(r.status===402||r.status===403){let d={};try{d=await r.json()}catch(e){}checkAccess();showNotInvited(d.error||'');throw new Error(d.error||'Choose a plan to continue')}
+    if(r.status===402||r.status===403){let d={};try{d=await r.json()}catch(e){}
+      // an unconfirmed address isn't a plan problem — showing the price sheet would tell them
+      // to pay for something they already have, and never mention the link sitting in their inbox
+      if(d.verify){verifyWall(d.error);throw new Error(d.error||'Confirm your email to continue')}
+      checkAccess();showNotInvited(d.error||'');throw new Error(d.error||'Choose a plan to continue')}
     if(r.status===429){let d={};try{d=await r.json()}catch(e){}const msg=d.error||'Usage limit reached';
       if(ANON&&d.signup){anonWall(msg)}else toast(msg);throw new Error(msg)}
     if(!r.ok||!r.body){let msg='HTTP '+r.status;try{msg=(await r.json()).error||msg}catch(e){}throw new Error(msg)}
@@ -3203,6 +3260,9 @@
     // suggestions live in the input placeholders now, not as starter buttons
     rotatePlaceholder($('ideaInput'),IDEA_SUGGEST);
     rotatePlaceholder($('briefIn'),['A launch campaign for…','A brand identity for…','A social content brief for…','Or attach references — docs, images, even a video']);
+    // 0) back from Google — claims the token only if we started the trip (see catchOAuthReturn),
+    //    so a recovery link landing on the same URL shape still reaches step 1 below
+    await catchOAuthReturn();
     // 1) set a new password from the email link (recovery / invite)
     const rec=await detectRecovery();
     if(rec){window._recToken=rec;history.replaceState(null,'',location.pathname);$('npView').classList.add('show');setTimeout(()=>$('npPass').focus(),60);return}

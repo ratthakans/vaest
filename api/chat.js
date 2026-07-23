@@ -365,6 +365,18 @@ export default async function handler(req, res) {
   // reaches the product's actual wow (the crystallize moment) before the paywall. Bounded CAC:
   // once ever per account (usage-row flag), output capped below, email-confirm + IP limits
   // bound multi-accounting to ~฿5 per abuse. Deliberate acquisition spend, not a leak.
+  // ── Unverified accounts spend nothing ── the free tier is real money (Sonnet Idea + one Opus
+  // Crystallize, ~฿47 an account) and sign-up costs an attacker only an email string. Requiring
+  // a proved address is what bounds it: Google sign-ins arrive verified, so the common path has
+  // no extra step at all, and email+password just has to click the link it was already sent.
+  // Paying accounts are exempt — a live card is a stronger proof of a real person than an inbox.
+  if (freeTier && user.verified === false) {
+    res.status(403).json({
+      error: 'Confirm your email to start — we sent you a link. Signing in with Google skips this.',
+      verify: true,
+    });
+    return;
+  }
   const freeSumming = freeTier && mode === 'summing' && !ud.freeSummed;
   if (freeTier && mode !== 'idea' && !freeSumming) {
     const msg = mode === 'summing'
