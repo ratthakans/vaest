@@ -61,6 +61,15 @@ export default async function handler(req, res) {
         res.status(409).json({ error: 'An account with this email already exists — sign in instead' });
         return;
       }
+      // The confirmation mail is now load-bearing, so when the mail server is the thing that
+      // failed, say so and point at the door that doesn't need one — rather than handing back
+      // Supabase's raw "Error sending confirmation email", which reads as the user's fault and
+      // offers them nothing to do next.
+      if (msg.includes('sending') || msg.includes('smtp') || msg.includes('email')) {
+        console.error('signup blocked — outbound mail is failing:', d.msg || d.error_description || msg);
+        res.status(503).json({ error: 'We can’t send the confirmation email right now. Use “Continue with Google” — it signs you in immediately.', mail: true });
+        return;
+      }
       res.status(400).json({ error: d.msg || d.error_description || 'Sign-up failed' });
       return;
     }
