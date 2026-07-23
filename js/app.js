@@ -604,7 +604,17 @@
       // 8-char overlap for a marker split across chunks) instead of re-splitting the whole buffer
       if(usIdx<0){const at=full.indexOf('[[USAGE]]',Math.max(0,prevLen-8));if(at>=0)usIdx=at}
       if(onText)onText(usIdx>=0?full.slice(0,usIdx):full)}}
-    catch(e){if(e.name==='AbortError'){stopped=true;toast('Stopped — kept what streamed so far')}else throw e}
+    catch(e){
+      if(e.name==='AbortError'){stopped=true;toast('Stopped — kept what streamed so far')}
+      // A dropped connection used to throw away everything that had already arrived. The server
+      // has finished and billed by then, so the user paid for a document they never saw — and on
+      // a phone (tunnel, lift, wifi handover) this is not rare. Pressing Stop already keeps the
+      // partial text; an interrupted stream is the same situation without the button, so it
+      // takes the same path. Below a sentence or so there is nothing worth keeping, and handing
+      // the message back to retry is the better answer.
+      else if(full.replace(/\[\[USAGE\]\][\s\S]*$/,'').trim().length>40){
+        stopped=true;toast('Connection dropped — kept what had arrived. Ask again to carry on.')}
+      else throw e}
     finally{_abort=null}
     if(stopped){const u=full.indexOf('[[USAGE]]');return (u>=0?full.slice(0,u):full).trim()}
     const i=full.indexOf('[[ERROR]]');if(i>=0)throw new Error(full.slice(i+9).trim()||'server error');
