@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pricing — VÆST</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="VÆST pricing — Basic ฿390, Pro ฿1,490, Director ฿3,490 a month. The Idea chat is free; turning it into a document is what a plan is for.">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="canonical" href="https://vaest.orions.agency/pricing">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#050506;--ink:#f2f1ee;--dim:#a1a09b;--mute:#5c5b57;--line:rgba(255,255,255,.09);
+    --line2:rgba(255,255,255,.2);--or:#ff5a1f;
+    --ui:"Inter","IBM Plex Sans Thai Looped",sans-serif;--mono:"IBM Plex Mono",monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--ui);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:80px 28px 100px}
+  .eye{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+  h1{font-weight:650;font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;margin:16px 0 10px}
+  .lead{font-size:15px;line-height:1.8;color:var(--dim);max-width:56ch;margin-bottom:44px}
+  p,li{font-size:14.5px;line-height:1.85;color:var(--dim)}
+  b{color:var(--ink);font-weight:600}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .back{display:inline-block;margin-bottom:34px;font-size:13.5px;color:var(--dim);text-decoration:none}
+  .back:hover{color:var(--ink)}
+  /* three cards, one marked — same shape as the in-app sheet so the two never disagree */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 18px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}.card.hot{order:-1}}
+  .card{border:1px solid var(--line);border-radius:16px;padding:24px 22px;display:flex;flex-direction:column}
+  .card.hot{border-color:rgba(255,90,31,.5)}
+  .badge{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--or);margin-bottom:8px}
+  .name{font-weight:650;font-size:16px;margin-bottom:6px}
+  .price{font-size:30px;font-weight:650;letter-spacing:-.03em;margin-bottom:2px}
+  .price i{font-style:normal;font-size:13px;font-weight:400;color:var(--mute)}
+  .per{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase;margin-bottom:18px}
+  .card ul{list-style:none;margin:0 0 20px;display:flex;flex-direction:column;gap:9px}
+  .card li{font-size:13.5px;line-height:1.6;padding-left:16px;position:relative}
+  .card li::before{content:"✓";position:absolute;left:0;color:var(--or);font-size:11px}
+  .cta{margin-top:auto;display:block;text-align:center;padding:11px;border-radius:100px;
+    border:1px solid var(--line2);font-size:13.5px;font-weight:600;color:var(--ink);text-decoration:none}
+  .card.hot .cta{background:#f2f1ee;color:#050506;border-color:#f2f1ee}
+  .terms{font-size:12.5px;line-height:1.8;color:var(--mute);max-width:62ch;margin:0 0 44px}
+  h2{font-weight:650;font-size:19px;letter-spacing:-.01em;margin:40px 0 12px;padding-top:24px;border-top:1px solid var(--line)}
+  .th{font-family:"IBM Plex Sans Thai Looped",sans-serif}
+  dl{margin:0}
+  dt{font-weight:600;color:var(--ink);font-size:14.5px;margin-top:20px}
+  dd{font-size:14.5px;line-height:1.85;color:var(--dim);margin:6px 0 0}
+</style>
+</head>
+<body><div class="wrap">
+  <a class="back" href="/home">← VÆST</a>
+  <div class="eye">VÆST · by ORIONS.Agency</div>
+  <h1>Pricing</h1>
+  <p class="lead">Talking to Galdr is free, with no sign-up. Turning that thinking into a document your client can read is what a plan is for.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="name">Basic</div>
+      <div class="price">฿390 <i>/ month</i></div>
+      <div class="per">20 documents a month</div>
+      <ul>
+        <li>The whole flow — Idea · Brief · Crystallize</li>
+        <li>Think — a second mind on any section</li>
+        <li>Share links your client can comment on</li>
+        <li>Export to PDF, Word, Markdown and slides</li>
+      </ul>
+      <a class="cta" href="/?plan=basic">Get Basic</a>
+    </div>
+    <div class="card hot">
+      <div class="badge">Most studios</div>
+      <div class="name">Pro</div>
+      <div class="price">฿1,490 <i>/ month</i></div>
+      <div class="per">60 documents a month</div>
+      <ul>
+        <li>Everything in Basic</li>
+        <li>Refine — the apex audit before work ships</li>
+        <li>3× the monthly volume</li>
+      </ul>
+      <a class="cta" href="/?plan=pro">Get Pro</a>
+    </div>
+    <div class="card">
+      <div class="name">Director</div>
+      <div class="price">฿3,490 <i>/ month</i></div>
+      <div class="per">120 documents a month</div>
+      <ul>
+        <li>Everything in Pro</li>
+        <li>6× the monthly volume</li>
+        <li>Direct line to the studio</li>
+      </ul>
+      <a class="cta" href="/?plan=director">Get Director</a>
+    </div>
+  </div>
+
+  <p class="terms">Billed monthly · cancel anytime · prices exclude VAT · you can start using it the moment payment clears. By subscribing you agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>. Refunds are covered by the <a href="/refund">refund policy</a>.</p>
+
+  <h2>Questions people actually ask</h2>
+  <dl>
+    <dt>What does “a document” mean?</dt>
+    <dd>One full generation — a Crystallize, or a compiled Brief. Editing it afterwards, asking Think for a push, exporting it and sharing it are all free and unlimited. You are charged for making the document, not for working on it.</dd>
+
+    <dt>What is free?</dt>
+    <dd>The Idea chat. Anonymous visitors get a few messages with no sign-up; a free account keeps the conversation with a monthly allowance. Crystallize and Brief need a plan.</dd>
+
+    <dt>What if I run out mid-month?</dt>
+    <dd>Add a usage pack (฿490) from Settings ▸ Usage without changing plan, or upgrade — the change applies immediately.</dd>
+
+    <dt>Can I cancel?</dt>
+    <dd>Yes, from Settings ▸ Usage ▸ Change plan, which opens the billing portal. You keep access until the end of the period you have paid for.</dd>
+
+    <dt>A team, or something bigger?</dt>
+    <dd>Per-seat plans and studio rollouts are arranged directly — <a href="/contact">talk to us</a>.</dd>
+  </dl>
+
+  <h2>ภาษาไทย</h2>
+  <p class="th">คุยกับ Galdr ได้ฟรี ไม่ต้องสมัคร — ส่วนการเปลี่ยนบทสนทนาให้เป็นเอกสารที่ส่งลูกค้าได้คือสิ่งที่แพ็กเกจครอบคลุม · <b>“หนึ่งเอกสาร”</b> คือการสร้างหนึ่งครั้ง (Crystallize หรือ Brief ที่คอมไพล์แล้ว) หลังจากนั้นแก้ไข ส่งออก และแชร์ได้ไม่จำกัด · <b>ราคายังไม่รวม VAT</b> · ยกเลิกได้ทุกเมื่อ และใช้ได้จนจบรอบที่จ่ายไปแล้ว</p>
+</div></body>
+</html>
