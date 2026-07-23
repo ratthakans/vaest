@@ -16,17 +16,30 @@ const M = new Date().toISOString().slice(0, 7); // current month key, as plans.j
 
 console.log('\nlib/plans.js — margin law (CLAUDE.md law #5)\n');
 
-// The one law that guards the whole business model: spendCap = 70% of the plan price, so
+// The one law that guards the whole business model: spendCap = 70% of what a plan EARNS, so
 // quality-first routing can never dip the margin below 30%. Canonical THB prices live in
 // Stripe; encode them here so any future spendCap edit that breaks the ratio fails loudly.
+//
+// Prices are VAT-inclusive (Stripe Tax has no Thailand support, so nothing is added at
+// checkout and Thai law reads the charge as tax-inclusive). This test measured the ratio
+// against the GROSS and so certified a 30% floor that was really 25.1% — the assertion passed
+// on arithmetic nobody had checked against how the money actually arrives.
 const PRICE = { basic: 390, pro: 1490, director: 3490 };
-t('every paid plan keeps spendCap === round(0.70 × price)', () => {
+const VAT = 1.07;
+t('every paid plan keeps spendCap === floor(0.70 × net price)', () => {
   for (const [name, price] of Object.entries(PRICE)) {
-    assert.equal(PLANS[name].spendCap, Math.round(0.70 * price), name + ' spendCap drifted from the 30% floor');
+    assert.equal(PLANS[name].spendCap, Math.floor(0.70 * price / VAT), name + ' spendCap drifted from the 30% floor');
   }
 });
-t('credit pack keeps the same 70% floor (BOOST_SPEND === round(0.70 × PACK_PRICE))', () => {
-  assert.equal(BOOST_SPEND, Math.round(0.70 * PACK_PRICE));
+t('the floor is measured on money actually kept, not on the sticker', () => {
+  // guards the mistake itself: gross-based caps would pass the line above if VAT were dropped
+  for (const [name, price] of Object.entries(PRICE)) {
+    const net = price / VAT;
+    assert.ok(PLANS[name].spendCap / net <= 0.70 + 1e-9, name + ' spends more than 70% of real income');
+  }
+});
+t('credit pack keeps the same 70% floor on net (BOOST_SPEND)', () => {
+  assert.equal(BOOST_SPEND, Math.floor(0.70 * PACK_PRICE / VAT));
 });
 t('unlimited plan has no finite spend cap', () => assert.equal(PLANS.unlimited.spendCap, Infinity));
 
