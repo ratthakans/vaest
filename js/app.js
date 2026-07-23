@@ -224,10 +224,11 @@
       // something the next screen takes back
       set('briefLimit','Brief is part of a paid plan · <button onclick="showNotInvited()">See plans</button>');
       return}
-    // signed-in, no plan → free tier: Galdr chat + one lifetime Crystallize; Brief is paid
+    // signed-in, no plan → free tier: the Idea chat only. Crystallize and Brief are paid, and
+    // each says so under its own input rather than at submit.
     if(AUTH&&window.QUOTA&&window.QUOTA.allowed===false){
-      set('anonLimit','Free · Galdr + one Crystallize · <button onclick="showNotInvited()">See plans</button>');
-      set('cryLimit',null);
+      set('anonLimit','Free · the Idea chat · <button onclick="showNotInvited()">See plans</button>');
+      set('cryLimit','Crystallize is part of a plan · <button onclick="showNotInvited()">See plans</button>');
       set('briefLimit','Brief is part of a paid plan · <button onclick="showNotInvited()">See plans</button>');
       return}
     set('anonLimit',null);set('cryLimit',null);set('briefLimit',null)}
@@ -383,7 +384,7 @@
       bar(Math.min(100,u.pct),cap(q.plan.name),foot);return}
     if(q.allowed===false){ // free tier — Galdr allowance
       const pct=u&&u.pct!=null?Math.min(100,u.pct):0;
-      const foot=(u&&u.freeCrystallize?'1 Crystallize free · ':'')+(u&&u.resetsOn?'resets '+fmtReset(u.resetsOn):'');
+      const foot=(u&&u.resetsOn?'resets '+fmtReset(u.resetsOn):'');
       bar(pct,'Free · Galdr',foot);return}
     el.style.display='none'}
   function showNotInvited(msg){
@@ -407,7 +408,7 @@
         +(q.canManage?'<button class="ps-btn ghost" onclick="closeSettings();openPortal()">Change plan</button>':'')+'</div>';
     }else{
       el.innerHTML='<div class="ps-row"><div class="ps-l"><div class="ps-lbl">Current plan</div><div class="ps-name">Free</div>'
-        +'<div class="ps-sub">Galdr chat + one Crystallize on the house</div></div>'
+        +'<div class="ps-sub">The Idea chat — Crystallize and Brief need a plan</div></div>'
         +'<button class="ps-btn" onclick="openPlans()">Upgrade</button></div>';
     }}
   // ── billing: start Stripe Checkout / open the customer portal ──
@@ -1773,7 +1774,7 @@
     // and the old order left the user with an empty thread and their text relocated
     if(ANON){anonWall('Brief is part of a plan — it interviews you, then compiles the brief');return}
     if(window.QUOTA&&!window.QUOTA.internal&&!window.QUOTA.plan){
-      showNotInvited('Brief is part of a plan — the free account covers the Idea chat and one Crystallize');return}
+      showNotInvited('Brief is part of a plan — the free account covers the Idea chat');return}
     const v=($('briefIn')&&$('briefIn').value.trim())||'';
     if(!v&&!(s.files&&s.files.length)){toast('Paste or type a rough brief, or attach a file');return}
     s.mode='brief';s.briefQA=[{r:'user',c:v||'(see attached files)',ts:Date.now()}];s.briefSeed=v;
@@ -2636,11 +2637,6 @@
       s.updatedAt=Date.now();save();renderRail();showCanvas();
       if(document.hidden)notifyDone('Crystallize');
       if(s.chain){toast('Summed — Refine starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
-      else if(window.QUOTA&&window.QUOTA.allowed===false){
-        // the one free Crystallize just landed — say so NOW, not as a surprise wall next time
-        toast('That was your free Crystallize — pick a plan for unlimited documents');
-        checkAccess(); // refresh the rail meter (freeCrystallize flag just flipped)
-      }
       else toast('Done — edit any section, then Share a link your client can comment on');
     }catch(e){
       $('doc').innerHTML='<div class="gen"><div class="gen-eye" style="color:var(--cin-d)">Failed — '+esc(e.message)+'</div>'
@@ -3007,11 +3003,21 @@
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
       +buildDocHTML(false).replace(/^<!doctype html><html lang="th">/i,'').replace(/<\/html>$/i,'')+'</html>';
     dl(new Blob(['﻿'+html],{type:'application/msword'}),docFilename()+'.doc');toast('Downloaded .doc (opens in Word)')}
+  // A share link IS the access control on a client's document — there is no second check, so
+  // whoever guesses the URL reads the work. The old id was Math.random() (6 base36 chars, ~31
+  // bits) plus a timestamp tail: small enough to be worth grinding, and Math.random() is not a
+  // CSPRNG — V8's generator leaks its internal state to anyone holding a few outputs, which for
+  // a studio means a client who legitimately received two links could compute other clients'.
+  // 128 crypto-strong bits instead. Existing links keep resolving; only new ones change.
+  function newShareId(){
+    const b=new Uint8Array(16);crypto.getRandomValues(b);
+    let out='';for(const n of b)out+=n.toString(36).padStart(2,'0');
+    return 'sh'+out}
   // read-only share — stores only the chosen title+canvas, no account data
   async function shareDoc(){
     $('expMenu').classList.remove('show');
     const s=cur();if(!s||!s.canvas.trim()){toast('No document to share yet');return}
-    if(!s.shareId)s.shareId='sh'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+    if(!s.shareId)s.shareId=newShareId();
     toast('Creating share link…');
     try{await ensureAuth();
       const r=await fetch('/api/share',{method:'POST',

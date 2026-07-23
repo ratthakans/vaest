@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     try { usage = await usageSnapshot(user.email, access.plan, ud); } catch (e) {}
   } else if (!internal) {
     // free tier — expose the Galdr allowance as the same abstract % so the app's rail
-    // meter works before there's a plan (plus whether the one free Crystallize is unspent)
+    // meter works before there's a plan
     try {
       const used = ud.month === month ? (ud.used || 0) : 0;
       const FREE_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 150_000; // must match api/chat.js — the rail meter reads this
@@ -30,7 +30,6 @@ export default async function handler(req, res) {
       usage = {
         pct: Math.min(100, Math.round(used / FREE_CAP * 100)),
         resetsOn: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString().slice(0, 10),
-        freeCrystallize: !ud.freeSummed,
       };
     } catch (e) {}
   }

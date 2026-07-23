@@ -361,10 +361,6 @@ export default async function handler(req, res) {
   // paid engine still requires a plan. Cost is bounded: Gemini/Haiku only, per-user rate
   // limit above, and a small monthly token allowance below.
   const freeTier = !access.allowed;
-  // ── One Crystallize on the house ── a single LIFETIME summing for free accounts, so signup
-  // reaches the product's actual wow (the crystallize moment) before the paywall. Bounded CAC:
-  // once ever per account (usage-row flag), output capped below, email-confirm + IP limits
-  // bound multi-accounting to ~฿5 per abuse. Deliberate acquisition spend, not a leak.
   // ── Unverified accounts spend nothing ── the free tier is real money (Sonnet Idea + one Opus
   // Crystallize, ~฿47 an account) and sign-up costs an attacker only an email string. Requiring
   // a proved address is what bounds it: Google sign-ins arrive verified, so the common path has
@@ -377,12 +373,17 @@ export default async function handler(req, res) {
     });
     return;
   }
-  const freeSumming = freeTier && mode === 'summing' && !ud.freeSummed;
-  if (freeTier && mode !== 'idea' && !freeSumming) {
-    const msg = mode === 'summing'
-      ? 'Your free Crystallize is used — pick a plan for unlimited documents'
-      : 'Choose a plan to unlock this — the free account covers the Idea chat';
-    res.status(402).json({ error: msg, paywall: true }); return;
+  // Crystallize is paid, with no free first one. The free account is the Idea chat and nothing
+  // else — an honest line to draw and to say out loud, where "one on the house, then a wall"
+  // meant the moment someone was most convinced was also the moment the product stopped.
+  if (freeTier && mode !== 'idea') {
+    res.status(402).json({
+      error: mode === 'summing'
+        ? 'Crystallize is part of a plan — the free account covers the Idea chat'
+        : 'Choose a plan to unlock this — the free account covers the Idea chat',
+      paywall: true,
+    });
+    return;
   }
   // monthly fair-use token cap (invisible — guards against runaway cost · ORIONS team unlimited)
   // plan-scaled ceiling; capFor (env MONTHLY_CAP) remains the fallback for comp/invited
@@ -439,7 +440,7 @@ export default async function handler(req, res) {
   // a "document" = one full Odin generation: Crystallize (summing) or a Brief compile
   // (briefdoc). Without counting briefdoc, Brief mode is an unlimited-Opus backdoor.
   const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign' || mode === 'recast';
-  if (countsDoc && !freeTier) { // the one free Crystallize has no plan to count against — its own flag gates it
+  if (countsDoc && !freeTier) { // free accounts never reach here — Crystallize is gated above
     try {
       const q = await checkDocQuota(user.email, plan, ud);
       if (!q.ok) {
@@ -455,8 +456,7 @@ export default async function handler(req, res) {
   // brain — an easier promise to keep, and a truer one. Billed at the accurate `sonnet` rate so
   // the 30% floor holds. (`tag` stays on Flash — a 1–3 word label nobody reads as prose.)
   const base = TASK[mode] || TASK.summing;
-  // the free Crystallize streams a tighter document — caps its worst-case cost near ฿5
-  const maxTok = freeSumming ? 3072 : (route.max || 8192);
+  const maxTok = route.max || 8192;
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -520,7 +520,7 @@ export default async function handler(req, res) {
           const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
           nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
         }
-        if (countsDoc) nextData = freeTier ? { ...nextData, freeSummed: true } : applyDocBump(nextData, plan.docs);
+        if (countsDoc) nextData = applyDocBump(nextData, plan.docs); // only paid accounts reach a document
         if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
         return nextData;
       });
