@@ -5,6 +5,16 @@
        dark frame around a lit sheet, and so long-form Thai isn't near-white on near-black.
        --card must stay clearly above --paper: the Think / Refine panel sits on it. */
     --app:#050506; --paper:#111114; --sheet:#0a0a0b; --card:#1c1c20;
+    /* The canvas ground — --paper rotated warm (R above B instead of below), then dropped 3
+       levels to pay for the grain. The noise tile averages light, so at 3% it ADDS about 5
+       levels rather than sitting neutral: laid over the warm value directly the sheet came out
+       at (24,23,20), brighter than --paper and brighter than anything asked for. Measured, not
+       guessed. Composited this lands at (21,20,18) — a shade above --paper on purpose, since
+       the rail is meant to read as a dark frame around a lit sheet. */
+    --stock:#100F0D;
+    /* ink rules: heavier where a nib lands, fading along the stroke */
+    --rule:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.05) 62%,rgba(255,255,255,.02));
+    --rule-h:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,.13) 62%,rgba(255,255,255,.05));
     --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
     --dim:#a5a29a; --mute:#83827b; --soft:rgba(255,255,255,.05);
     --ui:"Inter","IBM Plex Sans Thai Looped",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
@@ -219,11 +229,29 @@
   .dz-in{border:1.5px dashed var(--cinnabar);border-radius:var(--r-lg);padding:44px 68px;font-size:16px;font-weight:650;color:var(--cin-d);background:var(--sheet)}
 
   /* ===== CANVAS — seamless editorial (no paper sheet) ===== */
-  .cv{flex:1;overflow-y:auto;min-height:0;background:var(--paper);padding:0}
+  /* ═══ the canvas as stock, not as a screen ═══════════════════════════════════════════
+     Four moves, all below the threshold where anyone would name them, because a texture
+     you notice is decoration and this has to read as material.
+
+     1 — GROUND. --paper is #111114, which carries a blue bias (B is 3 above R). Uncoated
+         stock in low light goes the other way. --stock is the same value rotated warm:
+         the eye reads "paper" before it reads "darker", and nothing about the layout moved.
+     2 — GRAIN. A tiled fractal-noise tile at 3.5% over the ground. At 100% zoom it is
+         invisible per-pixel and present as a whole — the difference between a surface and
+         a fill. Tiled so it costs one rasterise, and pinned to .doc so it travels with the
+         page the way tooth travels with paper.
+     3 — INK. Rules stop being uniform 1px hairlines. Real ruling is heavier where the nib
+         starts, so borders carry a gradient that fades along their length.
+     4 — Print drops all of it — see the export CSS. Grain on a laser printer is dirt. */
+  .cv{flex:1;overflow-y:auto;min-height:0;background:var(--stock);padding:0}
   /* 700px keeps the column at ~75 Thai characters per line. Thai has no spaces between words, so a
      long line gives the eye nothing to grab when it wraps — at the old 960px it ran to ~123. The
      whole column narrows together (heading, tools, body) so the section toolbar stays beside the text. */
-  .doc{max-width:860px;margin:0 auto;padding:88px 56px 160px}
+  /* the tooth of the stock — one 140px fractal-noise tile at 3.5%. Deliberately below the
+     threshold of "I can see a texture": the job is to stop the ground reading as a flat fill. */
+  .doc{max-width:860px;margin:0 auto;padding:88px 56px 160px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch' seed='7'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+    background-repeat:repeat}
   @media(max-width:720px){.doc{padding:56px 26px 100px}}
   .mast-head{padding-bottom:40px;margin-bottom:4px}
   .mh-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
@@ -333,7 +361,9 @@
   .sec-c ol{margin:13px 0 20px;padding-left:28px}
   .sec-c ol li{margin:10px 0;padding-left:6px}
   .sec-c ol li::marker{color:var(--mute);font-family:var(--mono);font-size:13px}
-  .sec-c blockquote{border-left:2px solid var(--ink);padding:3px 0 3px 20px;margin:20px 0;color:var(--dim);font-style:italic}
+  .sec-c blockquote{border-left:2px solid transparent;
+    border-image:linear-gradient(180deg,rgba(230,224,211,.85),rgba(230,224,211,.42)) 1;
+    padding:3px 0 3px 20px;margin:20px 0;color:var(--dim);font-style:italic}
   .sec-c code{font-family:var(--mono);font-size:.8em;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:var(--r-xs)}
   .sec-c hr{border:0;height:0;border-top:1px solid var(--line);margin:26px 0;width:64px}
   .sec-c pre{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:var(--r-sm);padding:15px 17px;overflow-x:auto;margin:16px 0}
@@ -343,8 +373,8 @@
   /* tables — airy, readable */
   .sec-c table{width:100%;border-collapse:collapse;margin:18px 0;font-size:15.5px;line-height:1.6;display:block;overflow-x:auto}
   .sec-c th{font-family:var(--ui);text-align:left;font-weight:650;font-size:13.5px;color:var(--ink);
-    border-bottom:1.5px solid var(--line2);padding:10px 20px 10px 0;white-space:nowrap}
-  .sec-c td{border-bottom:1px solid var(--line);padding:11px 20px 11px 0;vertical-align:top}
+    border-bottom:1.5px solid transparent;border-image:var(--rule-h) 1;padding:10px 20px 10px 0;white-space:nowrap}
+  .sec-c td{border-bottom:1px solid transparent;border-image:var(--rule) 1;padding:11px 20px 11px 0;vertical-align:top}
   .sec-c tr:last-child td{border-bottom:none}
   /* per-section attached files */
   .sec-files{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 2px}
