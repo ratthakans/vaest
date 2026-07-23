@@ -165,14 +165,14 @@
   .brief-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
   .brief-files:empty{display:none}
   .brief-interview .id-thread{max-height:46vh}
-  .brief-interview .id-m .tx{font-size:16px;line-height:1.86}
+  .brief-interview .id-m .tx{font-size:15.5px;line-height:1.78}
   /* Brief — the current question pops as a focused card, Claude-style */
   .q-card{border:1px solid var(--line2);border-left:2px solid var(--cinnabar);border-radius:var(--r-lg);
     background:rgba(255,255,255,.04);padding:16px 18px;margin:16px 0 6px;animation:qPop .34s var(--ease) both}
   .q-eye{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--cin-d);font-weight:600;margin-bottom:10px}
   .q-dot{width:6px;height:6px;border-radius:50%;background:var(--grad);background-size:200% 200%;animation:liquid 4s ease infinite}
-  .q-body{font-family:var(--body);font-size:16px;line-height:1.72;color:#efece6}
+  .q-body{font-family:var(--body);font-size:15.5px;line-height:1.7;color:#efece6}
   .q-body strong,.q-body b{color:#eae4d8;font-weight:600}
   .q-body p{margin:0 0 8px}.q-body p:last-child{margin-bottom:0}
   .q-body ul{margin:8px 0 0 18px}.q-body li{margin:4px 0}
@@ -253,7 +253,7 @@
      (heading, tools, body) so the section toolbar stays beside the text. */
   /* the tooth of the stock — one 140px fractal-noise tile at 3.5%. Deliberately below the
      threshold of "I can see a texture": the job is to stop the ground reading as a flat fill. */
-  .doc{max-width:700px;margin:0 auto;padding:80px 52px 150px;
+  .doc{max-width:684px;margin:0 auto;padding:78px 50px 145px;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch' seed='7'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
     background-repeat:repeat}
   @media(max-width:720px){.doc{padding:56px 26px 100px}}
@@ -345,12 +345,12 @@
   .rp-attach:hover{color:var(--ink);border-color:var(--line2)}
   /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
   /* gentle tracking only — Thai loops (Looped face) get cramped under tight negative tracking */
-  .sec-h{font-family:var(--ui);font-size:19px;font-weight:700;letter-spacing:-.008em;line-height:1.5;margin:12px 0 20px;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;transition:background .14s}
+  .sec-h{font-family:var(--ui);font-size:18px;font-weight:700;letter-spacing:-.008em;line-height:1.5;margin:12px 0 20px;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;transition:background .14s}
   .sec-h:hover,.sec-h:focus{background:var(--soft)}
   /* document body — comfortable serif */
   /* #d8d5ce on --paper is 12.9:1 — still far past WCAG AAA, but off the 16:1 of near-white on
      near-black, which halates around Thai's thin strokes and tone marks. */
-  .sec-c{font-family:var(--body);font-size:16.5px;line-height:1.88;color:#d9d4c9;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;max-width:none;transition:background .14s}
+  .sec-c{font-family:var(--body);font-size:16px;line-height:1.78;color:#d9d4c9;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;max-width:none;transition:background .14s}
   .sec-c:hover{background:var(--soft)}
   .sec-c:focus{background:rgba(255,255,255,.055)}
   .sec-c p{margin:0 0 22px;text-wrap:pretty}.sec-c p:last-child{margin-bottom:4px}
@@ -1025,7 +1025,7 @@
   .idea.hero{margin-top:14px;background:transparent;border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
   .idea.hero:focus-within{box-shadow:none}
   .idea.hero .id-thread{max-height:none;overflow:visible;padding:2px 2px}
-  .idea.hero .id-m .tx{font-size:16px;line-height:1.86}
+  .idea.hero .id-m .tx{font-size:15.5px;line-height:1.78}
   .idea.hero .id-in textarea{font-size:15.5px;line-height:1.65}
   .idea.hero .id-in{padding:14px 12px 14px 18px}
   .idea.hero .id-in textarea{font-size:15px;padding:8px 4px}
@@ -1084,7 +1084,7 @@
   .id-m .who{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mute);margin-bottom:9px}
   .id-m.ai .who{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   /* what VÆST says reads in the same serif voice as the canvas; sans is reserved for UI chrome */
-  .id-m .tx{font-family:var(--body);font-size:15.5px;line-height:1.82;color:#d9d4c9;letter-spacing:.002em;word-break:break-word}
+  .id-m .tx{font-family:var(--body);font-size:15px;line-height:1.75;color:#d9d4c9;letter-spacing:.002em;word-break:break-word}
   .id-m.you .tx{color:#b4b1aa}
   .id-m .tx p{margin:8px 0}.id-m .tx ul,.id-m .tx ol{margin:8px 0 8px 20px}.id-m .tx li{margin:5px 0}
   /* markdown headings render as .ph — give replies real heading presence (มีหัว) */

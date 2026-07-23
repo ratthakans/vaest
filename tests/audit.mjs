@@ -88,16 +88,24 @@ t('no pure white on a reading surface', () => {
 
 console.log('\nVersion — one source, so it cannot go stale again\n');
 
-t('the version is not hardcoded in index.html', () => {
-  // It sat at 3.1 in the markup through an entire product's worth of change, because nothing
-  // owned it. app.js declares VERSION and paints the label; the markup ships an empty span.
-  const hits = HTML.match(/V[ÆAE]ST\s*\d+\.\d+/gi) || [];
-  if (hits.length) throw new Error(`hardcoded in markup: ${fmt([...new Set(hits)])} — set VERSION in js/app.js instead`);
+// Both of these started out too narrow and certified a lie. The first only matched a version
+// sitting next to the word VÆST, so `<span class="ab-ver">3.1</span>` walked past it. The second
+// only counted consts literally named VERSION, so a second source called VAEST_VER walked past
+// too — and that one stamped the footer of every exported document a client receives. A test
+// that names the one shape you already thought of is a test that agrees with you.
+t('no version literal anywhere in the markup', () => {
+  const hits = [
+    ...(HTML.match(/V[ÆAE]ST\s*v?\d+\.\d+/gi) || []),   // "VÆST 3.1"
+    ...(HTML.match(/>\s*v?\d+\.\d+\s*</gi) || []),       // ">3.1<" as an element's whole text
+  ];
+  if (hits.length) throw new Error(`hardcoded in markup: ${fmt([...new Set(hits)])} — set VERSION in js/app.js and paint it`);
 });
 
-t('app.js declares exactly one VERSION', () => {
-  const hits = APP.match(/\bconst\s+VERSION\s*=/g) || [];
-  if (hits.length !== 1) throw new Error(`found ${hits.length} declarations, expected 1`);
+t('app.js holds exactly one version constant, whatever it is called', () => {
+  // matches any const whose NAME mentions a version and whose VALUE looks like one
+  const hits = [...APP.matchAll(/\bconst\s+(\w*VER\w*)\s*=\s*['"]\d+\.\d+/gi)].map(m => m[1]);
+  if (hits.length !== 1) throw new Error(`${hits.length} version constants: ${fmt(hits)} — expected exactly 1`);
+  if (hits[0] !== 'VERSION') throw new Error(`the one source should be called VERSION, found ${hits[0]}`);
 });
 
 console.log('\n' + pass + ' passed · ' + fail + ' failed');
