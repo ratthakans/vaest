@@ -57,6 +57,12 @@
 
   /* ═══ state — sessions/projects · localStorage + Supabase ═══ */
   const STORE='vaest_v2',DB_V=5,LEGACY_WHO='orions-workspace';
+  // The one place the version is written. It sat hardcoded in index.html and stayed at 3.1
+  // through Brief, brand voice, project context, one engine for every tier, Google sign-in
+  // and verified email — a number nothing updated, on a label customers read. tests/audit.mjs
+  // now fails if index.html hardcodes one again.
+  const VERSION='3.2';
+  function paintVersion(){const w=$('whoLbl');if(w&&!AUTH)w.textContent='VÆST '+VERSION}
   // VÆST 3.0 — every item carries a mode: 'idea' (chat) · 'brief' (interview→doc) · 'crystallize' (canvas)
   const MODES=['idea','brief','crystallize'];
   function inferMode(s){
@@ -1912,7 +1918,7 @@
     // one-tap key handler would still think a question is live and answer it into whatever
     // session is now open
     else{const iv=$('briefInterview');if(iv)iv.style.display='none';_qOpts=[]}
-    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit();renderScopeLines()}
+    renderChips();renderTone();renderChain();renderIdeas();renderOutline();renderTabs();renderAnonLimit();renderScopeLines();paintVersion()}
   // switch the current (unstarted) item's mode — only allowed before it has real content
   function setMode(m){
     if(!MODES.includes(m))return;

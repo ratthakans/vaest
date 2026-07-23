@@ -86,6 +86,20 @@ t('no pure white on a reading surface', () => {
   if (hits.length) throw new Error(`${hits.length} prose rules use pure white: ${fmt(hits)}`);
 });
 
+console.log('\nVersion — one source, so it cannot go stale again\n');
+
+t('the version is not hardcoded in index.html', () => {
+  // It sat at 3.1 in the markup through an entire product's worth of change, because nothing
+  // owned it. app.js declares VERSION and paints the label; the markup ships an empty span.
+  const hits = HTML.match(/V[ÆAE]ST\s*\d+\.\d+/gi) || [];
+  if (hits.length) throw new Error(`hardcoded in markup: ${fmt([...new Set(hits)])} — set VERSION in js/app.js instead`);
+});
+
+t('app.js declares exactly one VERSION', () => {
+  const hits = APP.match(/\bconst\s+VERSION\s*=/g) || [];
+  if (hits.length !== 1) throw new Error(`found ${hits.length} declarations, expected 1`);
+});
+
 console.log('\n' + pass + ' passed · ' + fail + ' failed');
 console.log(fail ? '\nAUDIT FAILED\n' : '\nAUDIT CLEAN\n');
 process.exit(fail ? 1 : 0);
