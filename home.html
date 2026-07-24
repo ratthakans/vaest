@@ -112,6 +112,27 @@
   .hero{position:relative;padding:16vh 0 14vh;border-bottom:1px solid var(--line);overflow:hidden;
     background:linear-gradient(180deg,#111114 0%,#0d0d10 58%,#050506 100%)}
   @media(max-width:640px){.hero{padding:11vh 0 10vh}}
+  /* ── cinematic: one orchestrated open, not a pile of effects ────────────────────────
+     A title sequence — the hero settles in one considered cascade — plus a scope vignette
+     that darkens the frame edges the way a lens falls off at the corners. Same elements,
+     given an entrance; no new visual vocabulary. The vignette sits above the prism and
+     below the text (z 1), so it deepens the atmosphere without touching legibility. */
+  .hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 38%,transparent 52%,rgba(0,0,0,.28) 100%)}
+  @keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  /* the cascade — tick, eyebrow, headline, the two lines, the buttons, the free note.
+     40ms steps read as deliberate, not laggy; a long ease so nothing snaps into place. */
+  .hero .wrap>*{opacity:0;animation:riseIn .9s cubic-bezier(.16,1,.3,1) forwards}
+  .hero .hero-tick{animation-delay:.05s}
+  .hero .eye{animation-delay:.14s}
+  .hero h1{animation-delay:.24s}
+  .hero .sub{animation-delay:.40s}
+  .hero .hero-vs{animation-delay:.52s}
+  .hero .row{animation-delay:.62s}
+  .hero .hero-free{animation-delay:.72s}
+  /* reduced-motion (and the global animation:none kill-switch) would otherwise strand every
+     hero element at opacity:0 — the animation is what reveals them. Force them visible. */
+  @media(prefers-reduced-motion:reduce){.hero .wrap>*{opacity:1;transform:none;animation:none}.hero::after{display:none}}
   /* touch: the nav and the purchase CTAs need a real hit area (measured 16-34px at 320px) */
   @media(hover:none){
     .nav-login{padding:14px 4px}
