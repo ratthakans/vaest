@@ -7,7 +7,7 @@ document, in one voice. The north star is one phrase — *considered down to the
 Live at **vaest.orions.agency** · root `/` serves the app (`index.html`); marketing is `/home`.
 Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate with `node --check`)
 + `css/app.css` · Vercel serverless (`api/*`, ESM, region sin1) · Supabase (auth + Postgres REST + RLS)
-· Anthropic + OpenAI + Gemini SDKs behind white-label engines.
+· Anthropic SDK behind all three white-label engines (+ Gemini for the tiny `tag` topic label).
 
 ## The laws (broken these before — cost real rework)
 
