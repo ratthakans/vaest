@@ -33,9 +33,6 @@ export default async function handler(req, res) {
       };
     } catch (e) {}
   }
-  // internal glance: how many times this month Mimir(Sol) silently fell back to Odin(Opus)
-  const mimirFallback = internal && ud.solFbMonth === month ? (ud.solFb || 0) : 0;
-
   const p = access.plan;
   res.status(200).json({
     allowed: access.allowed,
@@ -49,15 +46,13 @@ export default async function handler(req, res) {
       name: p.name,
       refine: p.refine,               // false only on Basic
     } : null,
-    // Engine wiring — ORIONS team only, booleans, never a key value. Every engine falls back
-    // silently on a missing/bad key (Mimir→Odin, Galdr→Haiku), which is right for customers but
-    // means an unwired engine looks identical to a working one from the outside. This is the
-    // only way to tell "Ø Think runs on Mimir" from "Ø Think has been quietly running on Odin".
+    // Engine wiring — ORIONS team only, booleans, never a key value. Three engines now, all on
+    // Anthropic (Galdr = Sonnet, Odin = Opus, Norrsken = Fable) plus Gemini for the tiny `tag`
+    // label. odin true ⇒ the Anthropic key that powers all three is present; galdr's Gemini key
+    // only affects topic labels. The old cross-provider Mimir(OpenAI)→Odin fallback is gone.
     engines: internal ? {
-      odin: !!process.env.ANTHROPIC_API_KEY,
-      mimir: !!process.env.OPENAI_API_KEY,
-      galdr: !!process.env.GEMINI_API_KEY,
-      mimirFallback,   // Sol→Opus silent fallbacks this month; >0 with a key present = Sol is failing
+      odin: !!process.env.ANTHROPIC_API_KEY,   // powers Galdr · Odin · Norrsken (all Anthropic)
+      galdr: !!process.env.GEMINI_API_KEY,      // Gemini — the `tag` topic-label call only
       kv: kvConfigured(), // rate limits distributed (true) vs per-instance in-memory (false)
     } : undefined,
   });

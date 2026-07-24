@@ -440,27 +440,29 @@
   // (invite-request path retired — the gate is a plan picker now, self-serve only)
 
   /* ═══ usage analytics — cost per document ═══ */
-  const RATE_DEF={odin:2600,norrsken:600,idea:150,mimir:3100,skadi:400}; // THB per 1M (in+out combined) — estimate, editable
+  const RATE_DEF={odin:2600,norrsken:600,idea:400,skadi:400}; // THB per 1M (in+out combined) — estimate, editable
   // Law #1: the buckets used to be named after the models. Old workspaces still carry those
-  // keys in localStorage and in the synced blob, so read them once and forget them.
+  // keys in localStorage and in the synced blob, so read them once and forget them. `mimir`
+  // is retired too — Think folded into Galdr, so its tokens now count under `idea` (Sonnet).
   function migrateRateKeys(o){if(!o)return o;const r={...o};
     if(r.opus!=null&&r.odin==null)r.odin=r.opus;if(r.fable!=null&&r.norrsken==null)r.norrsken=r.fable;
-    delete r.opus;delete r.fable;return r}
+    delete r.opus;delete r.fable;delete r.mimir;return r}
   function migrateTokenKeys(){
     (sessions||[]).forEach(x=>{const t=x.tok;if(!t)return;
       if(t.opus!=null&&t.odin==null)t.odin=t.opus;if(t.fable!=null&&t.norrsken==null)t.norrsken=t.fable;
+      if(t.mimir!=null){t.idea=(t.idea||0)+t.mimir;delete t.mimir}
       delete t.opus;delete t.fable})}
   function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r)return {...RATE_DEF,...migrateRateKeys(r)}}catch(e){}return {...RATE_DEF}}
-  function saveRates(){const r={odin:+$('rateOdin').value||0,norrsken:+$('rateNorrsken').value||0,idea:+$('rateIdea').value||0,mimir:+$('rateMimir').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
-  function docCost(s,rt){const t=s.tok||{};return (t.odin||0)/1e6*rt.odin+(t.norrsken||0)/1e6*rt.norrsken+(t.idea||0)/1e6*(rt.idea||0)+(t.mimir||0)/1e6*(rt.mimir||0)+(t.skadi||0)/1e6*(rt.skadi||0)}
+  function saveRates(){const r={odin:+$('rateOdin').value||0,norrsken:+$('rateNorrsken').value||0,idea:+$('rateIdea').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
+  function docCost(s,rt){const t=s.tok||{};return (t.odin||0)/1e6*rt.odin+(t.norrsken||0)/1e6*rt.norrsken+(t.idea||0)/1e6*(rt.idea||0)+(t.skadi||0)/1e6*(rt.skadi||0)}
   const baht=n=>'฿'+(n>=1000?Math.round(n).toLocaleString():n.toFixed(n<10?2:1));
-  function openStats(){if(!(window.QUOTA&&window.QUOTA.internal))return;const rt=getRates();$('rateOdin').value=rt.odin;$('rateNorrsken').value=rt.norrsken;$('rateIdea').value=rt.idea||0;$('rateMimir').value=rt.mimir||0;$('statsView').classList.add('show');renderStats()}
+  function openStats(){if(!(window.QUOTA&&window.QUOTA.internal))return;const rt=getRates();$('rateOdin').value=rt.odin;$('rateNorrsken').value=rt.norrsken;$('rateIdea').value=rt.idea||0;$('statsView').classList.add('show');renderStats()}
   function closeStats(){$('statsView').classList.remove('show')}
   function renderStats(){
     const rt=getRates();
     const docs=sessions.filter(s=>(s.ops||0)>0);
-    let tOdin=0,tNorrsken=0,tIdea=0,tMimir=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOdin+=t.odin||0;tNorrsken+=t.norrsken||0;tIdea+=t.idea||0;tMimir+=t.mimir||0;cost+=docCost(s,rt)});
-    const tAll=tOdin+tNorrsken+tIdea+tMimir;
+    let tOdin=0,tNorrsken=0,tIdea=0,cost=0;docs.forEach(s=>{const t=s.tok||{};tOdin+=t.odin||0;tNorrsken+=t.norrsken||0;tIdea+=t.idea||0;cost+=docCost(s,rt)});
+    const tAll=tOdin+tNorrsken+tIdea;
     const nDoc=docs.length,avg=nDoc?cost/nDoc:0,avgTok=nDoc?tAll/nDoc:0;
     $('statsKpis').innerHTML=[
       ['Documents measured',nDoc],
@@ -475,7 +477,7 @@
     const top=[...docs].sort((a,b)=>docCost(b,rt)-docCost(a,rt)).slice(0,12);
     $('statsDocs').innerHTML= nDoc
       ?('<thead><tr><th>Document</th><th class="num">Runs</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead><tbody>'
-        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.odin||0)+(t.norrsken||0)+(t.idea||0)+(t.mimir||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
+        +top.map(s=>{const t=s.tok||{};return '<tr><td>'+esc((s.title||'—').slice(0,40))+'</td><td class="num">'+(s.ops||0)+'</td><td class="num">'+fmtTok((t.odin||0)+(t.norrsken||0)+(t.idea||0))+'</td><td class="num">'+baht(docCost(s,rt))+'</td></tr>'}).join('')+'</tbody>')
       :'<tbody><tr><td style="color:var(--mute);padding:16px 0">No data yet — start using Crystallize / Think / Refine and cost shows up here</td></tr></tbody>'}
 
   function stateBlob(){return {v:DB_V,projects,sessions,currentSid,usage,trash,profile,library}}
@@ -628,7 +630,7 @@
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':um[3]==='galdr'?'idea':um[3]==='mimir'?'mimir':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+      const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':(um[3]==='galdr'||um[3]==='sonnet')?'idea':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
@@ -1287,7 +1289,7 @@
       +'<button class="tm-pin" onclick="pinTasteMem(\''+m.id+'\')" title="'+(m.pinned?'Unpin':'Pin — weigh higher')+'">'+(m.pinned?'★':'☆')+'</button>'
       +'<span class="tm-t">'+esc(m.text)+'</span>'
       +'<button class="tm-x" onclick="removeTasteMem(\''+m.id+'\')" title="Remove">✕</button></div>').join('')}
-  // T2 — Mimir reads the learned approve/skip signals and proposes human-readable memories to keep
+  // T2 — Galdr reads the learned approve/skip signals and proposes human-readable memories to keep
   let _tmProps=[];
   async function distillTaste(){
     if(ANON){anonWall('Sign up to distill taste memories');return}
@@ -1323,7 +1325,7 @@
         +(ap.length?'\nAPPROVED: '+ap.join(' · '):'')+(rj.length?'\nPASSED ON: '+rj.join(' · '):''),1200))}
     return parts.join('\n\n')}
 
-  /* project brand-voice modal — paste a link / PDF / samples → Mimir distills a voice guide → confirm */
+  /* project brand-voice modal — paste a link / PDF / samples → Galdr distills a voice guide → confirm */
   let _voicePid=null,_voiceSrc=[];
   function openVoice(pid){const p=projects.find(x=>x.id===pid);if(!p)return;_voicePid=pid;_voiceSrc=[];
     $('voiceTitle').textContent='Brand voice — '+p.name;$('voiceText').value=p.voice||'';
@@ -1404,28 +1406,30 @@
   // white-label engines · role · version. Real model + wired status shown to internal only.
   // white-label engines · role · version. The underlying model/provider is NEVER shown —
   // to anyone, internal included. Engines are the product; the model behind them is ours.
+  // Three engines, three jobs. The concept line reads under the role — the old-north name,
+  // and the thing it actually does. Galdr now holds Think too (it is the mind you argue with,
+  // before and after the draft); Odin is still the only hand on the canvas.
   const ENGINES=[
-    {n:'Galdr',    role:'Idea — thinks out loud with you',                ver:'2.5', key:'galdr'},
-    {n:'Odin',     role:'Crystallize — writes every word on the canvas',  ver:'1.8', key:'odin'},
-    {n:'Mimir',    role:'Think — a second mind that pushes',              ver:'1.0', key:'mimir'},
-    {n:'Norrsken', role:'Refine + Present — the apex audit, and the deck', ver:'3.0', key:'norrsken'},
+    {n:'Galdr',    role:'Idea & Think',        concept:'the mind you think with — sparks the angle, then pushes the draft braver',     ver:'3.0', key:'galdr'},
+    {n:'Odin',     role:'Crystallize',         concept:'every word on the page — the one engine that writes the canvas',               ver:'2.0', key:'odin'},
+    {n:'Norrsken', role:'Refine & Present',    concept:'the last light before it ships — the bird’s-eye audit, and the deck',          ver:'3.2', key:'norrsken'},
   ];
   function renderAbout(){
     const el=$('engineList');if(!el)return;
     const q=window.QUOTA;const internal=!!(q&&q.internal);const en=(q&&q.engines)||null;
     $('abVer').textContent=VERSION;
     el.innerHTML=ENGINES.map(e=>{
-      // name · role · version — the same for everyone. Internal accounts get a live wired
-      // dot (status only, no model name) so the team can still tell an engine is keyed.
+      // name · role · concept · version — the same for everyone. Internal accounts get a live
+      // wired dot (status only, no model name) so the team can still tell an engine is keyed.
+      // All three run on the one Anthropic key now, so that is what the dot reflects.
       let dot='';
-      if(internal&&en){const wired=(e.key==='norrsken'?en.odin:en[e.key]); // Norrsken rides Odin's key
+      if(internal&&en){const wired=en.odin;
         dot='<span class="eg-dot'+(wired===false?' off':'')+'" title="'+(wired===false?'no key — falling back':'wired')+'"></span>';}
       return '<div class="eg-row"><div class="eg-l">'+dot+'<b>'+e.n+'</b></div>'
-        +'<div class="eg-sub">'+e.role+'</div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
+        +'<div class="eg-sub">'+e.role+' — <em>'+e.concept+'</em></div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
     // foot: build + (internal) engine-only diagnostics — no model/provider names anywhere
     const bits=['ORIONS.Agency'];
-    if(internal&&en){if(en.mimirFallback>0)bits.push('Mimir fell back ×'+en.mimirFallback+' this month');
-      bits.push('rate limit · '+(en.kv?'distributed':'in-memory'));}
+    if(internal&&en){bits.push('rate limit · '+(en.kv?'distributed':'in-memory'));}
     $('abFoot').innerHTML=bits.join(' · ')+' · <a href="/privacy" style="color:var(--dim)">Privacy</a> · <a href="/terms" style="color:var(--dim)">Terms</a>'}
   /* ═══ API keys — build VÆST into your own tools ═══ */
   async function renderApiKeys(){
@@ -1528,16 +1532,15 @@
       else{toast('Couldn’t delete — nothing was removed')}}
     catch(e){toast('Couldn’t delete, try again')}}
   function renderUsageBreak(){
-    const rt=getRates();let o=0,f=0,idea=0,mi=0;sessions.forEach(x=>{const t=x.tok||{};o+=(t.odin||0)+(t.skadi||0);f+=t.norrsken||0;idea+=t.idea||0;mi+=t.mimir||0});
+    const rt=getRates();let o=0,f=0,idea=0;sessions.forEach(x=>{const t=x.tok||{};o+=(t.odin||0)+(t.skadi||0);f+=t.norrsken||0;idea+=t.idea||0});
     const q=window.QUOTA;const qe=$('quotaRow2');
     if(qe){const h=quotaBarHTML(q);if(h){qe.style.display='';qe.innerHTML=h}else qe.style.display='none'}
-    // Norrsken rides the same Anthropic key as Odin. `false` here means the key is absent, so that
-    // engine has been silently falling back — the tokens above would be landing in another bucket.
+    // All three engines ride the one Anthropic key now (`odin`). `false` means the key is absent,
+    // so everything is silently falling back — the tokens above would be landing in another bucket.
+    // Think folded into Galdr, so its spend counts under `idea` (Sonnet).
     const en=(window.QUOTA&&window.QUOTA.engines)||null;
-    const mfb=(en&&en.mimirFallback)||0; // Sol→Opus silent fallbacks this month
-    let rows=[['ODIN · write',o,'odin'],['MIMIR · think',mi,'mimir'],['NORRSKEN · refine',f,'odin'],['Galdr · idea',idea,'galdr']]
+    let rows=[['ODIN · write',o,'odin'],['NORRSKEN · refine',f,'odin'],['Galdr · idea & think',idea,'odin']]
       .map(r=>'<div class="ub-row"><span>'+r[0]+(en&&en[r[2]]===false?' <em class="ub-off">no key — falling back</em>':'')
-        +(r[2]==='mimir'&&mfb>0?' <em class="ub-off">'+mfb+' fell back to Odin this month</em>':'')
         +'</span><b>'+fmtTok(r[1])+'</b></div>').join('');
     if(en&&typeof en.kv==='boolean') // rate limits: distributed (KV) vs per-instance
       rows+='<div class="ub-row"><span>Rate limit '+(en.kv?'':'<em class="ub-off">in-memory — connect KV</em>')+'</span><b>'+(en.kv?'distributed':'per-instance')+'</b></div>';
@@ -2079,7 +2082,7 @@
           +(m.approved?'<span class="id-approved">Approved ✓</span>':'')
           // on any earlier reply the keep-it action is Save, and it stays lit
           +(!isLastAI?'<button class="id-use" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
-          +'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Mimir)">Think</button>'
+          +'<button class="id-use ghost think" onclick="ideaThink('+i+')" title="Think — a sharper, braver push (Galdr)">Think</button>'
           +'<button class="id-use ghost" onclick="copyIdea('+i+')" title="Copy this reply">⧉</button>'
           +(isLastAI?'<button class="id-use ghost" onclick="addSpark('+i+')" title="Save this reply — pick it into any Crystallize">✚ Save</button>':'')
         +'</div>';
@@ -2098,7 +2101,7 @@
   function approveIdea(i){const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(!m||m.r==='user'||m.approved)return;
     m.approved=true;tasteLog('approved',{t:(m.c||'').slice(0,90)});s.updatedAt=Date.now();save();renderIdeas();
     toast('Approved — VÆST will lean this way')}
-  // Think on an Idea reply — Mimir pushes it sharper; each push is a one-tap follow-up.
+  // Think on an Idea reply — Galdr pushes it sharper; each push is a one-tap follow-up.
   // Ephemeral (lives in the DOM, cleared on the next render) — it provokes, it doesn't persist.
   async function ideaThink(i){
     if(_ideaBusy||_busy){toast('One moment…');return}
@@ -2107,14 +2110,14 @@
     const ex=row.nextElementSibling;if(ex&&ex.classList.contains('id-think')){ex.remove();return} // toggle off
     const btn=row.querySelector('.id-use.think');if(btn){btn.disabled=true;btn.classList.add('busy')}
     const box=document.createElement('div');box.className='id-think';
-    box.innerHTML='<div class="it-hd">Think · Mimir</div><div class="it-stream"><span class="cursor"></span></div>';
+    box.innerHTML='<div class="it-hd">Think · Galdr</div><div class="it-stream"><span class="cursor"></span></div>';
     row.after(box);const th=$('ideaThread');th.scrollTop=th.scrollHeight;
     const prompt='Idea under discussion:\n'+m.c;
     const r=raf(full=>{const el=box.querySelector('.it-stream');if(el)el.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
     try{
       const out=await streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r);r.stop();
       const pts=parsePoints(out);
-      box.innerHTML='<div class="it-hd">Think · Mimir</div>'
+      box.innerHTML='<div class="it-hd">Think · Galdr</div>'
         +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
           +'<div class="it-acts"><button class="it-save" onclick="saveProvocation(this)" title="Keep this — becomes a Crystallize source">✚</button>'
           +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div></div>').join('')
@@ -2683,7 +2686,7 @@
         +'<button class="tb" onclick="backToBrief()">← Back to brief</button></div><div style="margin-top:10px;font-size:12px;color:var(--mute)">Your brief and files are intact.</div>';
     }finally{setBusy(false);go.disabled=false;go.innerHTML='Crystallize <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'}}
 
-  /* ═══ SECTION IDEA (Odin writes) + THINK (Mimir proposes, Odin applies) — per section ═══ */
+  /* ═══ SECTION IDEA (Odin writes) + THINK (Galdr proposes, Odin applies) — per section ═══ */
   function sectionIdea(btn){
     const sec=btn.closest('.sec');const ex=sec.querySelector('.sec-idea');
     if(ex){ex.remove();return}
@@ -2716,7 +2719,7 @@
     const first=btns[0].closest('.sec');
     if(first){const cv=$('cvView');smoothTo(cv,cv.scrollTop+first.getBoundingClientRect().top-cv.getBoundingClientRect().top-80)}
     toast('Think lives in each section now — pick the one to push')}
-  /* Think per section — Mimir proposes pushes for this one section; nothing changes until
+  /* Think per section — Galdr proposes pushes for this one section; nothing changes until
      the user approves a point, and then Odin rewrites only this section. Propose and write
      stay separate models on purpose: the critique comes from outside the document's voice. */
   function sectionThink(btn){
@@ -3210,7 +3213,7 @@
         toast('Your trial chat is saved to your account')}catch(e){}}}
     sweepCommentCounts()}
   /* onboarding — sample work for new accounts */
-  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Think** — Mimir, a second mind, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left) and pick a mode up top: **Idea** to think out loud, **Brief** to get a brief airtight, or **Crystallize** to turn notes and files into a document like this one.';
+  const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Think** — Galdr, a mind apart from the one that wrote it, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left) and pick a mode up top: **Idea** to think out loud, **Brief** to get a brief airtight, or **Crystallize** to turn notes and files into a document like this one.';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:'',mode:'crystallize'};sessions=[s];currentSid=s.id;save()}
 
   /* share view — read-only */

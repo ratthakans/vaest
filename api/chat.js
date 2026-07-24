@@ -1,10 +1,9 @@
 import { capFor, readUsageData, writeUsageRow, updateUsage, verifyUser, checkDocQuota, applyDocBump, checkRefineQuota, applyRefineBump, costTHB, applySpend, spendThisMonth, spendCapFor } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
-import { streamOpenAI } from '../lib/openai.js';
 
-// Lazy-load the Anthropic SDK — the Idea chat (Galdr = Gemini) never needs it, so a cold
-// start on that hot path doesn't pay to import/parse the SDK. ANTHROPIC_API_KEY from env.
+// Lazy-load the Anthropic SDK — the only path that never needs it is the tiny `tag` label call
+// (Gemini), so importing it lazily keeps that one hot path cheap. ANTHROPIC_API_KEY from env.
 let _anthropic = null;
 // exported so api/v1/*.js (the public API surface) can reuse the same client/prompts
 // instead of re-declaring them — one source of truth for the engine text.
@@ -13,14 +12,15 @@ export async function getAnthropic() {
   return _anthropic;
 }
 
-// VÆST — four engines. Galdr (Idea/Brief interview) = Gemini Flash · Odin (every word that
-// lands: Crystallize/Brief compile/edits/Present) = Opus 5 · Mimir (Ø Think) = GPT-5.6 Sol
-// · Norrsken (Refine) = Fable 5
+// VÆST — THREE engines. Galdr (the mind you think with: Idea sandbox + Think pushes + taste/voice
+// distillation) = Sonnet 5 · Odin (every word that lands on the canvas: Crystallize/Brief compile/edits) =
+// Opus 5 · Norrsken (the last light: Refine + Present) = Fable 5.
 //
-// Critic vs writer: Mimir and Norrsken only ever *propose* (Think pushes / Refine points) — they never
-// write into the canvas. Every mode that puts words in the document (summing, apply, improve, edit) stays
-// on Odin, so one document keeps one voice. Mimir is deliberately a different model family from Odin:
-// the point of Ø Think is a second opinion the author wouldn't have reached on its own.
+// Critic vs writer holds: Galdr and Norrsken only ever *propose* (Idea/Think pushes, Refine points) —
+// they never write into the canvas; every mode that puts words in the document stays on Odin, so one
+// document keeps one voice. Think used to run on a different family (GPT) for maximum independence; it
+// now runs on Sonnet — a genuinely different model from Odin's Opus, one provider, Thai-fluent, cheaper,
+// and with no silent cross-provider fallback to hide a dying key.
 const GEMINI_MODEL = 'gemini-flash-latest';
 export const ROUTE = {
   // One engine for every Idea chat, paid or not — see the note at the free-tier allowance.
@@ -36,10 +36,10 @@ export const ROUTE = {
   edit:      { model: 'claude-opus-5' },
   apply:     { model: 'claude-opus-5' },
   recast:    { model: 'claude-opus-5' },                                        // rewrite the whole doc into a different register/length (Odin — same voice, new shape)
-  think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5' },
-  sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 2048 },
-  distill:      { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
-  voice:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 900 },   // read a brand's own writing (samples/site/PDF) → distill a reusable voice guide
+  think:        { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001' },
+  sectionthink: { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: 2048 },
+  distill:      { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
+  voice:        { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: 900 },   // read a brand's own writing (samples/site/PDF) → distill a reusable voice guide
   mastering: { model: 'claude-fable-5', fallback: 'claude-opus-5' },
   present:   { model: 'claude-fable-5', fallback: 'claude-opus-5', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
 };
@@ -467,7 +467,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   // engine names only — provider/model ids never reach the client
-  const ENGINE = { idea: 'GALDR', tag: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN', think: 'MIMIR', sectionthink: 'MIMIR', distill: 'MIMIR', voice: 'MIMIR' };
+  const ENGINE = { idea: 'GALDR', tag: 'GALDR', think: 'GALDR', sectionthink: 'GALDR', distill: 'GALDR', voice: 'GALDR', briefchat: 'ODIN', briefdoc: 'ODIN', recast: 'ODIN', mastering: 'NORRSKEN', present: 'NORRSKEN' };
   res.setHeader('X-Engine', ENGINE[mode] || 'ODIN');
   if (typeof res.flushHeaders === 'function') res.flushHeaders();
 
@@ -477,17 +477,6 @@ export default async function handler(req, res) {
       // Idea sandbox → Gemini Flash, but never let a Gemini hiccup break the flow: fall back to Haiku
       try { usage = await streamGemini(res, base, system || '', messages, maxTok); }
       catch (ge) { usage = await streamAnthropic(res, route.fallback, base, system || '', messages, 2048); usage.model = route.fallback; }
-    } else if (route.openai) {
-      // Ø Think → Mimir. Any OpenAI problem (no key, outage, rate limit) falls back to Odin so the
-      // feature never hard-fails — but only if nothing streamed yet, so we never double up text.
-      try {
-        usage = await streamOpenAI(res, route.openai, base, system || '', messages, maxTok);
-      } catch (oe) {
-        if (res.__wrote || !route.fallback) throw oe;
-        console.error('mimir failed, falling back to odin:', oe?.message || oe);
-        usage = await streamAnthropic(res, route.fallback, base, system || '', messages, maxTok);
-        usage.model = route.fallback;
-      }
     } else {
       // Specialty models (NORRSKEN·Fable, Present·Sonnet) fall back to Opus if the model
       // is ever unavailable — but only if nothing has streamed yet, so we never double up text.
@@ -501,10 +490,10 @@ export default async function handler(req, res) {
       }
     }
     const { inTok, outTok } = usage;
-    // cost bucket only (galdr/mimir/norrsken/odin) — never the underlying model id.
-    // Keyed off the model that actually ran, so a Mimir→Odin fallback is billed as Odin.
+    // cost bucket only (galdr/sonnet/norrsken/odin) — never the underlying model id.
+    // Keyed off the model that actually ran, so any fallback is billed as what really served it.
     const mid = String(usage.model || route.model || '');
-    const bucket = /fable/.test(mid) ? 'norrsken' : /^gpt/.test(mid) ? 'mimir'
+    const bucket = /fable/.test(mid) ? 'norrsken'
       : /sonnet/.test(mid) ? 'sonnet' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
     // Send the per-document cost and close the response FIRST, so the metering read-modify-write
     // below no longer adds its round-trips to the tail the user is waiting on. It still runs
@@ -520,12 +509,6 @@ export default async function handler(req, res) {
       await updateUsage(user.email, (d0) => {
         let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
         nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
-        // Mimir (Sol) silently fell back to Odin (Opus) → the "second opinion" was actually the
-        // writer reviewing itself. Tally it monthly so an internal glance shows whether Sol is dying.
-        if (route.openai && /opus/.test(mid)) {
-          const prev = d0.solFbMonth === u.month ? (d0.solFb || 0) : 0;
-          nextData = { ...nextData, solFbMonth: u.month, solFb: prev + 1 };
-        }
         if (countsDoc) nextData = applyDocBump(nextData, plan.docs); // only paid accounts reach a document
         if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
         return nextData;

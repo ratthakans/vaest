@@ -12,11 +12,13 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
 ## The laws (broken these before — cost real rework)
 
 1. **Never leak a model / provider id — to anyone, internal included.** The engines are the
-   product: **Galdr** (Idea), **Odin** (Crystallize · writes every word on the canvas),
-   **Mimir** (Think · second opinion), **Norrsken** (Refine + Present). Show engine name +
-   role + version only. The model behind them is ours. (See `renderAbout`, `ENGINES`.)
+   product — **three** now, all on Anthropic: **Galdr** (the mind you think with · Idea sandbox +
+   Think pushes + taste/voice distillation), **Odin** (every word on the page · Crystallize, the
+   only engine that writes the canvas), **Norrsken** (the last light before it ships · Refine +
+   Present). Show engine name + role + version only. The model behind them is ours.
+   (See `renderAbout`, `ENGINES`.)
 
-2. **Critic ≠ writer.** Mimir and Norrsken only ever *propose*; **Odin writes every word that
+2. **Critic ≠ writer.** Galdr and Norrsken only ever *propose*; **Odin writes every word that
    lands on the canvas.** That separation is why one document keeps one voice and why the
    critique is honest. Never let a critic engine write to the canvas.
 
@@ -36,7 +38,7 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
    spend where the user can see it (paid Idea, Brief interview, deck), never on invisible plumbing.
 
 6. **Ship + verify on production, in a browser.** Workflow every change: `node --check js/app.js`
-   → `npm test` (unit + openai + server billing/margin math + `tests/ssrf.mjs` + `tests/audit.mjs`,
+   → `npm test` (unit + server billing/margin math + `tests/ssrf.mjs` + `tests/audit.mjs`,
    which must print `AUDIT CLEAN` — it enforces law #1 and #4 mechanically) → **for anything that
    takes untrusted input or touches money, a deliberate adversarial review before shipping** (a
    guard that merely exists is not a guard: /api/extract shipped "SSRF-guarded" and was fully
@@ -59,10 +61,13 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
 
 ## Gotchas
 
-- GPT-5.x reject `max_tokens` and non-default `temperature` → use `max_completion_tokens`, send
-  neither (`lib/openai.js`).
-- Every engine falls back **silently** (Mimir→Odin, Galdr→Haiku). Internal `/api/access` exposes
-  wired booleans + a monthly fallback count so a dying engine shows itself.
+- Three engines, one provider (Anthropic): Galdr = Sonnet 5, Odin = Opus 5, Norrsken = Fable 5.
+  Opus 5 **thinks by default** — `thinking:{type:'disabled'}` is set on every call (`streamAnthropic`
+  in `api/chat.js`, `callAnthropic` in `lib/apiengine.js`) to keep the old token/latency profile.
+  OpenAI/Mimir is fully retired (was GPT-5.6 Sol · the second opinion is now Galdr on Sonnet, a
+  genuinely different mind from Odin on Opus).
+- Each engine still falls back **silently** to a cheaper Anthropic model (Galdr→Haiku, and specialty
+  models→workhorse). Internal `/api/access` exposes wired booleans so a dying key shows itself.
 - Env-var changes need a redeploy to take effect. Static-asset cache is `max-age=0,
   must-revalidate` (a normal reload gets new CSS/JS — no service worker).
 - Memory files under the session memory dir hold longer context: `vaest-engines`, `vaest-billing`.
