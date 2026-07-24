@@ -14,7 +14,7 @@ export async function getAnthropic() {
 }
 
 // VÆST — four engines. Galdr (Idea/Brief interview) = Gemini Flash · Odin (every word that
-// lands: Crystallize/Brief compile/edits/Present) = Opus 4.8 · Mimir (Ø Think) = GPT-5.6 Sol
+// lands: Crystallize/Brief compile/edits/Present) = Opus 5 · Mimir (Ø Think) = GPT-5.6 Sol
 // · Norrsken (Refine) = Fable 5
 //
 // Critic vs writer: Mimir and Norrsken only ever *propose* (Think pushes / Refine points) — they never
@@ -27,21 +27,21 @@ export const ROUTE = {
   // Two cheaper engines were tried on the free path and both wrote Thai a studio could not
   // show a client, so the trial either runs on the real thing or misrepresents what it sells.
   idea:      { model: 'claude-sonnet-5', fallback: 'claude-haiku-4-5-20251001', max: 4096 },
-  briefchat: { model: 'claude-opus-4-8', fallback: 'claude-haiku-4-5-20251001', max: 1536 }, // the interview — same brain that compiles the brief asks the questions
-  briefdoc:  { model: 'claude-opus-4-8' },                                        // compile the gathered answers into a brief
-  briefalign:{ model: 'claude-opus-4-8' },                                        // reshape the brief to match a reference the user provides
+  briefchat: { model: 'claude-opus-5', fallback: 'claude-haiku-4-5-20251001', max: 1536 }, // the interview — same brain that compiles the brief asks the questions
+  briefdoc:  { model: 'claude-opus-5' },                                        // compile the gathered answers into a brief
+  briefalign:{ model: 'claude-opus-5' },                                        // reshape the brief to match a reference the user provides
   tag:       { gemini: true, fallback: 'claude-haiku-4-5-20251001', max: 16 },
-  summing:   { model: 'claude-opus-4-8' },
-  improve:   { model: 'claude-opus-4-8' },
-  edit:      { model: 'claude-opus-4-8' },
-  apply:     { model: 'claude-opus-4-8' },
-  recast:    { model: 'claude-opus-4-8' },                                        // rewrite the whole doc into a different register/length (Odin — same voice, new shape)
-  think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8' },
-  sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 2048 },
-  distill:      { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
-  voice:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-4-8', max: 900 },   // read a brand's own writing (samples/site/PDF) → distill a reusable voice guide
-  mastering: { model: 'claude-fable-5', fallback: 'claude-opus-4-8' },
-  present:   { model: 'claude-fable-5', fallback: 'claude-opus-4-8', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
+  summing:   { model: 'claude-opus-5' },
+  improve:   { model: 'claude-opus-5' },
+  edit:      { model: 'claude-opus-5' },
+  apply:     { model: 'claude-opus-5' },
+  recast:    { model: 'claude-opus-5' },                                        // rewrite the whole doc into a different register/length (Odin — same voice, new shape)
+  think:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5' },
+  sectionthink: { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 2048 },
+  distill:      { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 700 },   // read the studio's approve/skip decisions → propose human-readable taste rules
+  voice:        { openai: 'gpt-5.6-sol', fallback: 'claude-opus-5', max: 900 },   // read a brand's own writing (samples/site/PDF) → distill a reusable voice guide
+  mastering: { model: 'claude-fable-5', fallback: 'claude-opus-5' },
+  present:   { model: 'claude-fable-5', fallback: 'claude-opus-5', max: 8192 }, // Norrsken lands the FINAL FORMS — the audit and the deck. A deck is judgment (what to cut), not canvas voice, and nothing downstream audits it — so the critic/writer law holds: Fable still never writes ON the canvas.
 };
 
 // ── Persona ~30% ORIONS ──
@@ -271,7 +271,13 @@ function cacheLastTurn(messages) {
 }
 
 async function streamAnthropic(res, model, base, dynamic, messages, maxTokens) {
-  const params = { model, max_tokens: maxTokens, messages: cacheLastTurn(messages) };
+  // thinking:disabled — Opus 5 thinks by default (Opus 4.8 did not). Left on, every Odin call
+  // would spend thinking tokens (billed as output, metered against the spend cap the whole
+  // margin system is tuned to) and could truncate the tight-budget fallbacks (voice 900,
+  // distill 700) mid-sentence. Disabled keeps this a true drop-in from 4.8; Opus 5 accepts it
+  // at the default effort (high). Odin writes the canvas — quality-first thinking is a later
+  // call to make deliberately, with the cost re-modelled, not a silent side effect of the swap.
+  const params = { model, max_tokens: maxTokens, messages: cacheLastTurn(messages), thinking: { type: 'disabled' } };
   // system as blocks: the static persona/task prefix is cache-marked (free hits within the 5-min window);
   // the dynamic part (tone / project voice) rides in a second block
   const system = [{ type: 'text', text: base, cache_control: { type: 'ephemeral' } }];

@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const out = await runApiEngine(req, res, {
     taskKey: 'present',
     model: 'claude-fable-5',
-    fallback: 'claude-opus-4-8',
+    fallback: 'claude-opus-5',
     maxTokens: 8192,
     buildContent: (b) => (b.document || '').trim() || null,
   });
