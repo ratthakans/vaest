@@ -352,9 +352,10 @@
   .rp-go:hover{background:rgba(255,255,255,.12);color:#fff}
   .rp-attach{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--dim);padding:7px 11px;border-radius:var(--r-md);border:1px solid var(--line);transition:.14s}
   .rp-attach:hover{color:var(--ink);border-color:var(--line2)}
-  /* line-height 1.45: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
-  /* gentle tracking only — Thai loops (Looped face) get cramped under tight negative tracking */
-  .sec-h{font-family:var(--ui);font-size:20px;font-weight:600;letter-spacing:-.011em;line-height:1.45;margin:14px 0 18px;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;transition:background .14s}
+  /* line-height 1.4: Thai stacks vowels above and tone marks above those — 1.32 clipped them */
+  /* gentle tracking only — a serif at display size doesn't want the tight negative tracking a
+     sans can carry, and Thai's loops get cramped under it too */
+  .sec-h{font-family:var(--body);font-size:22px;font-weight:500;color:var(--ink);letter-spacing:-.004em;line-height:1.4;margin:16px 0 18px;outline:none;border-radius:var(--r-xs);padding:2px 5px;margin-left:-5px;transition:background .14s}
   .sec-h:hover,.sec-h:focus{background:var(--soft)}
   /* document body — comfortable serif */
   /* #d8d5ce on --paper is 12.9:1 — still far past WCAG AAA, but off the 16:1 of near-white on
@@ -365,9 +366,9 @@
   .sec-c p{margin:0 0 22px;text-wrap:pretty}.sec-c p:last-child{margin-bottom:4px}
   .sec-c strong{font-weight:600;color:var(--ink)}
   .sec-c em{font-style:italic}
-  /* sub-heading inside a section — sans + 650 + brighter carries the hierarchy, so it only needs
-     to match the body size, not beat it. At 15px against a 19px body it read as small print. */
-  .sec-c .ph{font-family:var(--ui);font-weight:600;color:var(--ink);font-size:15px;line-height:1.55;letter-spacing:0;margin:30px 0 12px}
+  /* sub-heading inside a section — serif now, like everything VÆST writes (law #4). Size and
+     brightness carry the step down from .sec-h; weight can't, since only 400/500 are loaded. */
+  .sec-c .ph{font-family:var(--body);font-weight:500;color:var(--ink);font-size:17.5px;line-height:1.5;letter-spacing:-.002em;margin:30px 0 12px}
   .sec-c ul{margin:13px 0 20px;padding-left:26px}
   .sec-c ul li{margin:10px 0;padding-left:6px}
   .sec-c ul{list-style:none;padding-left:22px}
@@ -420,7 +421,7 @@
   @keyframes genrun{from{background-position:-40% 0}to{background-position:140% 0}}
   .genning .gen-body,.genning #genBody{position:relative}
   .gen-body .cursor,#genBody .cursor{box-shadow:0 0 10px 1px rgba(79,195,255,.7)}
-  .gen-body .ph{font-family:var(--ui);font-weight:700}
+  .gen-body .ph{font-family:var(--body);font-weight:500;color:var(--ink)}
   .cursor{display:inline-block;width:2px;height:1.05em;border-radius:2px;background:var(--cinnabar);margin-left:2px;vertical-align:text-bottom;animation:curfade 1.1s var(--ease) infinite}
   @keyframes curfade{0%,100%{opacity:1}50%{opacity:.28}}
   /* time-to-first-token status — a quiet rotating line, gone the instant text lands */

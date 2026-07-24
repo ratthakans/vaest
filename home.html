@@ -735,8 +735,20 @@
     $('sc'+n).classList.add('on')}
   function wait(ms){return new Promise(r=>setTimeout(r,ms))}
   async function typeText(el,t,sp){for(let i=0;i<=t.length;i++){el.textContent=t.slice(0,i);await wait(sp+Math.random()*26)}}
+  // The demo used to loop unconditionally, so it kept typing while scrolled far past it or on a
+  // background tab — burning CPU and battery to animate something nobody was looking at, and
+  // competing with scroll on the longest page of the site. Each cycle now parks until the stage
+  // is actually on screen AND the tab is visible; parked, it costs one cheap poll.
+  let _onScreen=true;
+  const _stage=document.querySelector('.demo-wrap');
+  if(_stage&&'IntersectionObserver'in window)
+    new IntersectionObserver(es=>{_onScreen=es[0].isIntersecting},{threshold:.08}).observe(_stage);
+  const watching=()=>document.visibilityState==='visible'&&_onScreen;
+  function awake(){return watching()?Promise.resolve()
+    :new Promise(r=>{const t=setInterval(()=>{if(watching()){clearInterval(t);r()}},450)})}
   async function runDemo(){
     for(;;){
+      await awake();
       $('typed').textContent='';await showScene(1);
       ['ch1','ch2','ch3'].forEach(c=>$(c).classList.remove('on'));
       document.querySelectorAll('#sc2 .ln').forEach(l=>l.classList.remove('on'));
