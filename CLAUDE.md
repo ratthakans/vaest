@@ -68,6 +68,17 @@ Stack: static `index.html` + plain-script `js/app.js` (NOT a module — validate
   genuinely different mind from Odin on Opus).
 - Each engine still falls back **silently** to a cheaper Anthropic model (Galdr→Haiku, and specialty
   models→workhorse). Internal `/api/access` exposes wired booleans so a dying key shows itself.
+- **Type traps that already cost a rewrite.** (a) Google Fonts ships only the weights you ask
+  for — `Inter:wght@400;500;600;700` + `font-weight:650` **snaps up to 700**, so the whole site
+  rendered fully bold while the CSS claimed 650. Use a weight you actually loaded. (b) Newsreader
+  is requested per-page; 5 pages once loaded the *italic* axis only (`1,6..72,500`) and so silently
+  fell back to Inter for all display type. (c) `index.html` loads Newsreader **400/500 only** while
+  Noto Serif Thai has 400–700 — a serif heading at 600 renders 500 in Latin and 600 in Thai, i.e.
+  two weights inside one Thai heading. Display type is serif 500; hierarchy comes from size,
+  space and colour, never weight.
+- The **exported** document builds its own inline stylesheet in `js/app.js` (~line 3010) — it does
+  NOT inherit `css/app.css`. Any canvas type change must be mirrored there or the file the client
+  receives stops matching the screen.
 - Env-var changes need a redeploy to take effect. Static-asset cache is `max-age=0,
   must-revalidate` (a normal reload gets new CSS/JS — no service worker).
 - Memory files under the session memory dir hold longer context: `vaest-engines`, `vaest-billing`.
