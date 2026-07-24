@@ -170,7 +170,7 @@
   /* ── spec strip ── */
   .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;padding:64px 0;border-bottom:1px solid var(--line)}
   @media(max-width:720px){.specs{grid-template-columns:1fr 1fr;gap:44px 28px}}
-  .spec .n{font-weight:650;font-size:clamp(38px,4.6vw,56px);line-height:1;letter-spacing:-.04em}
+  .spec .n{font-family:var(--serif);font-weight:500;font-size:clamp(34px,4vw,48px);line-height:1.05;letter-spacing:-.018em}
   .spec .n .u{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:14px}
 
@@ -179,7 +179,7 @@
   @media(max-width:640px){.sec-pad{padding-top:104px;padding-bottom:104px}}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:30px;display:flex;align-items:center;gap:13px}
   .lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
-  h2{font-weight:650;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
+  h2{font-weight:600;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
   .lead{font-family:var(--th);font-size:clamp(15px,1.55vw,18.5px);line-height:1.8;color:var(--dim);max-width:58ch;margin-top:26px}
   .lead b{color:var(--ink);font-weight:600}
   section{border-bottom:1px solid var(--line)}
@@ -230,7 +230,7 @@
   @media(max-width:440px){.rail{grid-template-columns:1fr}}
   .step{padding-top:24px;border-top:1px solid var(--line2)}
   .step .si{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .step .st{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
+  .step .st{font-family:var(--th);font-weight:600;font-size:16.5px;margin-top:14px;color:var(--ink)}
   .step .sd{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
   /* taste demo + client loop */
@@ -244,7 +244,7 @@
   @media(max-width:760px){.loop{grid-template-columns:1fr;gap:44px}}
   .lp{padding-top:24px;border-top:1px solid var(--line2)}
   .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:100% 100%}
-  .lp-t{font-family:var(--th);font-weight:650;font-size:16.5px;margin-top:14px;color:var(--ink)}
+  .lp-t{font-family:var(--th);font-weight:600;font-size:16.5px;margin-top:14px;color:var(--ink)}
   .lp-d{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
   /* ── before / after ── */
@@ -263,7 +263,7 @@
   @media(max-width:900px){.eng{grid-template-columns:1fr;gap:36px}}
   .e-card{padding-top:26px;border-top:1px solid var(--line2)}
   .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .e-card h3{font-family:var(--th);font-weight:700;font-size:24px;margin:18px 0 14px;letter-spacing:-.01em;color:var(--ink)}
+  .e-card h3{font-family:var(--th);font-weight:600;font-size:21px;margin:18px 0 13px;letter-spacing:-.006em;color:var(--ink)}
   .e-card p{font-family:var(--th);font-size:14px;line-height:1.85;color:var(--dim)}
   .e-card .tag{display:inline-block;margin-top:22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
 
@@ -442,7 +442,7 @@
     <div class="e-card">
       <div class="em">Critic ≠ Writer</div>
       <h3 class="th">A real second opinion</h3>
-      <p class="th">The mind that pushes your work is a different model from the one that writes it. You approve; it rewrites. That separation is why the critique is honest — not the same brain nodding at itself.</p>
+      <p class="th">The engine that pushes your work is not the one that writes it — and it is never allowed to write. You approve; Odin rewrites. That separation is why the critique is honest, instead of the same mind nodding at itself.</p>
     </div>
     <div class="e-card">
       <div class="em">One voice</div>

@@ -19,7 +19,7 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/nav.css">
 <link rel="stylesheet" href="/css/site.css">
 <style>
@@ -66,6 +66,24 @@
   .engines a.apex::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--chroma);background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
   .engines .apx{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;margin-top:11px;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
   .model .ph .apex-tag{color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite;font-weight:600}
+
+  /* side-by-side spec sheet — same hairline language as .engines above, no card chrome */
+  .trio{margin-top:52px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0a0a0c}
+  .trio-scroll{overflow-x:auto}
+  .trio-t{min-width:720px;width:100%;border-collapse:collapse}
+  .trio-t th,.trio-t td{padding:17px 22px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+  .trio-t th+th,.trio-t td+td,.trio-t td{border-left:1px solid var(--line)}
+  .trio-t thead th{border-top:none;padding:28px 22px 22px}
+  .trio-t tbody tr:hover{background:rgba(255,255,255,.018)}
+  /* scoped to the table: an unscoped .rl would leak uppercase + width into .engines .rl above,
+     which only declares family/size/colour and so wouldn't override them */
+  .trio-t .rl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);font-weight:400;width:20%}
+  .trio-nm{font-family:var(--mono);font-size:13px;letter-spacing:.2em;font-weight:600;color:var(--ink)}
+  .trio-kn{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--dim);margin-top:8px;line-height:1.5;font-weight:400}
+  .trio-t td{font-family:var(--th);font-size:14px;line-height:1.65;color:var(--dim);font-weight:400}
+  .trio-w{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .trio-no{color:var(--mute)}
+  .trio-yes{font-weight:600;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
 </style>
 </head>
 <body data-page="product">
@@ -182,6 +200,65 @@
   </div>
 </section>
 
+<!-- Side by side — a spec sheet for the three, not a feature grid. The row that carries the
+     argument is "Writes the canvas": two Nevers and one Every word. -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">Side by side</div>
+  <h2>What actually separates them</h2>
+  <p class="lead th">Same studio, three different jobs. Read the third row first — only one of these engines is allowed to touch the page.</p>
+  <div class="trio reveal"><div class="trio-scroll">
+    <table class="trio-t">
+      <thead>
+        <tr>
+          <th class="rl"></th>
+          <th><div class="trio-nm">GALDR</div><div class="trio-kn">the mind you think with</div></th>
+          <th><div class="trio-nm">ODIN</div><div class="trio-kn">every word on the page</div></th>
+          <th><div class="trio-nm">NORRSKEN</div><div class="trio-kn">the last light before it ships</div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th class="rl">Its job</th>
+          <td>Idea &amp; Think</td>
+          <td>Crystallize</td>
+          <td>Refine &amp; Present</td>
+        </tr>
+        <tr>
+          <th class="rl">When it speaks</th>
+          <td>Before there is a draft — and again on the finished one</td>
+          <td>The moment the inputs are ready</td>
+          <td>Last, when the work is about to leave the studio</td>
+        </tr>
+        <tr>
+          <th class="rl">Writes the canvas</th>
+          <td><span class="trio-w trio-no">Never</span></td>
+          <td><span class="trio-w trio-yes">Every word</span></td>
+          <td><span class="trio-w trio-no">Never</span></td>
+        </tr>
+        <tr>
+          <th class="rl">What it reads</th>
+          <td>One thread, or one section at a time</td>
+          <td>Everything at once — chats, brief, files, notes</td>
+          <td>The whole document, from above</td>
+        </tr>
+        <tr>
+          <th class="rl">Best at</th>
+          <td>Provocation — the missing hook, the safe choice worth bending</td>
+          <td>Synthesis — a mountain of input, one voice</td>
+          <td>Catching what line-by-line reading never catches</td>
+        </tr>
+        <tr>
+          <th class="rl">Left alone, it would give you</th>
+          <td>Sharp notes nobody applied</td>
+          <td>A confident draft nobody challenged</td>
+          <td>A flawless audit of the wrong document</td>
+        </tr>
+      </tbody>
+    </table>
+  </div></div>
+  <p class="lead th" style="margin-top:28px">Which is the argument for keeping them apart: <b>the engine that judges the work is not allowed to write it</b>. A critic that can quietly rewrite whatever it disliked isn't a critic — it's the same mind nodding at itself.</p>
+</div></section>
+
 <!-- The instrument -->
 <section><div class="wrap sec-pad">
   <div class="lbl">The instrument &amp; the through-line</div>
@@ -195,12 +272,13 @@
 <!-- vs the usual — quiet, four lines, no feature grid -->
 <section><div class="wrap sec-pad">
   <div class="lbl">Where VÆST sits</div>
-  <h2>Not another chatbot, notebook or deck maker</h2>
+  <h2>Everyone else hands you one mind wearing every hat</h2>
+  <p class="lead th">Ask a single assistant to spark the idea, write the draft, critique it and polish it, and it will do all four — in one voice, agreeing with itself at every step. It cannot give you a second opinion, because there is no second mind in the room. VÆST splits the work across three engines and puts a hard rule between them: <b>only one of them is allowed to write.</b></p>
   <div class="grid c2" style="margin-top:32px">
-    <div class="card"><div class="k">vs ChatGPT / Claude</div><p>They give you an answer in a chat. VÆST gives you an editable document — one voice, a second opinion, a client link — the deliverable, not the conversation.</p></div>
-    <div class="card"><div class="k">vs NotebookLM</div><p>A place to <em>research</em> your sources. VÆST is where the work <em>ships</em>: taste, a shareable canvas, a deck — none of which a notebook can hand a client.</p></div>
-    <div class="card"><div class="k">vs Gamma</div><p>Best-in-class decks. For VÆST a deck is the <em>closing move</em> after the thinking is done — not the starting point.</p></div>
-    <div class="card"><div class="k">vs Jasper / Writer</div><p>Marketing copy at volume. VÆST is built for one considered document a creative studio can put its name on.</p></div>
+    <div class="card"><div class="k">vs ChatGPT / Claude</div><p>One brilliant generalist in a chat window. Ask it to critique its own draft and it is grading its own homework — politely. VÆST answers with a document, and with a critique from an engine that didn't write it.</p></div>
+    <div class="card"><div class="k">vs NotebookLM</div><p>A place to <em>research</em> your sources — it summarizes what you fed it, faithfully. VÆST is where the work <em>ships</em>: it takes a position, holds a house voice, and hands over a client link and a deck. A notebook never argues back.</p></div>
+    <div class="card"><div class="k">vs Gamma</div><p>Best-in-class decks, fast. But a deck is a <em>format</em>. Here it's the closing move — Norrsken only builds one once the thinking has survived a real audit. Beautiful slides can't rescue an unexamined idea.</p></div>
+    <div class="card"><div class="k">vs Jasper / Writer</div><p>Marketing copy at volume, against brand guidelines you upload. VÆST is built for the opposite shape of problem: one considered document, in a voice it learns from every approve and skip you make.</p></div>
   </div>
 </div></section>
 
