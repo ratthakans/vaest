@@ -1869,7 +1869,7 @@
     try{
       const rev=mdReveal($('genBody'),{scroll:()=>softScroll($('cvView'))});
       const md=await streamAPI('briefdoc',[{role:'user',content:msgContent(prompt,imgs)}],toneSys()+projectContext(s),rev.on);await rev.done(md);
-      setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();showCanvas();
+      setCanvasMd(s,md);s.mode='brief';s.updatedAt=Date.now();save();renderRail();_freshDoc=true;showCanvas(); // cascade — brief settles into shape
       toast('Brief compiled — edit any section, then Export PDF');
     }catch(e){showHome();toast('Compile failed: '+e.message)}
     finally{setBusy(false)}}
@@ -2304,7 +2304,9 @@
     catch(e){toast('Couldn’t revoke, try again')}}
 
   /* ═══ doc render / serialize ═══ */
+  let _freshDoc=false; // set by Crystallize/Brief-compile so renderDoc staggers the sections once
   function renderDoc(md){
+    const pour=_freshDoc;_freshDoc=false; // read-and-clear: only the fresh render cascades
     const lines=String(md||'').split('\n');let title='',secs=[],c=null;
     for(const raw of lines){const line=raw.trim();
       if(/^#\s/.test(line)&&!title){title=line.replace(/^#\s/,'');continue}
@@ -2330,7 +2332,10 @@
       const isIntro=sec.h==='_intro';if(!isIntro)n++;
       const pinned=!isIntro&&pins[sec.h];
       const files=(!isIntro&&secFiles[sec.h])||[];
-      h+='<div class="sec'+(pinned?' pinned':'')+'" data-i="'+i+'" data-h="'+esc(sec.h)+'">'
+      // on a fresh document, stagger the entrance (capped at 9 steps so a long doc still finishes
+      // its arrival in well under a second); no delay on re-renders, so editing never lags
+      const pourAttr=pour?' style="animation-delay:'+(Math.min(i,9)*70)+'ms"':'';
+      h+='<div class="sec'+(pour?' pour':'')+(pinned?' pinned':'')+'" data-i="'+i+'" data-h="'+esc(sec.h)+'"'+pourAttr+'>'
         +(isIntro?'':'<div class="sec-top"><div class="sec-eye">'+(pinned?'<span class="pin-on">◆</span> ':'')+String(n).padStart(2,'0')+'</div>'
           +'<div class="sec-tools">'
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
@@ -2668,7 +2673,7 @@
       else{s.canvas=md;s.canvases=[{id:uid('cv'),t:'Main',md:md}];s.cvId=s.canvases[0].id}
       const t=(s.canvas.match(/^#\s+(.+)/m)||[])[1];
       if(t&&(s.title==='New'||!s.title))s.title=t.trim().slice(0,60);
-      s.updatedAt=Date.now();save();renderRail();showCanvas();
+      s.updatedAt=Date.now();save();renderRail();_freshDoc=true;showCanvas(); // cascade the sections in — the crystallize moment
       if(document.hidden)notifyDone('Crystallize');
       if(s.chain){toast('Summed — Refine starting…');setTimeout(()=>{if(!_busy)runMastering('')},600)}
       else toast('Done — edit any section, then Share a link your client can comment on');

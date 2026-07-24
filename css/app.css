@@ -24,6 +24,10 @@
     --grad:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
     --pop:0 1px 0 rgba(255,255,255,.06) inset,0 30px 80px rgba(0,0,0,.6);
     --ease:cubic-bezier(.22,1,.36,1);
+    /* one reveal curve across the whole product — the hero's entrance, the marketing sections
+       on scroll, and the document settling into shape all ease the same way, so motion reads
+       as one considered language rather than several unrelated animations */
+    --reveal:cubic-bezier(.16,1,.3,1);
     /* system tokens — one source for values that used to be hand-typed per rule.
        (Full type scale + 4/8/12/16 radius tightening is the deliberate post-launch pass.) */
     --on-ink:#0a0a0a; --ok:#57c795;
@@ -274,7 +278,12 @@
   .flow-trail .ft .ck{color:var(--cin-d)}
   .flow-trail .ft em{font-style:normal;font-size:8.5px;opacity:.75;border:1px solid var(--line2);border-radius:var(--r-xl);padding:1px 5px;letter-spacing:.06em}
   .flow-trail .sep{opacity:.3}
-  .sec{padding:52px 0 0;animation:secIn .6s var(--ease) both;transition:opacity var(--slow) var(--ease);border-radius:var(--r-sm)}
+  .sec{padding:52px 0 0;animation:secIn .7s var(--reveal) both;transition:opacity var(--slow) var(--ease);border-radius:var(--r-sm)}
+  /* the crystallize moment: on a fresh document each section carries an inline animation-delay,
+     so they settle into place one after another — the same cascade the hero opens with. Only on
+     a fresh Crystallize/Brief (renderDoc adds the delays); edits and undo re-render with no
+     stagger, so working never feels laggy. */
+  .sec.pour{animation-duration:.8s}
   .sec:first-of-type{padding-top:40px}
   @keyframes secIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .sec.flash{animation:flash 1.6s var(--ease)}
