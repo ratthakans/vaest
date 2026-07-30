@@ -149,7 +149,7 @@
   /* the hero speaks in the app's voice — Newsreader on warm charcoal, the same question the
      product opens with. The old Inter/near-black/accent-dot hero looked like a different
      company than the thing behind the Try-free button. */
-  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(44px,7.4vw,104px);
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(40px,5.4vw,76px);
     line-height:1.06;letter-spacing:-.022em;max-width:13ch;color:#e6e0d3}
   html[lang="th"] .hero h1,.hero h1:lang(th){line-height:1.24} /* Thai stacks tone marks — Latin display leading clips them */
   .hero .sub{font-family:var(--th);font-size:clamp(16px,1.65vw,20px);line-height:1.75;color:var(--dim);max-width:47ch;margin:48px 0 46px}
@@ -178,9 +178,12 @@
      row invites comparison; a single claim invites belief. */
   .specs.one{grid-template-columns:1fr;gap:0;padding:104px 0}
   @media(max-width:720px){.specs.one{grid-template-columns:1fr;padding:76px 0}}
-  .specs.one .n{font-size:clamp(72px,11vw,150px);line-height:.92;color:var(--or)}
-  .specs.one .k{font-family:var(--serif);font-weight:500;font-size:clamp(22px,2.7vw,34px);line-height:1.2;letter-spacing:-.014em;
-    text-transform:none;color:var(--ink);margin-top:20px;max-width:22ch}
+  /* The number sits just UNDER the hero, never above it: the headline is the page's voice and this
+     is its proof. At 150px it was the loudest thing on the site and out-shouted the thing it was
+     meant to support. */
+  .specs.one .n{font-size:clamp(52px,5vw,72px);line-height:.96;color:var(--or)}
+  .specs.one .k{font-family:var(--serif);font-weight:500;font-size:clamp(18px,1.9vw,25px);line-height:1.32;letter-spacing:-.01em;
+    text-transform:none;color:var(--ink);margin-top:16px;max-width:24ch}
   .specs.one .kk{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:26px}
 
   /* ── section frame ── */
@@ -188,7 +191,11 @@
   @media(max-width:640px){.sec-pad{padding-top:104px;padding-bottom:104px}}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:30px;display:flex;align-items:center;gap:13px}
   .lbl::before{content:"";width:26px;height:2px;background:var(--or);border-radius:2px}
-  h2{font-weight:600;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
+  /* Display type is serif 500, and hierarchy comes from size and space — not weight. This was the
+     only page in the product setting section headings in sans 600 at 54px: ten of them down the
+     scroll, each shouting at the same volume as the next, while every inner page uses the shared
+     serif h2 from css/site.css. Same family, same weight, two steps quieter. */
+  h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,2.9vw,40px);line-height:1.14;letter-spacing:-.014em;max-width:24ch}
   .lead{font-family:var(--th);font-size:clamp(15px,1.55vw,18.5px);line-height:1.8;color:var(--dim);max-width:58ch;margin-top:26px}
   .lead b{color:var(--ink);font-weight:600}
   section{border-bottom:1px solid var(--line)}
@@ -245,7 +252,7 @@
   .td-row .m{flex:none;width:12px;color:var(--mute)}
   .td-row.ok .t{color:var(--ink)}
   .td-row.no .t{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(235,89,57,.55)}
-  .td-out{display:block;margin-top:30px;font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.2vw,26px);line-height:1.45;color:var(--ink)}
+  .td-out{display:block;margin-top:30px;font-family:var(--serif);font-style:italic;font-size:clamp(17px,1.8vw,22px);line-height:1.5;color:var(--ink)}
   .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;margin-top:70px}
   @media(max-width:760px){.loop{grid-template-columns:1fr;gap:44px}}
   .lp{padding-top:24px;border-top:1px solid var(--line2)}
@@ -296,7 +303,7 @@
   .final{position:relative;text-align:center;padding:180px 0 160px;overflow:hidden}
   @media(max-width:640px){.final{padding:120px 0 110px}}
   .final .wrap{position:relative;z-index:2}
-  .final h2{font-size:clamp(40px,7vw,96px);line-height:1;letter-spacing:-.04em;max-width:none}
+  .final h2{font-size:clamp(32px,4.2vw,58px);line-height:1.06;letter-spacing:-.02em;max-width:none}
   .final h2 .dot{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
   .final .q{font-family:var(--th);font-size:16.5px;color:var(--dim);margin-top:32px}
   .final .btn{margin-top:52px}

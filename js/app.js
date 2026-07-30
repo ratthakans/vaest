@@ -1475,6 +1475,32 @@
     setSetTab('profile');$('setView').classList.add('show')}
   /* profile — name + avatar in the user's own state (stays with the account) */
   function getProfile(){return profile||{}}
+  // Google returns the account's name and photo in the very same response the session comes from
+  // (user_metadata.full_name / .name / .avatar_url / .picture) — and both session paths kept only
+  // the email, so signing in with Google landed you on a raw address and a single letter. Seed the
+  // profile from the provider, but ONLY into fields still empty: a name typed in Settings belongs
+  // to the user and must never be overwritten by the provider on the next sign-in. Runs at the end
+  // of boot(), after the cloud merge, or applyBlob() would overwrite what this just filled.
+  async function seedProfileFromProvider(){
+    const p=getProfile();
+    if(p.name&&p.pic)return;                       // nothing left to fill
+    if(!AUTH||!(await ensureAuth()))return;
+    let m;
+    try{const r=await fetch(SB.url+'/auth/v1/user',{headers:{apikey:SB.key,Authorization:'Bearer '+AUTH.access_token}});
+      if(!r.ok)return;m=(await r.json()||{}).user_metadata||{}}catch(e){return}
+    let changed=false;
+    if(!p.name){const n=String(m.full_name||m.name||'').trim().slice(0,40);if(n){p.name=n;changed=true}}
+    // The photo is COPIED into the account's own state, not hot-linked: a googleusercontent URL
+    // rotates (the avatar would quietly vanish weeks later) and hot-linking would call Google on
+    // every page load, from a product whose footer promises no third parties. Same 128px JPEG the
+    // upload path produces, so both photos are one kind of thing. If the copy is refused (CORS,
+    // offline, a URL that 404s) we keep the initial — a missing photo is not worth an error.
+    if(!p.pic){const u=m.avatar_url||m.picture;
+      if(u)try{const rb=await fetch(u,{mode:'cors'});
+        if(rb.ok){p.pic=await imgToDataURL(await rb.blob(),128,.8);changed=true}}catch(e){}}
+    if(!changed)return;
+    saveProfileObj(p);paintAvatar();
+    const w=$('whoLbl');if(w)w.textContent=p.name||AUTH.email}
   function saveProfileObj(p){profile=p||{};save()} // rides the cloud sync — follows the account across devices
   function paintAvatar(){const p=getProfile();const av=$('pfAv'),txt=$('pfAvTxt');const foot=$('railAv');
     const set=el=>{if(!el)return;if(p.pic){el.style.backgroundImage='url('+p.pic+')';el.classList.add('has');el.textContent=''}
@@ -3211,7 +3237,10 @@
         sessions=carry.concat(sessions.filter(x=>(x.canvas&&x.canvas.trim())||x.files.length||(x.brief&&x.brief.trim())||chatsOf(x).some(c=>c.ideas.length)));
         currentSid=carry[0].id;save();cloudSave();renderRail();showHome();
         toast('Your trial chat is saved to your account')}catch(e){}}}
-    sweepCommentCounts()}
+    sweepCommentCounts();
+    // last, and deliberately not awaited: the name/photo are cosmetic, so a slow provider round-trip
+    // must not hold up a workspace that is already usable.
+    seedProfileFromProvider().catch(()=>{})}
   /* onboarding — sample work for new accounts */
   const SAMPLE_MD='# ARIYA Coffee — Rebrand Direction (sample)\n\n> This is a sample VÆST crystallized from a brief + files. Try editing it, highlight text and refine it, or hit Refine for a full-document check.\n\n---\n\n## Core idea: warm with intent, not another vintage retread\n\nThe 25–40 creative crowd doesn’t want another "cute cafe" — they want a place that feels **considered down to the inch**. Every element must answer one question: was this place actually thought through?\n\n## Visual tone: warm cream × burnt orange\n\n- Primary: warm cream as the base — clean but never cold\n- Accent: burnt orange, used sparingly — a signal, not decoration\n- Type: a confident serif for headings + a clean sans for body\n\n## Deliverables\n\n1. Logo system (primary + compact)\n2. Menu + price tags\n3. Storefront sign\n4. 3 social templates\n\n## Try these three moves\n\n1. **Highlight any sentence** above — a toolbar appears. Try *Ask VÆST* and type your own instruction.\n2. Hover any section and hit **Think** — Galdr, a mind apart from the one that wrote it, pushes that section bolder. Approve what you like; VÆST remembers your taste from every decision.\n3. Hit **Refine** (top right) for the final coherence check, then **Export → Share link** to see exactly what a client sees.\n\n---\n\n**Then make it yours.** Hit **New** (top-left) and pick a mode up top: **Idea** to think out loud, **Brief** to get a brief airtight, or **Crystallize** to turn notes and files into a document like this one.';
   function seedSample(){currentSid=null;const s={id:uid('s'),title:'ARIYA Coffee — sample',projectId:null,brief:'',files:[],canvas:SAMPLE_MD,updatedAt:Date.now(),tone:'',mode:'crystallize'};sessions=[s];currentSid=s.id;save()}
