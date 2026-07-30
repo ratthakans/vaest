@@ -1485,9 +1485,16 @@
     const p=getProfile();
     if(p.name&&p.pic)return;                       // nothing left to fill
     if(!AUTH||!(await ensureAuth()))return;
+    // Read user_metadata first, then fall back to the identity's own identity_data: which of the
+    // two carries the Google name/photo depends on the Supabase version and on whether the
+    // provider has been re-linked, and a profile that works on one project and silently does
+    // nothing on another is not worth the two lines it costs to check both.
     let m;
     try{const r=await fetch(SB.url+'/auth/v1/user',{headers:{apikey:SB.key,Authorization:'Bearer '+AUTH.access_token}});
-      if(!r.ok)return;m=(await r.json()||{}).user_metadata||{}}catch(e){return}
+      if(!r.ok)return;
+      const u=(await r.json())||{};
+      const id=(Array.isArray(u.identities)?u.identities:[]).find(x=>x&&x.identity_data)||{};
+      m={...(id.identity_data||{}),...(u.user_metadata||{})}}catch(e){return}
     let changed=false;
     if(!p.name){const n=String(m.full_name||m.name||'').trim().slice(0,40);if(n){p.name=n;changed=true}}
     // The photo is COPIED into the account's own state, not hot-linked: a googleusercontent URL
