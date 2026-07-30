@@ -2,8 +2,9 @@
 :root{
   --bg:#050506; --ink:#f2f1ee; --dim:#a8a7a1; --mute:#7d7c75;
   --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2); --soft:rgba(255,255,255,.045);
-  --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
-  --cy:#4fc3ff; --or:#ff5a1f;
+  /* the prism resolves into the house cinnabar — one warm accent shared with css/app.css */
+  --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#f08a5e 68%,#eb5939 100%);
+  --cy:#4fc3ff; --or:#eb5939;
   --ui:"Inter","IBM Plex Sans Thai Looped",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
   --th:"IBM Plex Sans Thai Looped","Inter",sans-serif;
   --serif:"Newsreader","Noto Serif Thai",Georgia,serif;
@@ -55,7 +56,7 @@ img{max-width:100%}
 @media(max-width:640px){.sec-pad{padding-top:72px;padding-bottom:72px}}
 section{border-bottom:1px solid var(--line)}
 .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:26px;display:flex;align-items:center;gap:13px}
-.lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
+.lbl::before{content:"";width:26px;height:2px;background:var(--or);border-radius:2px}
 h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.3vw,40px);line-height:1.16;letter-spacing:-.012em;max-width:24ch}
 h3{font-weight:600;letter-spacing:-.01em}
 .lead{font-family:var(--th);font-size:clamp(15px,1.55vw,18px);line-height:1.8;color:var(--dim);max-width:60ch;margin-top:22px}
@@ -69,7 +70,9 @@ h3{font-weight:600;letter-spacing:-.01em}
 @media(max-width:600px){.grid.c2,.grid.c3{grid-template-columns:1fr}}
 .card{background:#0a0a0c;padding:30px 28px;transition:background .25s var(--ease)}
 .card:hover{background:#0e0e11}
-.card .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:100% 100%}
+/* a mono eyebrow is scaffolding — it labels, it does not speak. Muted, so the card's own
+   sentence is the loudest thing in the card. */
+.card .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
 .card h3{font-family:var(--th);font-size:19px;margin:14px 0 10px;color:var(--ink)}
 .card p{font-family:var(--th);font-size:14px;line-height:1.7;color:var(--dim)}
 .card .ver{display:inline-block;margin-top:16px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute);border:1px solid var(--line2);border-radius:100px;padding:4px 11px}

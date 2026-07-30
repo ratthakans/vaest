@@ -19,13 +19,15 @@
 .nav-login{font-size:14px;font-weight:600;color:var(--ink);transition:opacity .2s var(--ease);white-space:nowrap}
 .nav-login:hover{opacity:.62}
 .nav-burger{display:none;background:none;border:none;color:var(--ink);padding:6px}
-/* gradient fluid Try button */
+/* The primary CTA is solid, in the one accent. It used to be a looping four-stop gradient with a
+   cold-blue glow — which made the nav button, the pricing CTA and the hero rule three competing
+   accents on one screen, and put a cold light on the warmest moment in the funnel. The prism is
+   now the atmosphere (the field behind the hero) and the accent word; the button is the accent. */
 .btn-try{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#08080a;
-  background:var(--chroma);background-size:200% 100%;padding:11px 22px;border-radius:100px;
-  animation:tryflow 5s ease-in-out infinite;transition:transform .2s var(--ease),box-shadow .25s var(--ease);
-  box-shadow:0 0 0 0 rgba(79,195,255,0)}
-.btn-try:hover{transform:translateY(-1px);box-shadow:0 10px 34px rgba(79,195,255,.28)}
-@keyframes tryflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  background:var(--or);padding:11px 22px;border-radius:100px;
+  transition:transform .2s var(--ease),box-shadow .25s var(--ease);
+  box-shadow:0 0 0 0 rgba(235,89,57,0)}
+.btn-try:hover{transform:translateY(-1px);box-shadow:0 10px 34px rgba(235,89,57,.3)}
 @media(max-width:820px){
   .nav-in{display:flex;align-items:center;gap:14px}
   .nav-links{position:fixed;inset:72px 0 auto 0;transform:translateY(-12px);flex-direction:column;align-items:flex-start;gap:0;margin:0;

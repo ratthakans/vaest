@@ -35,9 +35,9 @@
     --serif:"Newsreader","Noto Serif Thai",Georgia,"Times New Roman",serif;
     --bg:#050506; --ink:#f2f1ee; --dim:#a1a09b; --mute:#5c5b57;
     --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.2);
-    /* chromatic dispersion — the one accent */
-    --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#ffa14b 68%,#ff5a1f 100%);
-    --cy:#4fc3ff; --or:#ff5a1f;
+    /* chromatic dispersion — resolves into the house cinnabar, so prism and flat accent agree */
+    --chroma:linear-gradient(100deg,#4fc3ff 0%,#dff4ff 32%,#f08a5e 68%,#eb5939 100%);
+    --cy:#4fc3ff; --or:#eb5939;
     --ui:"Inter","IBM Plex Sans Thai Looped",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
     --th:"IBM Plex Sans Thai Looped","Inter",sans-serif;
     --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -56,7 +56,7 @@
   @media(max-width:640px){.wrap{padding:0 24px}}
   .eye{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);font-weight:500}
   .th{font-family:var(--th)}
-  .ctx{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ctx{color:var(--or)}
 
   /* ═══ prismatic glass field — pure CSS, quiet & fluid ═══ */
   .prism{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -107,7 +107,7 @@
   /* fluid chroma — the gradient breathes inside every accent */
   @keyframes chromaflow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
   .hero h1 .dot,.final h2 .dot{background-size:230% 100%;animation:chromaflow 8s ease-in-out infinite}
-  .spec .n .u,.step .si,.e-card .em,.ba-col.after .ba-tag,.d-sec .no,.d-chip b,.d-ref .ok,.wl-msg,.lbl::before{background-size:100% 100%}
+  .spec .n .u,.e-card .em,.ba-col.after .ba-tag,.d-sec .no,.d-chip b,.d-ref .ok,.wl-msg,.lbl::before{background-size:100% 100%}
 
   /* ── nav ── */
   /* #111114 is the app's --paper: the landing ground and the working surface now match,
@@ -171,14 +171,23 @@
   .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;padding:64px 0;border-bottom:1px solid var(--line)}
   @media(max-width:720px){.specs{grid-template-columns:1fr 1fr;gap:44px 28px}}
   .spec .n{font-family:var(--serif);font-weight:500;font-size:clamp(34px,4vw,48px);line-height:1.05;letter-spacing:-.018em}
-  .spec .n .u{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .spec .n .u{color:var(--mute)}
   .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-top:14px}
+  /* One number owns the strip. The four-up bar it replaced was the most generic thing on the
+     page — and its first figure ("4 Minds") contradicted the three engines further down. A spec
+     row invites comparison; a single claim invites belief. */
+  .specs.one{grid-template-columns:1fr;gap:0;padding:104px 0}
+  @media(max-width:720px){.specs.one{grid-template-columns:1fr;padding:76px 0}}
+  .specs.one .n{font-size:clamp(72px,11vw,150px);line-height:.92;color:var(--or)}
+  .specs.one .k{font-family:var(--serif);font-weight:500;font-size:clamp(22px,2.7vw,34px);line-height:1.2;letter-spacing:-.014em;
+    text-transform:none;color:var(--ink);margin-top:20px;max-width:22ch}
+  .specs.one .kk{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:26px}
 
   /* ── section frame ── */
   .sec-pad{padding-top:150px;padding-bottom:150px}
   @media(max-width:640px){.sec-pad{padding-top:104px;padding-bottom:104px}}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-bottom:30px;display:flex;align-items:center;gap:13px}
-  .lbl::before{content:"";width:26px;height:2px;background:var(--chroma);border-radius:2px}
+  .lbl::before{content:"";width:26px;height:2px;background:var(--or);border-radius:2px}
   h2{font-weight:600;font-size:clamp(30px,4.2vw,54px);line-height:1.06;letter-spacing:-.032em;max-width:24ch}
   .lead{font-family:var(--th);font-size:clamp(15px,1.55vw,18.5px);line-height:1.8;color:var(--dim);max-width:58ch;margin-top:26px}
   .lead b{color:var(--ink);font-weight:600}
@@ -207,7 +216,7 @@
   .d-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;min-height:30px}
   .d-chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--dim);background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:100px;padding:6px 12px;opacity:0;transform:translateY(5px);transition:.4s var(--ease)}
   .d-chip.on{opacity:1;transform:none}
-  .d-chip b{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:8.5px;font-weight:600}
+  .d-chip b{color:var(--mute);font-size:8.5px;font-weight:600}
   .d-foot{display:flex;justify-content:flex-end;margin-top:18px}
   .d-sum{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#050506;background:var(--ink);font-weight:600;padding:12px 24px;border-radius:100px;transition:transform .25s var(--ease)}
   .d-sum.press{transform:scale(.95)}
@@ -216,34 +225,31 @@
   .d-mast{font-family:var(--th);font-weight:700;font-size:26px;line-height:1.15;letter-spacing:-.01em;margin:8px 0 6px;color:var(--ink)}
   .d-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute);margin-bottom:24px}
   .d-sec{padding:17px 0;border-top:1px solid var(--line)}
-  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .d-sec .no{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--mute)}
   .d-sec .h{font-family:var(--th);font-weight:600;font-size:16px;margin-top:6px;color:var(--ink)}
   .d-sec .p{font-family:var(--th);font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:7px;max-width:60ch}
   .d-ref{display:inline-flex;align-items:center;gap:9px;margin-top:20px;border:1px solid var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);border-radius:100px;padding:9px 15px;opacity:0;transform:translateY(6px);transition:.5s var(--ease)}
   .d-ref.on{opacity:1;transform:none}
-  .d-ref .ok{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .d-ref .ok{color:var(--or)}
 
   /* ── process ── */
-  .rail{display:grid;grid-template-columns:repeat(5,1fr);gap:40px;margin-top:84px}
-  @media(max-width:900px){.rail{grid-template-columns:1fr 1fr 1fr;gap:44px 28px}}
-  @media(max-width:640px){.rail{grid-template-columns:1fr 1fr;gap:44px 28px}}
-  @media(max-width:440px){.rail{grid-template-columns:1fr}}
-  .step{padding-top:24px;border-top:1px solid var(--line2)}
-  .step .si{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .step .st{font-family:var(--th);font-weight:600;font-size:16.5px;margin-top:14px;color:var(--ink)}
-  .step .sd{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
   /* taste demo + client loop */
-  .taste-demo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:56px}
-  .td-pill{font-family:var(--mono);font-size:12px;letter-spacing:.04em;border-radius:100px;padding:9px 16px;border:1px solid var(--line2)}
-  .td-pill.ok{color:var(--ink)}
-  .td-pill.no{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(255,90,31,.6)}
-  .td-arrow{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:20px;font-weight:700;background-size:100% 100%;margin:0 4px}
-  .td-out{font-family:var(--th);font-style:italic;color:var(--dim);font-size:15px}
+  /* A ledger, not a chip row. Five bordered pills in a line is the one visual pattern the
+     working constitution bans by name — and it made a quiet idea (taste accrues) look like
+     filter tags. Now it reads down the page: what was kept, what was cut, then the consequence
+     as the section's single italic line. */
+  .taste-demo{margin-top:56px;max-width:44ch}
+  .td-row{display:flex;align-items:baseline;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.03em}
+  .td-row .m{flex:none;width:12px;color:var(--mute)}
+  .td-row.ok .t{color:var(--ink)}
+  .td-row.no .t{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(235,89,57,.55)}
+  .td-out{display:block;margin-top:30px;font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.2vw,26px);line-height:1.45;color:var(--ink)}
   .loop{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;margin-top:70px}
   @media(max-width:760px){.loop{grid-template-columns:1fr;gap:44px}}
   .lp{padding-top:24px;border-top:1px solid var(--line2)}
-  .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:100% 100%}
+  .lp-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mute);background-size:100% 100%}
   .lp-t{font-family:var(--th);font-weight:600;font-size:16.5px;margin-top:14px;color:var(--ink)}
   .lp-d{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px;line-height:1.7}
 
@@ -252,17 +258,17 @@
   @media(max-width:760px){.ba{grid-template-columns:1fr;gap:56px}}
   .ba-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
   .ba-col.before .ba-tag{color:var(--mute)}
-  .ba-col.after .ba-tag{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ba-col.after .ba-tag{color:var(--mute)}
   .ba-b{font-family:var(--th);font-size:14.5px;line-height:2.05;color:var(--dim)}
   .ba-b .x{display:block}
   .ba-col.after .bh{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin:20px 0 8px}
-  .ba-col.after .bq{border-left:2px solid;border-image:var(--chroma) 1;padding-left:16px;color:var(--ink);margin:16px 0;font-weight:500}
+  .ba-col.after .bq{border-left:2px solid var(--or);padding-left:16px;color:var(--ink);margin:16px 0;font-weight:500}
 
   /* ── engine ── */
   .eng{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:84px}
   @media(max-width:900px){.eng{grid-template-columns:1fr;gap:36px}}
   .e-card{padding-top:26px;border-top:1px solid var(--line2)}
-  .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
   .e-card h3{font-family:var(--th);font-weight:600;font-size:21px;margin:18px 0 13px;letter-spacing:-.006em;color:var(--ink)}
   .e-card p{font-family:var(--th);font-size:14px;line-height:1.85;color:var(--dim)}
   .e-card .tag{display:inline-block;margin-top:22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
@@ -284,7 +290,7 @@
   .wl input:focus{border-color:var(--ink)}
   .wl input::placeholder{color:var(--mute)}
   .wl .btn{padding:15px 28px;font-size:14px}
-  .wl-msg{font-family:var(--mono);font-size:11px;letter-spacing:.08em;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;margin-top:20px;min-height:16px}
+  .wl-msg{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--or);margin-top:20px;min-height:16px}
 
   /* ── final ── */
   .final{position:relative;text-align:center;padding:180px 0 160px;overflow:hidden}
@@ -310,22 +316,22 @@
   /* reduced-motion (and the belt-and-braces against a scroll-observer that never fires): show
      every reveal block immediately, no waiting on intersection. The hero does the same. */
   @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
-  .rail .step,.eng .e-card{opacity:0;transform:translateY(12px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-  .rail.reveal.in .step,.eng.reveal.in .e-card{opacity:1;transform:none}
-  .rail.reveal.in .step:nth-child(2){transition-delay:.09s}
-  .rail.reveal.in .step:nth-child(3){transition-delay:.18s}
-  .rail.reveal.in .step:nth-child(4){transition-delay:.27s}
-  .rail.reveal.in .step:nth-child(5){transition-delay:.36s}
-  .eng.reveal.in .e-card:nth-child(3){transition-delay:.2s}
-  .eng.reveal.in .e-card:nth-child(4){transition-delay:.28s}
+  /* The three engines enter one after another — they are the page's first real beat now, so the
+     stagger belongs to them. (These rules used to be shared with the 01–05 rail, which had the
+     graded delays while the engines only had one; the rail is gone.) */
+  .eng .e-card{opacity:0;transform:translateY(12px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .eng.reveal.in .e-card{opacity:1;transform:none}
   .eng.reveal.in .e-card:nth-child(2){transition-delay:.12s}
+  .eng.reveal.in .e-card:nth-child(3){transition-delay:.24s}
 
   /* ── pricing comparison matrix ── */
   .cmp-scroll{margin-top:52px;overflow-x:auto;border:1px solid var(--line);border-radius:16px;scroll-snap-type:x proximity}
-  /* mobile: the matrix scrolls sideways — say so, and snap column edges */
-  .cmp-hint{display:none}
+  /* mobile: the matrix scrolls sideways. It used to SAY so, in a centred mono sentence with
+     arrows on both sides — an explanatory caption for something the interface can simply show.
+     A fade at the right edge says the same thing without words, and stops saying it the moment
+     you reach the end. */
   @media(max-width:760px){
-    .cmp-hint{display:block;margin:14px 0 -38px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+    .cmp-scroll{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
     .cmp-row.head .cmp-col{scroll-snap-align:start}
   }
   .cmp{min-width:760px;background:#0a0a0c}
@@ -334,16 +340,19 @@
   .cmp-row>div+div{border-left:1px solid var(--line)}
   .cmp-row.head>div{border-top:none;padding:30px 24px 26px}
   .cmp-col.apex{position:relative;background:#0e0e12}
-  .cmp-col.apex::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--chroma);background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .cmp-col.apex::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--or)}
   .cmp-tier{font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink)}
-  .cmp-col.apex .cmp-tier{background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:chromaflow 8s ease-in-out infinite}
+  .cmp-col.apex .cmp-tier{color:var(--or)}
   .cmp-tag{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--dim);margin-top:11px;line-height:1.5}
   .cmp-price{margin-top:18px;font-family:var(--ui);font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--ink);line-height:1}
   .cmp-price .amt{align-items:baseline;gap:5px}
   .cmp-price .pr-ind{display:inline-flex}
   .cmp-price .pr-team{display:none}
   .cmp-price .per{font-size:12.5px;font-weight:500;color:var(--mute);letter-spacing:0}
-  .cmp-pop{position:absolute;top:14px;right:18px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:100px;color:#08080a;background:var(--chroma);background-size:200% 100%;animation:tryflow 5s ease-in-out infinite}
+  /* "Most popular" is social proof — the weakest reason there is, and the badge every SaaS page
+     already wears. VÆST's whole argument is that it has already judged, so it says so in its own
+     voice: a quiet mono line in the accent, no pill, no animation, no crowd. */
+  .cmp-pop{position:absolute;top:15px;right:18px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--or)}
   /* individual ↔ team price toggle */
   .pr-toggle{display:inline-flex;gap:4px;margin:32px 0 0;padding:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:100px}
   .pr-tab{font-family:var(--th);font-size:13.5px;font-weight:600;color:var(--dim);padding:8px 20px;border-radius:100px;cursor:pointer;transition:color .2s var(--ease),background .2s var(--ease)}
@@ -359,18 +368,18 @@
   .pr-biz .bz-d{font-family:var(--th);font-size:14px;color:var(--dim);margin-top:9px;max-width:64ch;line-height:1.7}
   .pr-biz .btn{flex:none}
   .cmp-note2{font-family:var(--th);font-size:12px;color:var(--mute);margin-top:7px}
-  .cmp-note2 b{font-weight:700;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text}
+  .cmp-note2 b{font-weight:700;color:var(--or)}
   /* "everything included" strip — full-width, calm */
   .cmp-incl{grid-template-columns:1fr;background:rgba(255,255,255,.02)}
   .cmp-incl>div{font-family:var(--th);font-size:13px;line-height:1.75;color:var(--dim)}
-  .cmp-incl .ic{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:transparent;background:var(--chroma);-webkit-background-clip:text;background-clip:text;margin-right:9px}
+  .cmp-incl .ic{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--mute);margin-right:9px}
   .cmp-incl b{color:var(--ink);font-weight:600}
   .cmp-incl .en{color:var(--mute)}
   .cmp-access{font-family:var(--th);font-size:14.5px;font-weight:600;color:var(--ink);margin-top:18px}
   .cmp-access span{display:block;font-weight:400;font-size:11.5px;color:var(--mute);margin-top:4px;letter-spacing:.02em}
   .cmp-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--ink);border:1px solid var(--line2);border-radius:100px;padding:9px 16px;transition:border-color .2s var(--ease),background .2s var(--ease)}
   .cmp-cta:hover{border-color:var(--ink);background:var(--soft)}
-  .cmp-col.apex .cmp-cta{color:#08080a;background:var(--chroma);background-size:200% 100%;border:none;font-weight:700;animation:tryflow 5s ease-in-out infinite}
+  .cmp-col.apex .cmp-cta{color:#08080a;background:var(--or);border:none;font-weight:700}
   .cmp-corner{display:flex;flex-direction:column;justify-content:flex-end}
   .cmp-corner .ct{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--ink);line-height:1.35}
   .cmp-corner .cs{font-family:var(--th);font-size:13px;color:var(--mute);margin-top:8px}
@@ -378,7 +387,7 @@
   .cmp-lbl small{display:block;font-weight:400;font-size:12px;color:var(--mute);margin-top:3px}
   .cmp-cell{font-family:var(--th);font-size:13.5px;color:var(--dim);display:flex;align-items:center;gap:8px}
   .cmp-cell.mut{color:var(--mute)}
-  .cmp-check{width:15px;height:15px;flex:none;stroke:#4fc3ff;fill:none} /* stroke inherits into the <use> shadow content */
+  .cmp-check{width:15px;height:15px;flex:none;stroke:var(--or);fill:none} /* stroke inherits into the <use> shadow content */
   .cmp-note{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--mute);margin-top:20px;text-align:center}
   @media(max-width:560px){
     .cmp-corner .ct{font-size:16px}
@@ -391,7 +400,7 @@
 
 <nav class="nav" id="siteNav"><div class="wrap nav-in">
   <a class="brand" href="/home" style="display:flex;align-items:center;gap:11px">
-  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="cg" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#ff5a1f"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#cg)" stroke-width="3.6" stroke-linecap="round"/></svg>
+  <svg class="mark" viewBox="0 0 40 40"><rect width="40" height="40" rx="9" fill="#141417" stroke="rgba(255,255,255,.14)" stroke-width="1"/><defs><linearGradient id="cg" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32"><stop offset="0" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#dff4ff"/><stop offset="1" stop-color="#eb5939"/></linearGradient></defs><path d="M25.5 8 14.5 32" stroke="url(#cg)" stroke-width="3.6" stroke-linecap="round"/></svg>
   <span class="wm">V<i style="font-style:normal">&AElig;</i>ST</span></a>
   <div class="nav-links" id="navLinks">
     <a href="/concept">Concept</a><a href="/features">Features</a><a href="/product">Product</a><a href="/developers">Developers</a><a href="/company">Company</a><a href="/news">News</a>
@@ -420,15 +429,48 @@
   </div>
 </header>
 
-<!-- SPEC STRIP -->
-<div class="wrap"><div class="specs reveal">
-  <div class="spec"><div class="n">4</div><div class="k">Minds · One Taste</div></div>
-  <div class="spec"><div class="n">7<span class="u">+</span></div><div class="k">Input Formats</div></div>
-  <div class="spec"><div class="n">1</div><div class="k">Source of Truth</div></div>
-  <div class="spec"><div class="n">&infin;</div><div class="k">Revisions</div></div>
+<!-- THE CLAIM — one number, the whole strip -->
+<div class="wrap"><div class="specs one reveal">
+  <div class="spec">
+    <div class="n">1</div>
+    <div class="k">document. One voice. Whatever went in.</div>
+    <span class="kk">The rest is drafts</span>
+  </div>
 </div></div>
 
-<!-- PRODUCT -->
+<!-- ACT ONE — the three engines. Characters before mechanics: this is the only
+     section on the page with names, roles and a mythology, and it used to sit eighth of
+     twelve, after the page had already explained itself three separate ways. -->
+<section><div class="wrap sec-pad">
+  <div class="lbl">The Creative Engines</div>
+  <h2>Three minds, one taste</h2>
+  <p class="lead th">Not one generic brain doing everything at once. Three engines, each with a single job and an old-north name — the mind you think with, the hand that writes, and the last light before the work ships. One writes; the others only ever push. That is why a VÆST document keeps one voice. <a href="/product" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Meet the three →</a></p>
+  <div class="eng reveal">
+    <div class="e-card">
+      <div class="em">◭ GALDR <span style="color:var(--mute);font-weight:400">· v3.0</span></div>
+      <h3 class="th">The mind you think with</h3>
+      <p class="th"><i>Galdr</i> — the old word for a chant sung to change something. It is where the work begins: a sandbox that thinks out loud with you until the first true angle lands. Then it comes back on the finished draft as <b>Think</b> — reading each section and pushing back on the missing hook, the safe choice worth bending. It only ever proposes. A mind apart from the one that wrote the page, so the second opinion is honest.</p>
+      <span class="tag">Idea · Think</span>
+    </div>
+    <div class="e-card">
+      <div class="em">◉ ODIN <span style="color:var(--mute);font-weight:400">· v2.0</span></div>
+      <h3 class="th">Every word on the page</h3>
+      <p class="th"><i>Odin</i> hung nine nights on the world-tree to win the runes — writing itself. He is the only engine that writes the canvas. Chats, files, a mountain of notes go in; one document in one voice comes out. Every critique the others raise passes through his hand before it lands, which is the whole reason the page never reads like it was written by a committee.</p>
+      <span class="tag">Crystallize · the voice</span>
+    </div>
+    <div class="e-card">
+      <!-- the "Apex" badge is gone: it was a fourth token in a name/role/version system, the only
+           engine wearing one, and the sentence directly below already says "our most powerful
+           engine, saved for the end" — better, and in the product's own voice. -->
+      <div class="em">◠ NORRSKEN <span style="color:var(--mute);font-weight:400">· v3.2</span></div>
+      <h3 class="th">The last light before it ships</h3>
+      <p class="th"><i>Norrsken</i> — the northern lights. Our most powerful engine, saved for the end. It reads the whole document at once, from above, and catches what line-by-line misses: an inconsistency, a claim that repeats, a logic that bends — every finding anchored to its exact line. Nothing leaves the studio until it has passed. And when the work becomes a deck for the room, Norrsken lands that too.</p>
+      <span class="tag">Refine · Present</span>
+    </div>
+  </div>
+</div></section>
+
+<!-- PRODUCT — what having three minds actually buys you -->
 <!-- WHY — the three edges no one else holds -->
 <section><div class="wrap sec-pad">
   <div class="lbl">Why VÆST</div>
@@ -485,13 +527,6 @@
       </div>
     </div>
   </div>
-  <div class="rail reveal">
-    <div class="step"><div class="si">01</div><div class="st th">Idea</div><div class="sd th">A sandbox that spars back — raw pastes welcome</div></div>
-    <div class="step"><div class="si">02</div><div class="st th">Crystallize</div><div class="sd th">Files, moodboards, sparks — crystallized into one document</div></div>
-    <div class="step"><div class="si">03</div><div class="st th">Canvas</div><div class="sd th">Edit whole sections, or a single highlighted sentence</div></div>
-    <div class="step"><div class="si">04</div><div class="st th">Think</div><div class="sd th">A second mind pushes each section bolder — approve what lands</div></div>
-    <div class="step"><div class="si">05</div><div class="st th">Refine</div><div class="sd th">The taste check before anything ships</div></div>
-  </div>
 </div></section>
 
 <!-- BEFORE / AFTER -->
@@ -523,46 +558,18 @@
   </div>
 </div></section>
 
-<!-- ENGINE — the Creative Engines -->
-<section><div class="wrap sec-pad">
-  <div class="lbl">The Creative Engines</div>
-  <h2>Three minds, one taste</h2>
-  <p class="lead th">Not one generic brain doing everything at once. Three engines, each with a single job and an old-north name — the mind you think with, the hand that writes, and the last light before the work ships. One writes; the others only ever push. That is why a VÆST document keeps one voice. <a href="/product" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Meet the three →</a></p>
-  <div class="eng reveal">
-    <div class="e-card">
-      <div class="em">◭ GALDR <span style="color:var(--mute);font-weight:400">· v3.0</span></div>
-      <h3 class="th">The mind you think with</h3>
-      <p class="th"><i>Galdr</i> — the old word for a chant sung to change something. It is where the work begins: a sandbox that thinks out loud with you until the first true angle lands. Then it comes back on the finished draft as <b>Think</b> — reading each section and pushing back on the missing hook, the safe choice worth bending. It only ever proposes. A mind apart from the one that wrote the page, so the second opinion is honest.</p>
-      <span class="tag">Idea · Think</span>
-    </div>
-    <div class="e-card">
-      <div class="em">◉ ODIN <span style="color:var(--mute);font-weight:400">· v2.0</span></div>
-      <h3 class="th">Every word on the page</h3>
-      <p class="th"><i>Odin</i> hung nine nights on the world-tree to win the runes — writing itself. He is the only engine that writes the canvas. Chats, files, a mountain of notes go in; one document in one voice comes out. Every critique the others raise passes through his hand before it lands, which is the whole reason the page never reads like it was written by a committee.</p>
-      <span class="tag">Crystallize · the voice</span>
-    </div>
-    <div class="e-card">
-      <div class="em">◠ NORRSKEN <span style="color:var(--mute);font-weight:400">· v3.2</span> <span style="font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;background:var(--chroma);-webkit-background-clip:text;background-clip:text;color:transparent;vertical-align:middle">Apex</span></div>
-      <h3 class="th">The last light before it ships</h3>
-      <p class="th"><i>Norrsken</i> — the northern lights. Our most powerful engine, saved for the end. It reads the whole document at once, from above, and catches what line-by-line misses: an inconsistency, a claim that repeats, a logic that bends — every finding anchored to its exact line. Nothing leaves the studio until it has passed. And when the work becomes a deck for the room, Norrsken lands that too.</p>
-      <span class="tag">Refine · Present</span>
-    </div>
-  </div>
-</div></section>
-
 <!-- TASTE MEMORY -->
 <section><div class="wrap sec-pad">
   <div class="lbl">Taste memory</div>
   <h2>The more you judge, the more it becomes yours</h2>
   <p class="lead th">Every approve and every skip is remembered per project — and quietly biases the next suggestion. Generic AI is smart the same way for everyone. <b>VÆST gets smart your way:</b> your studio’s taste stops living in one senior’s head and becomes infrastructure.</p>
   <div class="taste-demo reveal">
-    <span class="td-pill ok">✓ bold naming</span>
-    <span class="td-pill ok">✓ cultural hooks</span>
-    <span class="td-pill no">✕ wordplay</span>
-    <span class="td-pill ok">✓ quiet luxury</span>
-    <span class="td-pill no">✕ pastel-safe</span>
-    <span class="td-arrow">→</span>
-    <span class="td-out th">the next document already knows</span>
+    <div class="td-row ok"><span class="m">✓</span><span class="t">bold naming</span></div>
+    <div class="td-row ok"><span class="m">✓</span><span class="t">cultural hooks</span></div>
+    <div class="td-row no"><span class="m">✕</span><span class="t">wordplay</span></div>
+    <div class="td-row ok"><span class="m">✓</span><span class="t">quiet luxury</span></div>
+    <div class="td-row no"><span class="m">✕</span><span class="t">pastel-safe</span></div>
+    <em class="td-out">The next document already knows.</em>
   </div>
 </div></section>
 
@@ -591,14 +598,15 @@
 <section id="access-tiers"><div class="wrap sec-pad">
   <div class="lbl">Pricing · ราคาและแพ็กเกจ</div>
   <h2>Pick how you work<span class="dot">.</span></h2>
-  <p class="lead th">เลือกแพ็กเกจที่พอดีกับงาน จ่ายแล้วเริ่มได้ทันที · ทุกแพ็กเกจใช้เครื่องยนต์ครบ ต่างกันที่ <b>ปริมาณงาน</b> และ <b>ความลึกของฟีเจอร์</b>. Every plan runs the full studio — plans differ by <b>how much you make</b> and <b>how deep it goes</b>.</p>
+  <!-- one language per block. Every line here used to be said twice, Thai then English, which is
+       the opposite of white space in the section where a studio decides whether to pay. -->
+  <p class="lead th">ทุกแพ็กเกจใช้เครื่องยนต์ครบทั้งสาม ต่างกันที่ <b>ปริมาณงาน</b> และ <b>ความลึกของฟีเจอร์</b> — จ่ายแล้วเริ่มได้ทันที</p>
 
   <div class="pr-toggle" role="tablist" aria-label="Billing type">
     <button class="pr-tab on" data-m="individual" onclick="setPriceMode('individual')">Individual · ส่วนบุคคล</button>
     <button class="pr-tab" data-m="team" onclick="setPriceMode('team')">Team · ทีม</button>
   </div>
 
-  <div class="cmp-hint">← เลื่อนดูทั้ง 3 แพ็กเกจ · swipe →</div>
   <div class="cmp-scroll reveal">
     <div class="cmp reveal">
       <!-- header -->
@@ -615,7 +623,7 @@
           <a class="cmp-cta" href="/app?plan=basic">Get started</a>
         </div>
         <div class="cmp-col apex">
-          <div class="cmp-pop">Most popular</div>
+          <div class="cmp-pop">The one we'd pick</div>
           <div class="cmp-tier">Pro</div>
           <div class="cmp-tag">ครบทุกเครื่องยนต์ · the full flow.</div>
           <div class="cmp-price"><span class="pr-ind amt">฿1,490<span class="per">/ mo</span></span><span class="pr-team amt">฿1,490<span class="per">/ seat</span></span></div>
@@ -632,7 +640,7 @@
       </div>
       <!-- everything every plan shares — one line, no noise -->
       <div class="cmp-row cmp-incl">
-        <div><span class="ic">ทุกแพ็กเกจได้ครบ</span> Galdr chat &amp; Think · Odin Crystallize · Norrsken deck · เอกสารแคนวาส · แชร์ให้ลูกค้าคอมเมนต์ · export Word · PDF · deck <span class="en">— every plan includes the whole flow, client sharing &amp; all exports.</span></div>
+        <div><span class="ic">ทุกแพ็กเกจได้ครบ</span> Galdr chat &amp; Think · Odin Crystallize · Norrsken deck · เอกสารแคนวาส · แชร์ให้ลูกค้าคอมเมนต์ · export Word · PDF · deck</div>
       </div>
       <!-- only what actually differs between plans -->
       <div class="cmp-row">
@@ -692,7 +700,7 @@
 <section class="final">
   <div class="prism"><div class="glow"></div><div class="strips"></div><div class="sweep"></div></div>
   <div class="wrap">
-    <span class="eye" style="display:block;margin-bottom:30px">VÆST 3.1</span>
+    <span class="eye" style="display:block;margin-bottom:30px">VÆST 3.2</span>
     <h2>Taste, operationalized<span class="dot">.</span></h2>
     <p class="q th">“Computation is nothing without taste.”</p>
     <a class="btn" href="/">Try it free →</a>
@@ -725,8 +733,22 @@
   document.querySelectorAll('#navLinks a').forEach(a=>a.addEventListener('click',()=>_nav.classList.remove('open')));
 
   // reveal on scroll
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.16});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  //
+  // The default state of every section on this page is opacity:0, waiting on an observer. That
+  // makes the whole site one failed observer away from a blank page — and the failure is not
+  // hypothetical: in an embedded/offscreen viewport IntersectionObserver never reports an
+  // intersection at all, and nothing below the hero ever appears. So the reveal is now an
+  // enhancement with a floor: if IO is missing, or has not reported anything at all shortly
+  // after load, everything is simply shown. An animation is worth having; it is not worth
+  // being the only way the page becomes visible.
+  const showAll=()=>document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+  if(!('IntersectionObserver'in window)){showAll()}
+  else{
+    let seen=false;
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){seen=true;e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.16});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+    setTimeout(()=>{if(!seen)showAll()},1200);
+  }
 
   // typing demo
   const BRIEF='Rebrand a coffee shop in Ari — warm tone but not corny, audience 25–40 creatives; old audit file and sales attached.';
