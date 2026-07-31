@@ -2173,8 +2173,8 @@
       box.innerHTML='<div class="it-hd">Think · Galdr</div>'
         +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
           +'<div class="it-acts"><button class="it-save" onclick="saveProvocation(this)" title="Keep this — becomes a Crystallize source">✚</button>'
-          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button>'
-          +'<button class="it-go" onclick="docFromPush(this)" title="Crystallize this push into its own document">Document →</button></div></div>').join('')
+          +'<button class="it-go" onclick="exploreIdea(this)">Explore</button>'
+          +'<button class="it-go pri" onclick="docFromPush(this)" title="Crystallize this push into its own document">Document →</button></div></div>').join('')
         +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
       // stash each push's plain text for Explore
       box.querySelectorAll('.it-p').forEach((el,k)=>el.dataset.push=(pts[k].t||'').replace(/\*\*/g,''));

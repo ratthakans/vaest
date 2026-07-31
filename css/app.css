@@ -42,7 +42,11 @@
     --reveal:cubic-bezier(.16,1,.3,1);
     /* system tokens — one source for values that used to be hand-typed per rule.
        (Full type scale + 4/8/12/16 radius tightening is the deliberate post-launch pass.) */
-    --on-ink:#0a0a0a; --ok:#57c795;
+    /* The semantic pair, given the same shape as the cinnabar family so it cannot drift the way
+       that one did: a fill, a lighter form for text on dark, and channels for tints. Five greens
+       were in play (#57c795, #5d9e7e, #5fd08a, #6fd39a, #8fdcb8) doing one job between them —
+       "this succeeded" — plus a lone #cfd6ff on a checkbox that belonged to no palette at all. */
+    --on-ink:#0a0a0a; --ok:#57c795; --ok-d:#8fdcb8; --ok-rgb:87,199,149; --warn:#c9a04a;
     --r-xs:4px; --r-sm:6px; --r-md:8px; --r-ml:10px; --r-lg:12px; --r-xl:16px; --r-pill:100px;
     --base:.2s; --slow:.3s;
   }
@@ -502,10 +506,11 @@
   /* mode icon per Recents/Projects item — colour-cues the three modes without shouting */
   .s-item .s-ic{flex:none;display:flex;color:#6f6e68;transition:color .14s}
   .s-item:hover .s-ic,.s-item.on .s-ic{color:var(--dim)}
-  .s-item.mode-crystallize .s-ic{color:#c98a5e}
-  .s-item.mode-crystallize.on .s-ic,.s-item.mode-crystallize:hover .s-ic{color:var(--cin-d)}
-  .s-item.mode-brief .s-ic{color:#7fb0d6}
-  .s-item.mode-idea .s-ic{color:#7f9c86}
+  /* Mode is carried by the glyph, not by a hue. Three tints used to do it — #c98a5e, #7fb0d6,
+     #7f9c86 — a second colour system running underneath a palette that is charcoal, off-white and
+     one warm accent, and the only blue and green left in the product. They were also redundant:
+     the icon already says which mode a session is. The one coloured thing in the list stays the
+     dot on the session you have open, which is the only fact the list cannot show by shape. */
   .mi-ic{display:block}
   /* MD library list */
   .md-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r-sm);font-size:12.5px;color:var(--dim);cursor:pointer;transition:background .12s}
@@ -571,7 +576,7 @@
   .r-foot{flex:none;padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:8px;
     font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:#8b8a84}
   .sync{width:6px;height:6px;border-radius:50%;background:#7a7871;flex:none}
-  .sync.ok{background:#5d9e7e}.sync.sync{background:#c9a04a;animation:pl 1s infinite}.sync.off{background:var(--cinnabar)}
+  .sync.ok{background:var(--ok)}.sync.sync{background:var(--warn);animation:pl 1s infinite}.sync.off{background:var(--cinnabar)}
   .r-foot .tok{margin-left:auto}
 
   /* ctx menu */
@@ -802,9 +807,9 @@
   .df-sec{padding:14px 0;border-top:1px solid var(--line)}
   .df-h{font-size:14px;font-weight:700;margin-bottom:7px;display:flex;gap:8px;align-items:baseline}
   .df-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
-  .df-tag.add{color:var(--ok)}.df-tag.del{color:var(--cinnabar)}.df-tag.mod{color:#c9a04a}
+  .df-tag.add{color:var(--ok)}.df-tag.del{color:var(--cinnabar)}.df-tag.mod{color:var(--warn)}
   .df-b{font-family:var(--body);font-size:14.5px;line-height:1.85;color:var(--dim);word-break:break-word}
-  .df-b ins{background:rgba(87,199,149,.14);color:#8fdcb8;text-decoration:none;border-radius:2px;padding:0 1px}
+  .df-b ins{background:rgba(var(--ok-rgb),.14);color:var(--ok-d);text-decoration:none;border-radius:2px;padding:0 1px}
   .df-b del{background:rgba(var(--cin-rgb),.1);color:#c98a6e;text-decoration:line-through;border-radius:2px;padding:0 1px}
   .df-none{padding:20px 0;color:var(--mute);font-size:13.5px}
 
@@ -947,7 +952,7 @@
   .sum-warn b{color:var(--ink);font-weight:600}
   .sum-r{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-md);cursor:pointer;transition:background .14s var(--ease)}
   .sum-r:hover{background:rgba(255,255,255,.05)}
-  .sum-r input{flex:none;width:16px;height:16px;accent-color:#cfd6ff;cursor:pointer}
+  .sum-r input{flex:none;width:16px;height:16px;accent-color:var(--cinnabar);cursor:pointer}
   .sum-nm{font-size:13.5px;color:var(--ink);font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .sum-r.on-topic .sum-nm{font-family:var(--mono);font-size:12px;letter-spacing:.02em}
   .sum-sub{margin-left:auto;flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--mute);text-transform:uppercase}
@@ -989,7 +994,7 @@
   .eg-role{font-size:11px;color:var(--mute);margin-left:6px}
   .eg-sub{flex:1;min-width:0;font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .eg-model{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .eg-dot{width:6px;height:6px;border-radius:50%;background:#5fd08a;flex:none}
+  .eg-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex:none}
   .eg-dot.off{background:var(--cinnabar)}
   .eg-ver{flex:none;font-family:var(--mono);font-size:10.5px;color:var(--mute)}
   .ab-foot{margin-top:18px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);line-height:1.8;text-align:center}
@@ -1123,7 +1128,7 @@
   .dna-note{font-size:12px;color:var(--mute)}
   .dna-f{display:block;margin-top:12px}
   .dna-f>span{display:block;font-size:11.5px;color:var(--dim);margin-bottom:6px;font-weight:600}
-  .dna-f>span.ok{color:#6fd39a}.dna-f>span.no{color:var(--cin-d)}
+  .dna-f>span.ok{color:var(--ok-d)}.dna-f>span.no{color:var(--cin-d)}
   .dna-f textarea{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:var(--r-md);outline:none;resize:vertical;
     color:var(--ink);font-family:var(--ui);font-size:13px;line-height:1.6;padding:9px 11px;transition:border-color .15s}
   .dna-f textarea:focus{border-color:var(--line2)}
@@ -1175,8 +1180,14 @@
   .it-p:first-of-type{border-top:none}
   .it-t{flex:1;font-family:var(--body);font-size:14.5px;line-height:1.65;color:#e6e3dc}
   .it-t strong{color:var(--ink);font-weight:600}
-  .it-go{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);border:1px solid var(--line2);border-radius:var(--r-pill);padding:5px 12px;transition:.14s;white-space:nowrap}
-  .it-go:hover{background:rgba(255,255,255,.08);border-color:var(--ink)}
+  /* Three levels, because there are three different moves here and they are not equal. Keep it (✚)
+     is an aside. Explore stays inside the conversation. Document leaves with something made — it
+     is the forward move, so it is the only one that gets an edge. Two identical pills side by side
+     told the eye they were the same decision. */
+  .it-go{flex:none;font-size:11.5px;font-weight:600;color:var(--mute);border:1px solid transparent;border-radius:var(--r-pill);padding:5px 10px;transition:.14s;white-space:nowrap}
+  .it-go:hover{color:var(--ink)}
+  .it-go.pri{color:var(--ink);border-color:var(--line2);padding:5px 12px}
+  .it-go.pri:hover{background:rgba(var(--cin-rgb),.1);border-color:var(--cinnabar)}
   .it-acts{flex:none;display:flex;align-items:center;gap:6px}
   .it-save{font-size:13px;line-height:1;color:var(--mute);width:26px;height:26px;border-radius:var(--r-pill);border:1px solid var(--line);transition:.14s}
   .it-save:hover{color:var(--ink);border-color:var(--ink);background:rgba(255,255,255,.06)}
