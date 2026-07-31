@@ -2173,7 +2173,8 @@
       box.innerHTML='<div class="it-hd">Think · Galdr</div>'
         +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
           +'<div class="it-acts"><button class="it-save" onclick="saveProvocation(this)" title="Keep this — becomes a Crystallize source">✚</button>'
-          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button></div></div>').join('')
+          +'<button class="it-go" onclick="exploreIdea(this)">Explore →</button>'
+          +'<button class="it-go" onclick="docFromPush(this)" title="Crystallize this push into its own document">Document →</button></div></div>').join('')
         +'<button class="it-x" onclick="this.closest(\'.id-think\').remove()">Close</button>';
       // stash each push's plain text for Explore
       box.querySelectorAll('.it-p').forEach((el,k)=>el.dataset.push=(pts[k].t||'').replace(/\*\*/g,''));
@@ -2299,10 +2300,32 @@
     toast(p?('Saved to MD · /'+p.name+' — pick it into Crystallize'):'Saved — pick it into any Crystallize');
     // a nicer title if the answer has no heading — infer a topic label
     if(!/^#/.test(text))inferTopic(text).then(top=>{if(top){md.title=top;save();renderMDList()}}).catch(()=>{});
-    return true}
+    return md}   // the saved record, so a caller can carry it straight into a document (truthy — old callers unchanged)
+  // One click from a kept idea to a document. The MD library was the only crossing, and it took
+  // five steps: save the point, leave Idea, open Crystallize, find it in the picker, tick it, run.
+  // That is the move people want the moment an idea lands, and it was the longest path in the app.
+  //
+  // It opens a NEW crystallize session rather than converting the current one: the Idea chat that
+  // produced the spark is worth keeping as itself, and "several ideas → several documents" only
+  // works if each one gets its own canvas.
+  async function docFromMd(id){
+    if(_busy){toast('Working — one moment');return}
+    const m=(library||[]).find(x=>x.id===id);if(!m){toast('That note is gone');return}
+    newSession('crystallize');
+    const s=cur();if(!s)return;
+    s.title=(m.title||'Document').slice(0,60);s.updatedAt=Date.now();save();renderRail();
+    await doSumming({brief:false,files:[],chats:[],md:[id]});}
   function addSpark(i){const s=cur();if(!s)return;const m=curChat(s).ideas[i];if(m)saveToLibrary(m.c)}
   // R5 — keep a Think provocation too (the sharper mind), not just Galdr's replies
   function saveProvocation(btn){const p=btn&&btn.closest('.it-p');if(p&&saveToLibrary(p.dataset.push||''))btn.textContent='✓'}
+  // Think used to be a dead end: keep the point, or feed it back into the chat. Neither goes
+  // forward. This saves it and crystallizes it in one move, so a push you liked becomes a document
+  // without leaving the thread it came from.
+  function docFromPush(btn){
+    const p=btn&&btn.closest('.it-p');if(!p)return;
+    const md=saveToLibrary(p.dataset.push||'');
+    if(!md){toast('Nothing to build from');return}
+    docFromMd(md.id);}
   /* ═══ MD library — open / download / delete ═══ */
   function openMD(id){
     const md=(library||[]).find(x=>x.id===id);if(!md)return;
@@ -2320,13 +2343,17 @@
   function openMDCtx(e,id){
     const md=(library||[]).find(x=>x.id===id);
     let h='<button onclick="openMD(\''+id+'\');hideCtx()">Open</button>'
+      +'<button onclick="hideCtx();docFromMd(\''+id+'\')">Crystallize into a document</button>'
       +'<button onclick="downloadMD2(\''+id+'\');hideCtx()">Download .md</button>';
     if(projects.length||((md&&md.projectId)||null)){h+='<div class="sep"></div><div class="cap">Move to</div>';
       projects.forEach(p=>{if(p.id!==((md&&md.projectId)||null))h+='<button onclick="moveMD(\''+id+'\',\''+p.id+'\');hideCtx()">/'+esc(p.name)+'</button>'});
       if(md&&md.projectId)h+='<button onclick="moveMD(\''+id+'\',null);hideCtx()">General</button>'}
     h+='<div class="sep"></div><button class="danger" onclick="deleteMD(\''+id+'\');hideCtx()">Delete</button>';
     showCtx(e,h)}
-  function insertMDToCanvas(id){uiSheetClose();toast('In Crystallize, this MD is available as a source');/* wired fully in M3 */}
+  // Was a stub — it announced that the note "is available as a source" in Crystallize and left the
+  // user to go find it. A button whose whole job is to take you somewhere, telling you the place
+  // exists. It builds the document now.
+  function insertMDToCanvas(id){uiSheetClose();docFromMd(id)}
   async function inferTopic(text){
     try{const t=await streamAPI('tag',[{role:'user',content:text.slice(0,1200)}],'',null);
       return (t||'').replace(/["'.\n]/g,'').replace(/\s{2,}/g,' ').trim().split(/\s+/).slice(0,3).join(' ')||'General'}
