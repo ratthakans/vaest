@@ -181,10 +181,17 @@
   /* The number sits just UNDER the hero, never above it: the headline is the page's voice and this
      is its proof. At 150px it was the loudest thing on the site and out-shouted the thing it was
      meant to support. */
-  .specs.one .n{font-size:clamp(52px,5vw,72px);line-height:.96;color:var(--or)}
+  /* Tracks just under .hero h1 — clamp(40px,5.4vw,76px) — at BOTH ends, not only at the cap. The
+     first pass paired a 52px floor against the hero's 40px, so the number out-shouted the headline
+     on every phone: the exact fault fixed at desktop, still live at the small end. A clamp is two
+     numbers and a slope, and a hierarchy has to hold across all three. */
+  .specs.one .n{font-size:clamp(36px,4.9vw,68px);line-height:.96;color:var(--or)}
+  /* The number and the line are one sentence; the eyebrow is an aside. 16px then 26px read as
+     nearly the same interval, so the block came across as three stacked items rather than a
+     statement with a footnote. 20 then 36 — the grouping is the spacing's job. */
   .specs.one .k{font-family:var(--serif);font-weight:500;font-size:clamp(18px,1.9vw,25px);line-height:1.32;letter-spacing:-.01em;
-    text-transform:none;color:var(--ink);margin-top:16px;max-width:24ch}
-  .specs.one .kk{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:26px}
+    text-transform:none;color:var(--ink);margin-top:20px;max-width:24ch}
+  .specs.one .kk{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin-top:36px}
 
   /* ── section frame ── */
   .sec-pad{padding-top:150px;padding-bottom:150px}
@@ -276,7 +283,12 @@
   @media(max-width:900px){.eng{grid-template-columns:1fr;gap:36px}}
   .e-card{padding-top:26px;border-top:1px solid var(--line2)}
   .e-card .em{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
-  .e-card h3{font-family:var(--th);font-weight:600;font-size:21px;margin:18px 0 13px;letter-spacing:-.006em;color:var(--ink)}
+  /* The last sans-bold heading on the page. Every other display line moved to serif 500, so a card
+     title at sans 600 was the one voice left speaking differently — and these are the most
+     editorial lines on the site ("the mind you think with", "the last light before it ships"),
+     which is precisely the register the serif carries. Noto Serif Thai 400/500 is loaded, so Thai
+     lands on the same weight rather than falling back a step. */
+  .e-card h3{font-family:var(--serif);font-weight:500;font-size:22px;line-height:1.28;margin:16px 0 12px;letter-spacing:-.01em;color:var(--ink)}
   .e-card p{font-family:var(--th);font-size:14px;line-height:1.85;color:var(--dim)}
   .e-card .tag{display:inline-block;margin-top:22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
 
@@ -455,13 +467,13 @@
   <div class="eng reveal">
     <div class="e-card">
       <div class="em">◭ GALDR <span style="color:var(--mute);font-weight:400">· v3.0</span></div>
-      <h3 class="th">The mind you think with</h3>
+      <h3>The mind you think with</h3>
       <p class="th"><i>Galdr</i> — the old word for a chant sung to change something. It is where the work begins: a sandbox that thinks out loud with you until the first true angle lands. Then it comes back on the finished draft as <b>Think</b> — reading each section and pushing back on the missing hook, the safe choice worth bending. It only ever proposes. A mind apart from the one that wrote the page, so the second opinion is honest.</p>
       <span class="tag">Idea · Think</span>
     </div>
     <div class="e-card">
       <div class="em">◉ ODIN <span style="color:var(--mute);font-weight:400">· v2.0</span></div>
-      <h3 class="th">Every word on the page</h3>
+      <h3>Every word on the page</h3>
       <p class="th"><i>Odin</i> hung nine nights on the world-tree to win the runes — writing itself. He is the only engine that writes the canvas. Chats, files, a mountain of notes go in; one document in one voice comes out. Every critique the others raise passes through his hand before it lands, which is the whole reason the page never reads like it was written by a committee.</p>
       <span class="tag">Crystallize · the voice</span>
     </div>
@@ -470,7 +482,7 @@
            engine wearing one, and the sentence directly below already says "our most powerful
            engine, saved for the end" — better, and in the product's own voice. -->
       <div class="em">◠ NORRSKEN <span style="color:var(--mute);font-weight:400">· v3.2</span></div>
-      <h3 class="th">The last light before it ships</h3>
+      <h3>The last light before it ships</h3>
       <p class="th"><i>Norrsken</i> — the northern lights. Our most powerful engine, saved for the end. It reads the whole document at once, from above, and catches what line-by-line misses: an inconsistency, a claim that repeats, a logic that bends — every finding anchored to its exact line. Nothing leaves the studio until it has passed. And when the work becomes a deck for the room, Norrsken lands that too.</p>
       <span class="tag">Refine · Present</span>
     </div>
@@ -485,17 +497,17 @@
   <div class="why reveal">
     <div class="e-card">
       <div class="em">Brief · VÆST asks</div>
-      <h3 class="th">It interviews you</h3>
+      <h3>It interviews you</h3>
       <p class="th">Flip the chat around — VÆST asks the questions, one at a time, until the brief has no holes. No other tool turns the brief into a conversation you can hand a team.</p>
     </div>
     <div class="e-card">
       <div class="em">Critic ≠ Writer</div>
-      <h3 class="th">A real second opinion</h3>
+      <h3>A real second opinion</h3>
       <p class="th">The engine that pushes your work is not the one that writes it — and it is never allowed to write. You approve; Odin rewrites. That separation is why the critique is honest, instead of the same mind nodding at itself.</p>
     </div>
     <div class="e-card">
       <div class="em">One voice</div>
-      <h3 class="th">Client-ready, not a chat log</h3>
+      <h3>Client-ready, not a chat log</h3>
       <p class="th">Every word lands on one editable canvas in a single voice — then a share link your client comments on, and a deck to close. A synthesis tool gives you notes; VÆST gives you the deliverable.</p>
     </div>
   </div>
