@@ -77,6 +77,7 @@
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
   let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
   let library=[]; // MD library — saved chat answers, kept as .md
+  let _ctxTrimmed=0; // how many picked chats had to be cut to fit the shared context budget
   function setBusy(b){_busy=b;if(b)clearTimeout(_pt);const bar=$('genBar');if(bar)bar.classList.toggle('on',!!b);const sb=$('stopBtn');if(sb)sb.classList.toggle('show',!!b);document.querySelector('.main')?.classList.toggle('genning',!!b)}
   /* ═══ CI dialog — promise-based confirm/prompt ═══ */
   let _dlgResolve=null;
@@ -2019,7 +2020,11 @@
     // the anon Log-in/Sign-up bar belongs on the home only — the topbar owns the canvas view
     const ab=$('anonBar');if(ab)ab.style.display='none';
     // brief canvases have no Refine (that's a crystallize/Norrsken step) — hide the top-bar button
-    const isBrief=inferMode(s)==='brief';const mb=$('mastBtn');if(mb)mb.style.display=isBrief?'none':'';
+    // Refine used to be hidden on a brief. Norrsken's audit — inconsistency, a claim made twice, a
+    // logic that bends — is exactly what a brief needs before it reaches a client, and a brief is
+    // the document most likely to be the thing sent. Nothing about the engine cared which mode
+    // produced the canvas; only this line did.
+    const mb=$('mastBtn');if(mb)mb.style.display='';
     ensureCanvases(s);renderDoc(s.canvas);$('topTitle').textContent=s.title;updateUndo();$('cvView').scrollTop=0;renderTabs();fetchComments(s)}
   // brief canvas → back to the interview to fill gaps
   function reopenBrief(){const s=cur();if(!s)return;s.briefComplete=false;showHome();
@@ -2156,7 +2161,11 @@
     const prompt='Idea under discussion:\n'+m.c;
     const r=raf(full=>{const el=box.querySelector('.it-stream');if(el)el.innerHTML=renderMd(full)+'<span class="cursor"></span>'});
     try{
-      const out=await streamAPI('sectionthink',[{role:'user',content:prompt}],toneSys(),r);r.stop();
+      // `think` (8192), not `sectionthink` (2048). The two routes exist for two jobs: sectionthink
+      // pushes ONE section of a canvas and is deliberately short; think reads a whole idea. The app
+      // called the short one for both, so `think` had zero callers outside the public API and every
+      // Think in the product ran on a quarter of the budget written for it.
+      const out=await streamAPI('think',[{role:'user',content:prompt}],toneSys(),r);r.stop();
       const pts=parsePoints(out);
       box.innerHTML='<div class="it-hd">Think · Galdr</div>'
         +pts.map((p,pi)=>'<div class="it-p" style="animation-delay:'+(pi*70)+'ms"><div class="it-t">'+mdInline(p.t)+'</div>'
@@ -2324,12 +2333,20 @@
   // Selected chats → Crystallize input, one block per chat so Odin sees the topic boundaries.
   function chatsContext(chatIds,excludeTexts){
     const s=cur();if(!s||!chatIds||!chatIds.length)return '';
-    const per=Math.max(2500,Math.floor(9000/chatIds.length)); // shared budget — every picked chat gets a voice
+    // Shared budget — every picked chat gets a voice. Note the floor: past ~4 chats the divisor
+    // stops mattering and each one is simply capped at 2,500 characters, so picking MORE chats
+    // means less of each rather than more in total. capTail keeps the newest turns and drops the
+    // rest; _ctxTrimmed records how many were cut so the UI can say so instead of silently
+    // handing Odin a fraction of what the user thought they selected.
+    const per=Math.max(2500,Math.floor(9000/chatIds.length));
+    _ctxTrimmed=0;
     const blocks=chatsOf(s).filter(c=>chatIds.includes(c.id)).map(c=>{
       let ideas=c.ideas;
       if(excludeTexts&&excludeTexts.size)ideas=ideas.filter(m=>!excludeTexts.has((m.c||'').trim()));
       if(!ideas.length)return '';
-      return '## Chat: '+(c.title||'Untitled')+'\n'+capTail(ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n'),per)
+      const full=ideas.map(m=>(m.r==='user'?'You: ':'VÆST: ')+m.c).join('\n');
+      if(full.length>per)_ctxTrimmed++;
+      return '## Chat: '+(c.title||'Untitled')+'\n'+capTail(full,per)
     }).filter(Boolean);
     if(!blocks.length)return '';
     return '\n\n# Idea chats (raw conversations — curate: keep what serves the work, drop the rest)\n'+blocks.join('\n\n')}
@@ -2358,9 +2375,14 @@
       if(c)c.body.push(raw);else if(line){if(!secs.length||secs[0].h!=='_intro'){secs.unshift({h:'_intro',body:[raw]})}else secs[0].body.push(raw)}}
     if(!secs.length)secs=[{h:'Document',body:lines}];
     const s=cur();const docTitle=title||(s?s.title:'Document');
-    const isBrief=!_shareId&&inferMode(s)==='brief'; // brief canvas: edit sections + export, no Think/Refine
+    // A brief now carries the same instrument as a crystallized document. It used to stop at
+    // "edit sections + export": no Refine before it went out, no Recast into a concept, no share
+    // link for the client to comment on — every capability switched off for the one mode whose
+    // output is most often the thing actually sent. Think is not in the trail because the section
+    // tools now carry it; the trail is the flow, not the toolbar.
+    const isBrief=!_shareId&&inferMode(s)==='brief';
     const trail=isBrief
-      ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="exportPDF()">Export PDF</span></div>'
+      ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="openRecast(event)">Recast <em>as a concept</em></span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>'
       : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="openRecast(event)">Recast <em>for a room</em></span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
     let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
@@ -2384,8 +2406,11 @@
           +'<div class="sec-tools">'
           +'<button class="st'+(pinned?' on':'')+'" onclick="pinSection(this)" title="Pin as chapter"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z"/><path d="M12 16v4"/></svg></button>'
           +'<button class="st" onclick="copySection(this)" title="Copy section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
-          +(isBrief?'':'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>'
-          +'<button class="st think" onclick="sectionThink(this)" title="Think — a bolder, braver take">Think</button>')
+          +(isBrief?'':'<button class="st" onclick="sectionIdea(this)" title="Add an idea to this section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.7V16h6v-.7c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3z"/><path d="M9.5 20h5"/></svg> Idea</button>')
+          // Think was inside the isBrief ternary alongside Idea — one pair of brackets around both,
+          // so a compiled brief's sections carried only Pin and Copy. A brief is the document most
+          // likely to reach a client, and it was the one that could not be pushed.
+          +'<button class="st think" onclick="sectionThink(this)" title="Think — a bolder, braver take">Think</button>'
           +'</div></div>'
           +'<div class="sec-h" contenteditable="true" spellcheck="false">'+esc(sec.h)+'</div>')
         +'<div class="sec-c" contenteditable="true" spellcheck="false">'+renderMd(sec.body.join('\n'))+'</div>'
@@ -2693,6 +2718,9 @@
       +chatsContext(sel.chats)
       +mdContext(sel.md)
       +projectContext(s);
+    // Say it when a picked chat did not fit. Silence here reads as "all of it went in", and the
+    // trim gets worse the more chats you pick — the opposite of what picking more implies.
+    if(_ctxTrimmed)toast(_ctxTrimmed+(_ctxTrimmed>1?' chats were':' chat was')+' long — the newest part of each went in');
     // switch to canvas with live streaming
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     // the crystallize moment — name each source and let them converge, so the premise is visible:
