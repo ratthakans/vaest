@@ -588,6 +588,9 @@
     const headers={'Content-Type':'application/json'};
     if(ANON){
       // free trial covers Galdr (idea) only — anything else is the signup wall
+      // `tag` is the automatic topic label — never a reason to raise the sign-up wall in front of
+      // someone mid-chat. It fails quietly if the server refuses it; the title just stays "General".
+      if(mode==='tag'){throw new Error('tag: anonymous')}
       if(mode!=='idea'){anonWall();throw new Error('Sign up to use this')}
     }else{
       if(!await ensureAuth()){showAuth('Session expired — sign in again');throw new Error('Not signed in')}

@@ -303,6 +303,17 @@ export default async function handler(req, res) {
   // reject unknown modes — otherwise an unknown mode falls back to ROUTE.summing (Opus)
   // while skipping the document counter, and the Refine gate keys off literal mode strings.
   if (!Object.prototype.hasOwnProperty.call(ROUTE, mode)) { res.status(400).json({ error: 'unknown mode' }); return; }
+  // Bound the per-call cost. lib/apiengine.js has carried this ceiling since the public API
+  // shipped, with the reasoning spelled out there: the spend cap is only checked BEFORE a call, so
+  // without an input limit one request can run past the 30%-margin floor in a single shot. The
+  // app's own endpoint — which takes the largest inputs in the product, a whole Crystallize — never
+  // had it. A Basic account (cap ฿255/month) could post ~4MB at Fable's ฿360/M input and spend the
+  // month's entire ceiling on one request, because nothing re-checks mid-flight. Reject rather than
+  // truncate: a silently cut document is billed in full and reads as VÆST having missed things.
+  const inputChars = messages.reduce((n, m) => n + (typeof m?.content === 'string' ? m.content.length
+    : Array.isArray(m?.content) ? m.content.reduce((k, c) => k + (typeof c?.text === 'string' ? c.text.length : 0), 0) : 0), 0)
+    + String(system || '').length;
+  if (inputChars > 280000) { res.status(413).json({ error: 'That’s a lot at once — keep the sources under ~280,000 characters, or crystallize in passes.' }); return; }
 
   // 1) auth
   const user = await verifyUser(req);
@@ -312,6 +323,9 @@ export default async function handler(req, res) {
   // burst + hourly limit and a hard context cap; never touches the DB and never records usage.
   // Gemini-only: an anon call that fails does NOT fall back to Anthropic (no paid engine for anon).
   if (!user) {
+    // Stays idea-only: this branch always streams TASK.idea whatever the mode, so serving `tag`
+    // here would answer a 3-word label request with a full reply. The client skips the label call
+    // outright while anonymous — silently, so the wall never appears mid-chat (see streamAPI).
     if (mode !== 'idea') { res.status(401).json({ error: 'Sign up to use this — the free trial covers the Idea chat', signup: true }); return; }
     const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
     if (await rateLimit('anonburst:' + ip, 6, 60)) { res.status(429).json({ error: 'One at a time — give it a few seconds' }); return; }
@@ -382,7 +396,12 @@ export default async function handler(req, res) {
   // Crystallize is paid, with no free first one. The free account is the Idea chat and nothing
   // else — an honest line to draw and to say out loud, where "one on the house, then a wall"
   // meant the moment someone was most convinced was also the moment the product stopped.
-  if (freeTier && mode !== 'idea') {
+  // `tag` is exempt. It is a 1–3 word topic label (16 output tokens) the client fires on its own
+  // when a reply is saved to the MD library — so a free account clicking "✚ Save" on an Idea reply
+  // it is entitled to got a 402 back, and the client turns any 402 into the full-screen plan gate.
+  // The label call is fire-and-forget and swallows its own error, but the paywall had already been
+  // painted by then. The cheapest call in the product was closing the funnel it exists to serve.
+  if (freeTier && mode !== 'idea' && mode !== 'tag') {
     res.status(402).json({
       error: mode === 'summing'
         ? 'Crystallize is part of a plan — the free account covers the Idea chat'

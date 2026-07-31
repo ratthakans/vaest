@@ -3,6 +3,7 @@ import { rateLimit } from '../lib/ratelimit.js';
 import http from 'node:http';
 import https from 'node:https';
 import dns from 'node:dns';
+import net from 'node:net';
 import { URL } from 'node:url';
 
 // Read a public web page server-side and return its stripped text, so the brand-voice flow can
@@ -68,6 +69,22 @@ export function isBlockedAddr(ip) {
 function hostLooksInternal(host) {
   const h = String(host || '').toLowerCase();
   return !h || h === 'localhost' || h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.localhost');
+}
+
+// The hole guardedLookup could not cover, because it never ran.
+//
+// Node's net.connect short-circuits on isIP(host) and returns BEFORE consulting options.lookup —
+// so for a URL written as a literal address (http://127.0.0.1/, http://169.254.169.254/…) the
+// guard below was simply never called, and hostLooksInternal only ever matched names. Verified by
+// running it: a request with a lookup that refuses everything still connected and returned the
+// body. Defence #1 in the header comment was, for that whole class of target, absent.
+//
+// A literal address skips DNS entirely, so it has to be classified here, before the socket, and at
+// every redirect hop — a public host may still bounce to an address.
+export function isBlockedTarget(u) {
+  const h = String(u && u.hostname || '').replace(/^\[|\]$/g, '');   // IPv6 arrives bracketed
+  if (hostLooksInternal(h)) return true;
+  return net.isIP(h) ? isBlockedAddr(h) : false;                     // names are settled at connect
 }
 
 // Validate the address the socket is about to use. Node calls this instead of dns.lookup.
@@ -154,7 +171,7 @@ export default async function handler(req, res) {
     let hop = 0, out = null;
     for (;;) {
       if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('bad-scheme');
-      if (hostLooksInternal(u.hostname)) throw new Error('blocked-address');
+      if (isBlockedTarget(u)) throw new Error('blocked-address');
       const left = TOTAL_MS - (Date.now() - started);
       if (left <= 0) throw new Error('timeout');
       const r = await getOnce(u, left);

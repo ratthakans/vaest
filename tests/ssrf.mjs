@@ -6,10 +6,12 @@
 // list let ::ffff:127.0.0.1 and most real ULAs through. Every bypass that was demonstrated
 // is pinned here so it cannot come back.
 import assert from 'node:assert/strict';
-import { isBlockedAddr } from '../api/extract.js';
+import http from 'node:http';
+import { isBlockedAddr, isBlockedTarget } from '../api/extract.js';
 
 let pass = 0, fail = 0;
 function t(name, fn) { try { fn(); console.log('  ✓ ' + name); pass++; } catch (e) { console.log('  ✗ ' + name + '\n      ' + (e && e.message)); fail++; } }
+async function ta(name, fn) { try { await fn(); console.log('  ✓ ' + name); pass++; } catch (e) { console.log('  ✗ ' + name + '\n      ' + (e && e.message)); fail++; } }
 
 console.log('\napi/extract.js — SSRF address guard\n');
 
@@ -59,6 +61,61 @@ const ALLOWED = {
 };
 for (const [name, ip] of Object.entries(ALLOWED))
   t('allows ' + name + ' (' + ip + ')', () => assert.equal(isBlockedAddr(ip), false));
+
+// ── The classifier being right is not the same as the classifier being REACHED ──
+//
+// Every test above calls isBlockedAddr directly. All of them passed while the endpoint was fully
+// exploitable, because Node's net.connect short-circuits on isIP(host) and never consults
+// options.lookup — so guardedLookup, the defence the file's header calls #1, was never invoked for
+// a URL written as a literal address. A unit test on a pure function cannot see that. These run
+// the target through the code path a request actually takes.
+
+console.log('\napi/extract.js — the guard is REACHED, not just correct\n');
+
+for (const raw of ['http://127.0.0.1:8080/', 'http://169.254.169.254/latest/meta-data/',
+                   'http://10.0.0.5/', 'http://[::1]:9000/', 'http://192.168.1.1/',
+                   'https://[::ffff:127.0.0.1]/', 'http://localhost:3000/'])
+  t('refuses ' + raw, () => assert.equal(isBlockedTarget(new URL(raw)), true));
+
+for (const raw of ['https://example.com/', 'https://1.1.1.1/', 'http://vaest.orions.agency/'])
+  t('still allows ' + raw, () => assert.equal(isBlockedTarget(new URL(raw)), false));
+
+// Why the pre-flight has to exist at all. Pin the platform behaviour that made the original guard
+// unreachable: give http.request a lookup that refuses EVERYTHING and point it at a literal
+// address — it connects anyway, because net.connect returns on isIP(host) before reading
+// options.lookup. If Node ever changes this, the test says so rather than the guard quietly
+// becoming redundant. (This is the exact experiment that found the live bug.)
+await ta('Node skips options.lookup for a literal address — so a pre-flight check is required', async () => {
+  const srv = http.createServer((_q, r) => { r.writeHead(200); r.end('reached') });
+  await new Promise(r => srv.listen(0, '127.0.0.1', r));
+  const port = srv.address().port;
+  let lookupCalled = false;
+  try {
+    const reached = await new Promise(resolve => {
+      const rq = http.request(new URL(`http://127.0.0.1:${port}/`), {
+        timeout: 4000,
+        lookup: (_h, _o, cb) => { lookupCalled = true; cb(new Error('blocked-address')) },
+      }, res => { res.resume(); res.on('end', () => resolve(true)) });
+      rq.on('error', () => resolve(false));
+      rq.end();
+    });
+    assert.equal(lookupCalled, false, 'lookup ran — the platform changed, re-read the guard');
+    assert.equal(reached, true, 'connect was refused — the platform changed, re-read the guard');
+  } finally { srv.close() }
+});
+
+// And that the handler actually CALLS it, on the first request and on every redirect hop. The
+// previous guard was correct and simply never invoked; a unit test on a pure function cannot tell
+// the difference, so this reads the source the way tests/audit.mjs does.
+const SRC = await import('node:fs').then(fs => fs.readFileSync(new URL('../api/extract.js', import.meta.url), 'utf8'));
+t('the request loop pre-flights every hop through isBlockedTarget', () => {
+  const loop = SRC.slice(SRC.indexOf('for (;;)'), SRC.indexOf('if (out.status'));
+  assert.ok(loop.includes('isBlockedTarget(u)'), 'the redirect loop no longer pre-flights the target');
+  assert.ok(/hop > MAX_HOPS/.test(loop), 'redirects are no longer bounded');
+});
+t('isBlockedTarget classifies literal addresses rather than only names', () => {
+  assert.ok(/net\.isIP\(/.test(SRC), 'the IP-literal branch is gone — names-only means the bypass is back');
+});
 
 console.log('\n' + pass + ' passed · ' + fail + ' failed\n');
 process.exit(fail ? 1 : 0);
