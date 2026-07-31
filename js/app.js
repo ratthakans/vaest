@@ -946,10 +946,18 @@
     const unit=(n,w)=>n+' '+w+(n===1?'':'s')+' ago';
     if(day<7)return unit(day,'day');
     return unit(Math.floor(day/7),'week')}
+  // The rail is sorted newest-first, so a timestamp on every row restated the order the list was
+  // already in — a second column of grey down the whole sidebar, saying nothing the position did
+  // not. It rides as a tooltip now, and as the real date rather than "1 week ago", which is the
+  // form you actually want when you go looking. fmtAgo stays where the time IS the content:
+  // snapshots, client comments, and the ⌘K palette (where it separates two same-named sessions).
+  function fmtWhen(ts){if(!ts)return '';
+    try{return new Date(ts).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}
+    catch(e){return new Date(ts).toLocaleString()}}
   let _cmtCounts={};
   function sItem(s){const n=_cmtCounts[s.id]||0;const m=inferMode(s);
     return '<div class="s-item mode-'+m+(s.id===currentSid?' on':'')+'" data-sid="'+s.id+'" draggable="true" ondragstart="onRailDrag(event,\'s\',\''+s.id+'\')" onclick="openSession(\''+s.id+'\')" ondblclick="renameSession(\''+s.id+'\')">'
-    +'<span class="s-ic" title="'+m+'">'+modeIcon(m)+'</span><span class="sb"><span class="tt">'+esc(s.title)+'</span><span class="ago">'+fmtAgo(s.updatedAt)+'</span></span>'
+    +'<span class="s-ic" title="'+m+'">'+modeIcon(m)+'</span><span class="sb" title="'+esc(fmtWhen(s.updatedAt))+'"><span class="tt">'+esc(s.title)+'</span></span>'
     +(s.private?'<span class="lock" title="Private — on this device only">🔒</span>':'')+(n?'<span class="cbadge" title="'+n+' client comment'+(n>1?'s':'')+'">'+n+'</span>':'')
     +'<button class="more" aria-label="Session options" onclick="event.stopPropagation();openCtx(event,\''+s.id+'\')">⋯</button></div>'}
   // sweep shared sessions for fresh client comments (badge in the rail)
