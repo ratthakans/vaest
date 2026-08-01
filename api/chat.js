@@ -513,9 +513,13 @@ export default async function handler(req, res) {
     const { inTok, outTok } = usage;
     // cost bucket only (galdr/sonnet/norrsken/odin) — never the underlying model id.
     // Keyed off the model that actually ran, so any fallback is billed as what really served it.
+    // Buckets are ENGINE names. `sonnet` was one of the four, and this trailer is written into the
+    // response stream — so the model family behind Galdr was in every reader's network tab, under
+    // a comment promising it never would be. The rate that used to sit under `galdr` was Haiku's;
+    // it moves to `galdr-lite` so the engine-named bucket can carry the engine's real rate.
     const mid = String(usage.model || route.model || '');
     const bucket = /fable/.test(mid) ? 'norrsken'
-      : /sonnet/.test(mid) ? 'sonnet' : /gemini|haiku/.test(mid) ? 'galdr' : 'odin';
+      : /sonnet/.test(mid) ? 'galdr' : /gemini|haiku/.test(mid) ? 'galdr-lite' : 'odin';
     // Send the per-document cost and close the response FIRST, so the metering read-modify-write
     // below no longer adds its round-trips to the tail the user is waiting on. It still runs
     // before the handler returns (usage is recorded); its own try/catch keeps a metering hiccup

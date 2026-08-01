@@ -7,11 +7,24 @@
 // nothing but attention — no model id in the client, no pure white as text.
 //
 //   node tests/audit.mjs      (wired into `npm test`)
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
-const APP = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
-const HTML = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const CSS = readFileSync(new URL('../css/app.css', import.meta.url), 'utf8');
+const rd = p => readFileSync(new URL(p, import.meta.url), 'utf8');
+const APP = rd('../js/app.js');
+const HTML = rd('../index.html');
+const CSS = rd('../css/app.css');
+// The audit read three files and called itself clean. `api/` and `home.html` were outside its
+// sight entirely, which is how a model name shipped in a response trailer, a stale version number
+// sat in the marketing footer, and a "4 Minds" headline contradicted "three engines" one screen
+// below — all of them under a green AUDIT CLEAN. A gate that covers part of the surface reports on
+// part of the surface; it does not report on the product.
+const HOME = rd('../home.html');
+const apiDir = new URL('../api/', import.meta.url);
+const API = readdirSync(apiDir).filter(f => f.endsWith('.js'))
+  .map(f => ({ f: 'api/' + f, src: readFileSync(new URL(f, apiDir), 'utf8') }));
+const V1 = readdirSync(new URL('../api/v1/', import.meta.url)).filter(f => f.endsWith('.js'))
+  .map(f => ({ f: 'api/v1/' + f, src: readFileSync(new URL('../api/v1/' + f, import.meta.url), 'utf8') }));
+const SERVER = [...API, ...V1];
 
 let pass = 0, fail = 0;
 const t = (name, fn) => { try { fn(); console.log('  ✓ ' + name); pass++; } catch (e) { console.log('  ✗ ' + name + '\n      ' + e.message); fail++; } };
@@ -70,6 +83,85 @@ t('no model id in a persisted state key in app.js', () => {
   // token buckets and rate keys are written to localStorage and synced to the cloud
   const hits = [...APP.matchAll(/\b(?:tok|rt|rates?)\s*\.\s*(\w+)/g)].map(m => m[1]).filter(k => VENDOR.test(k));
   if (hits.length) throw new Error(`persisted key names: ${fmt([...new Set(hits)])}`);
+});
+
+// The rule above matched `tok.x` / `rt.x` — object names that do not hold the leaks. It passed
+// while 'sonnet', r.opus, t.opus and r.mimir all shipped in the bundle, because a regex written
+// against one shape cannot see another. This one reads every string literal and property name in
+// the file, which is the surface an attacker actually greps.
+t('no vendor or model name anywhere in the shipped client bundle', () => {
+  // One exception, and it is exempted by LOCATION rather than by pattern: the LEGACY-KEYS block
+  // must name the storage keys older builds wrote in order to migrate them away. Weakening the
+  // regex instead would have opened the door everywhere; cutting a hole at one labelled address
+  // keeps the rule intact and makes the exception reviewable — and it disappears when that block
+  // is finally deleted.
+  const a = APP.indexOf('/* LEGACY-KEYS'), b = APP.indexOf('/* END LEGACY-KEYS */');
+  if (a < 0 || b < a) throw new Error('the LEGACY-KEYS quarantine block is gone — re-scope this exemption');
+  const src = APP.slice(0, a) + APP.slice(b);
+  const strings = [...src.matchAll(/'([^'\\\n]{2,40})'|"([^"\\\n]{2,40})"/g)].map(m => m[1] || m[2]);
+  const props = [...src.matchAll(/\.\s*([a-zA-Z_$][\w$]*)/g)].map(m => m[1]);
+  const hits = [...strings, ...props].filter(v => VENDOR_WORD.test(v));
+  if (hits.length) throw new Error(`shipped to every visitor: ${fmt([...new Set(hits)])}`);
+});
+
+t('no model id in what the server sends back to the client', () => {
+  // The [[USAGE]] trailer and every error string reach the browser. A cost bucket named after a
+  // model family is a model id however it is labelled in a comment.
+  const hits = [];
+  for (const { f, src } of SERVER) {
+    for (const m of src.matchAll(/res\.(?:write|json|status\([^)]*\)\.json)\s*\(([^;]{0,220})/g))
+      if (VENDOR_WORD.test(m[1])) hits.push(f + ': ' + m[1].replace(/\s+/g, ' ').trim().slice(0, 70));
+    for (const m of src.matchAll(/\?\s*'([a-z]{3,12})'\s*:/g))
+      if (VENDOR_WORD.test(m[1])) hits.push(f + ": bucket '" + m[1] + "'");
+  }
+  if (hits.length) throw new Error(`reaches the client: ${fmt([...new Set(hits)])}`);
+});
+
+console.log('\nWiring the audit could not see before — api/ and home.html\n');
+
+t('every onclick in app.js resolves to a function it declares', () => {
+  // app.js builds most of its own markup, so index.html-only checking missed every handler the
+  // script writes at runtime — including a Recast entry that pointed at nothing.
+  const declared = new Set([...APP.matchAll(/(?:function\s+|const\s+|let\s+)([a-zA-Z_$][\w$]*)\s*(?:\(|=)/g)].map(m => m[1]));
+  const called = new Set([...APP.matchAll(/onclick="([a-zA-Z_$][\w$]*)\(/g)].map(m => m[1]));
+  const missing = [...called].filter(f => !declared.has(f));
+  if (missing.length) throw new Error(`handlers that do not exist: ${fmt(missing)}`);
+});
+
+t('no CSS animation references keyframes that were never defined', () => {
+  // `animation:tryflow` named a keyframe declared in a different file and silently did nothing.
+  const all = CSS + HOME + rd('../css/site.css') + rd('../css/nav.css');
+  const defined = new Set([...all.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1]));
+  const used = new Set([...all.matchAll(/animation(?:-name)?\s*:\s*([^;}]+)/g)]
+    .flatMap(m => m[1].split(',').map(p => (p.trim().match(/^([A-Za-z_-][\w-]*)/) || [])[1]))
+    .filter(n => n && !['none', 'inherit', 'initial', 'unset'].includes(n)));
+  const missing = [...used].filter(n => !defined.has(n) && !/^\d/.test(n));
+  if (missing.length) throw new Error(`animations that never run: ${fmt(missing)}`);
+});
+
+// Only what a reader actually sees. The first version of this check scanned the raw file and
+// flagged the phrase "4 Minds" sitting inside a CSS comment that explains why the 4-up stat bar
+// was removed — the fix being described as the fault. Strip style, script and comments first.
+const prose = html => html
+  .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+  .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+  .replace(/<!--[\s\S]*?-->/g, ' ')
+  .replace(/<[^>]+>/g, ' ');
+
+t('home.html states the same engine count the product ships', () => {
+  const engines = (APP.match(/\{n:'[A-Za-z]+'\s*,\s*role:/g) || []).length;
+  const text = prose(HOME);
+  const claims = [...text.matchAll(/(\w+)\s+(?:minds|engines)\b/gi)].map(m => m[1].toLowerCase());
+  const WORD = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+  const bad = claims.map(c => WORD[c] ?? +c).filter(n => Number.isFinite(n) && n !== engines);
+  if (bad.length) throw new Error(`markup claims ${fmt(bad.map(String))} minds/engines; ENGINES has ${engines}`);
+});
+
+t('no version literal in the marketing markup either', () => {
+  const v = (APP.match(/VERSION\s*=\s*'([\d.]+)'/) || [])[1];
+  const text = prose(HOME);
+  const stale = [...text.matchAll(/V[ÆAE]ST\s+(\d+\.\d+)/gi)].map(m => m[1]).filter(x => x !== v);
+  if (stale.length) throw new Error(`home.html says ${fmt([...new Set(stale)])}, app.js says ${v}`);
 });
 
 console.log('\nLaw #4 — serif is the writing voice, and never pure white\n');

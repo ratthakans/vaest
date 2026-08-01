@@ -6,8 +6,17 @@
 //   VAEST_EMAIL=... VAEST_PASSWORD=... npm run eval -- thai-rebrand # one brief
 //
 // Costs real tokens (Opus). Run before shipping prompt/model changes.
+//
+// VAEST_API used to default to production, so the safe-looking `npm run eval` ran a batch of Opus
+// documents against live customers' infrastructure and metered against live spend caps. The
+// default is now local; pointing it at production is something you have to type, and it says so
+// out loud before it spends anything.
 
-const API = process.env.VAEST_API || 'https://vaest.orions.agency';
+const API = process.env.VAEST_API || 'http://localhost:3000';
+if (/vaest\.orions\.agency/.test(API)) {
+  console.warn('\n⚠️  Running against PRODUCTION — real engine spend, metered against a real account.');
+  console.warn('   Ctrl-C now if that was not deliberate.\n');
+}
 const SB = { url: 'https://yyhqcqlylnoukmovrpwo.supabase.co', key: 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM' };
 
 const BRIEFS = [

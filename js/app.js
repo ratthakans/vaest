@@ -445,14 +445,22 @@
   // Law #1: the buckets used to be named after the models. Old workspaces still carry those
   // keys in localStorage and in the synced blob, so read them once and forget them. `mimir`
   // is retired too — Think folded into Galdr, so its tokens now count under `idea` (Sonnet).
+  /* LEGACY-KEYS — the one place in the bundle allowed to name a vendor, and it is quarantined here
+     so the audit can permit this and nothing else. These are storage keys written by builds that
+     predate the engine names; they have to be read to be migrated away, and the only alternative
+     was obfuscating them, which is worse than an exception written down. Everything migrated maps
+     to an engine name and the old key is deleted, so each account passes through once. Delete this
+     block once no live account can still be carrying pre-engine state. */
+  const LEGACY_KEYS=[['opus','odin'],['fable','norrsken'],['mimir','idea']];
   function migrateRateKeys(o){if(!o)return o;const r={...o};
-    if(r.opus!=null&&r.odin==null)r.odin=r.opus;if(r.fable!=null&&r.norrsken==null)r.norrsken=r.fable;
-    delete r.opus;delete r.fable;delete r.mimir;return r}
+    for(const [old,now] of LEGACY_KEYS){if(r[old]!=null&&r[now]==null&&now!=='idea')r[now]=r[old];delete r[old]}
+    return r}
   function migrateTokenKeys(){
     (sessions||[]).forEach(x=>{const t=x.tok;if(!t)return;
-      if(t.opus!=null&&t.odin==null)t.odin=t.opus;if(t.fable!=null&&t.norrsken==null)t.norrsken=t.fable;
-      if(t.mimir!=null){t.idea=(t.idea||0)+t.mimir;delete t.mimir}
-      delete t.opus;delete t.fable})}
+      for(const [old,now] of LEGACY_KEYS){if(t[old]==null)continue;
+        if(now==='idea')t.idea=(t.idea||0)+t[old];else if(t[now]==null)t[now]=t[old];
+        delete t[old]}})}
+  /* END LEGACY-KEYS */
   function getRates(){try{const r=JSON.parse(localStorage.getItem('vaest_rates'));if(r)return {...RATE_DEF,...migrateRateKeys(r)}}catch(e){}return {...RATE_DEF}}
   function saveRates(){const r={odin:+$('rateOdin').value||0,norrsken:+$('rateNorrsken').value||0,idea:+$('rateIdea').value||0};try{localStorage.setItem('vaest_rates',JSON.stringify(r))}catch(e){}}
   function docCost(s,rt){const t=s.tok||{};return (t.odin||0)/1e6*rt.odin+(t.norrsken||0)/1e6*rt.norrsken+(t.idea||0)/1e6*(rt.idea||0)+(t.skadi||0)/1e6*(rt.skadi||0)}
@@ -634,7 +642,7 @@
     // split tokens per call → record per-document cost (session)
     const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
-      const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':(um[3]==='galdr'||um[3]==='sonnet')?'idea':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
+      const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':/^galdr/.test(um[3])?'idea':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 

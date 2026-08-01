@@ -1,0 +1,45 @@
+# Until now nothing ran the tests except a person remembering to. CLAUDE.md law #6 prescribes
+# `node --check` → `npm test` → adversarial review → ship, and every step of that depended on
+# attention. This makes the first two automatic on every push and every pull request, so a green
+# main means the suite actually passed on the code that is on main — not on whatever was in
+# someone's working tree when they last thought to run it.
+#
+# No secrets are used, and none are needed: the suite is pure — unit maths, billing/margin
+# arithmetic, the SSRF address guard and its reachability, and the structural audit. Nothing here
+# calls an engine or touches Supabase or Stripe, which is what makes it safe to run on every push.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'          # matches the Vercel project's runtime
+          cache: npm
+
+      - run: npm ci
+
+      # js/app.js is a plain script, not a module — a syntax error there takes the whole app down
+      # and no bundler is in the way to catch it first.
+      - name: Syntax-check the client bundle
+        run: node --check js/app.js
+
+      - name: Tests + structural audit
+        run: npm test
+
+      # The audit prints AUDIT CLEAN and exits non-zero on failure, so `npm test` already gates
+      # this. Re-asserting the phrase catches the other failure: an audit that stops running at all
+      # — a rename, a bad path, a silent early return — which would otherwise read as success.
+      - name: The audit actually ran
+        run: npm test 2>&1 | grep -q 'AUDIT CLEAN'
