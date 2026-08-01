@@ -1448,7 +1448,7 @@
       return '<div class="eg-row"><div class="eg-l">'+dot+'<b>'+e.n+'</b></div>'
         +'<div class="eg-sub">'+e.role+' — <em>'+e.concept+'</em></div><span class="eg-ver">v'+e.ver+'</span></div>'}).join('');
     // foot: build + (internal) engine-only diagnostics — no model/provider names anywhere
-    const bits=['ORIONS.Agency'];
+    const bits=[VENDOR_MARK];
     if(internal&&en){bits.push('rate limit · '+(en.kv?'distributed':'in-memory'));}
     $('abFoot').innerHTML=bits.join(' · ')+' · <a href="/privacy" style="color:var(--dim)">Privacy</a> · <a href="/terms" style="color:var(--dim)">Terms</a>'}
   /* ═══ API keys — build VÆST into your own tools ═══ */
@@ -1541,6 +1541,13 @@
   // now the export asserted "ORIONS.Agency" on the cover and in the footer of every file a
   // customer handed to THEIR client, which is worse than carrying no mark at all. Unset means
   // unmarked; the vendor's name belongs in the small "Made with" line, nowhere else.
+  /* VENDOR-MARK — our own name, allowed in app chrome (the About panel) and nowhere a customer's
+     deliverable can carry it. Hardcoded copies of it reached the export cover, the export footer,
+     the canvas eyebrow, the deck's title slide, the deck's CLOSING slide — the image left on the
+     wall while the room decides — and the footer of every share link a client opened. Fixing them
+     one at a time missed two, so the literal now lives here once and the audit forbids it
+     elsewhere: a studio's document carries the studio's mark or no mark at all. */
+  const VENDOR_MARK='ORIONS.Agency';
   const studioName=()=>String((getProfile().studio)||'').trim();
   // The client this document is for. Sessions can sit in a project, and for a studio a project is
   // a client engagement — so the project name is the default and a per-document override wins.
@@ -3297,7 +3304,9 @@
       if(s.kind==='cover'){const _dm=[studioName(),clientName()?('for '+clientName()):''].filter(Boolean).join(' · ');
         return '<section class="sl cover">'+(_dm?'<div class="sl-eye">'+esc2(_dm)+'</div>':'')+'<h1>'+esc2(s.title)+'</h1>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="rule"></div></section>'}
       if(s.kind==='quote')return '<section class="sl quote"><blockquote>“'+esc2(s.quote)+'”</blockquote>'+(s.by?'<cite>— '+esc2(s.by)+'</cite>':'')+'</section>';
-      if(s.kind==='close')return '<section class="sl close"><div class="rule"></div><h2>'+esc2(s.title)+'</h2>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="sl-foot">VÆST · ORIONS.Agency</div></section>';
+      // The closing slide is the image left on the wall while the room decides. It carried our
+      // name; the cover was fixed and this was missed, which is exactly how the first one happened.
+      if(s.kind==='close')return '<section class="sl close"><div class="rule"></div><h2>'+esc2(s.title)+'</h2>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+(studioMark()?'<div class="sl-foot">'+esc2(studioMark())+'</div>':'')+'</section>';
       return '<section class="sl"><div class="sl-eye">'+esc2(s.title)+'</div><h2>'+esc2(s.title)+'</h2><ul>'+((s.bullets||[]).map(b=>'<li>'+esc2(b)+'</li>').join(''))+'</ul>'+(s.note?'<p class="note">'+esc2(s.note)+'</p>':'')+'</section>';
     };
     return '<!doctype html><html lang="'+docLang(title+' '+JSON.stringify(slides))+'"><head><meta charset="utf-8"><title>'+esc2(title)+' — VÆST</title>'
@@ -3424,7 +3433,7 @@
     $('topbar').innerHTML='<div class="tb" style="pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <span class="sh-lbl">Read-only · shared from VÆST</span></div><div class="top-title" style="flex:1">'+esc(data.title||'Document')+'</div><button class="tb" id="shTheme" onclick="toggleShareTheme()" title="Reading theme" aria-label="Reading theme">☀︎</button><a class="tb dark sh-open" href="/app" style="text-decoration:none">Open VÆST →</a>';
     try{if(localStorage.getItem('vaest_share_theme')==='light')toggleShareTheme(true)}catch(e){}
     // privacy note — earn the client's trust in one line
-    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PRIVATE BY DESIGN — NO AI TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a> · BY ORIONS.AGENCY</div>');
+    $('doc').insertAdjacentHTML('beforeend','<div style="margin:56px 0 24px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute)">PRIVATE BY DESIGN — NO AI TRAINING ON YOUR DATA · <a href=\'/privacy\' style=\'color:inherit\'>PRIVACY</a>'+(_shareMark?' · '+esc(_shareMark.toUpperCase()):'')+'</div>');
     // comments — readers can leave one per section
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       if(sec.getAttribute('data-h')==='_intro')return;

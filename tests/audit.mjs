@@ -117,6 +117,24 @@ t('no model id in what the server sends back to the client', () => {
   if (hits.length) throw new Error(`reaches the client: ${fmt([...new Set(hits)])}`);
 });
 
+t('our own name appears once, and never where a customer’s deliverable can carry it', () => {
+  // The vendor-name rules above only know MODEL names. Our studio's name is a different leak with
+  // the same shape, and it had reached the export cover, the export footer, the canvas eyebrow,
+  // the deck's title slide, the deck's closing slide and the footer of every share link. Fixing
+  // them by hand missed two — a deliverable branded with the tool-maker's name is one a studio
+  // has to rebuild, which turns "ready to send" into "ready to redo".
+  const decl = /const\s+VENDOR_MARK\s*=/;
+  if (!decl.test(APP)) throw new Error('VENDOR_MARK is gone — re-scope this rule before removing it');
+  const hits = APP.split('\n')
+    .map((l, i) => ({ l, n: i + 1 }))
+    .filter(({ l }) => /ORIONS/i.test(l) && !decl.test(l) && !/^\s*(\/\/|\*|\/\*)/.test(l.trim()))
+    // Two exemptions, both named so they stay reviewable: an internal-tier comment, and the
+    // storage key for pre-login rows — a database identifier that never reaches a rendered
+    // surface. Renaming it would orphan every anonymous workspace not yet migrated.
+    .filter(({ l }) => !/ORIONS team\b/.test(l) && !/LEGACY_WHO\s*=/.test(l));
+  if (hits.length) throw new Error(`hardcoded outside VENDOR_MARK: ${fmt(hits.map(h => 'line ' + h.n))}`);
+});
+
 console.log('\nWiring the audit could not see before — api/ and home.html\n');
 
 t('every onclick in app.js resolves to a function it declares', () => {
