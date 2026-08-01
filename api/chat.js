@@ -383,6 +383,16 @@ export default async function handler(req, res) {
   // paid engine still requires a plan. Cost is bounded: Gemini/Haiku only, per-user rate
   // limit above, and a small monthly token allowance below.
   const freeTier = !access.allowed;
+  // Every cap is computed from the usage row. When it cannot be read, they all read zero together
+  // and all pass together, so an outage is the one moment the margin floor is not a floor. Cheap
+  // engines keep working — a chat cannot move the number far. The routes that spend a document's
+  // worth of Opus or Fable wait, and say so honestly rather than running unmetered.
+  const METERED = new Set(['summing', 'briefdoc', 'briefalign', 'recast', 'mastering', 'present']);
+  if (ud._unreadable && METERED.has(mode) && !access.internal) {
+    console.error('usage row unreadable — refusing metered mode', mode, 'for', user.email);
+    res.status(503).json({ error: 'Can’t reach your usage record just now, so this would run unmetered — try again in a moment. The Idea chat still works.' });
+    return;
+  }
   // ── Unverified accounts spend nothing ── the free tier is real money (Sonnet Idea + one Opus
   // Crystallize, ~฿47 an account) and sign-up costs an attacker only an email string. Requiring
   // a proved address is what bounds it: Google sign-ins arrive verified, so the common path has
@@ -533,7 +543,8 @@ export default async function handler(req, res) {
       // re-read and re-apply the deltas to the winner's row instead of overwriting it.
       await updateUsage(user.email, (d0) => {
         let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
-        nextData = applySpend(nextData, costTHB(bucket, inTok, outTok)); // the 30%-floor meter
+        // base cap passed so spend above the plan's own ceiling draws down purchased headroom
+        nextData = applySpend(nextData, costTHB(bucket, inTok, outTok), plan && plan.spendCap); // the 30%-floor meter
         if (countsDoc) nextData = applyDocBump(nextData, plan.docs); // only paid accounts reach a document
         if (countsRefine) nextData = applyRefineBump(nextData, plan.refineMonth);
         return nextData;

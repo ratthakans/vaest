@@ -7,6 +7,7 @@ import {
   PLANS, PACK_PRICE, BOOST_SPEND, BOOST, MAX_PACKS_PER_MONTH, RATES,
   costTHB, applySpend, spendCapFor, spendThisMonth, planFor, isInternal,
   applyBoost, applyDocBump, applyRefineBump, packsLeft, checkDocQuota, checkRefineQuota,
+  creditSpendOf,
 } from '../lib/plans.js';
 
 let pass = 0, fail = 0;
@@ -133,6 +134,73 @@ t('isInternal treats the whole @orions.agency domain as team', () => {
 t('planFor: internal → unlimited, outsider → finite default', () => {
   assert.equal(planFor('dev@orions.agency').name, 'unlimited');
   assert.equal(Number.isFinite(planFor('stranger@example.com').spendCap), true); // never Infinity for outsiders
+});
+
+console.log('\nSeats — a Team plan is the same plan billed by quantity\n');
+
+const { scaleForSeats } = await import('../lib/billing.js');
+
+t('ten seats grant ten seats’ worth, not one', () => {
+  const one = { name: 'pro', ...PLANS.pro };
+  const ten = scaleForSeats(one, 10);
+  assert.equal(ten.docs, PLANS.pro.docs * 10);
+  assert.equal(ten.capTokens, PLANS.pro.capTokens * 10);
+  assert.equal(ten.spendCap, PLANS.pro.spendCap * 10);
+  assert.equal(ten.refineMonth, PLANS.pro.refineMonth * 10);
+  assert.equal(ten.seats, 10);
+});
+
+t('seats scale the margin law with the revenue, not past it', () => {
+  // spendCap is 70% of net. Ten seats earn ten times, so the ceiling must be ten times — no more.
+  const ten = scaleForSeats({ name: 'pro', ...PLANS.pro }, 10);
+  assert.equal(ten.spendCap / (PLANS.pro.spendCap * 10), 1);
+});
+
+t('refine stays an unlock, never an amount', () => {
+  assert.equal(scaleForSeats({ name: 'basic', ...PLANS.basic }, 8).refine, false);
+  assert.equal(scaleForSeats({ name: 'pro', ...PLANS.pro }, 8).refine, true);
+});
+
+t('unlimited stays unlimited and one seat is untouched', () => {
+  assert.equal(scaleForSeats({ name: 'unlimited', ...PLANS.unlimited }, 20).docs, Infinity);
+  const one = { name: 'pro', ...PLANS.pro };
+  assert.deepEqual(scaleForSeats(one, 1), one);
+  assert.deepEqual(scaleForSeats(one, undefined), one);
+});
+
+console.log('\nCredit — the headroom outlives the month it was bought in\n');
+
+t('a pack bought on the 31st still works on the 1st', () => {
+  // The bug: headroom was keyed on packMonth, so it evaporated at midnight while the documents it
+  // paid for remained. Simulate the rollover by dating the pack to last month.
+  const bought = applyBoost({}, 'cs_1', 1);
+  const nextMonth = { ...bought, packMonth: '1999-01', spendMonth: '1999-01', spendTHB: 0 };
+  const cap = spendCapFor(PLANS.basic, nextMonth);
+  assert.equal(cap, PLANS.basic.spendCap + BOOST_SPEND);
+  assert.ok(nextMonth.creditDocs > 0, 'the documents persist, so the headroom must too');
+});
+
+t('headroom is drawn down only by spend above the plan’s own ceiling', () => {
+  const base = PLANS.basic.spendCap;
+  let d = applyBoost({}, 'cs_2', 1);
+  assert.equal(creditSpendOf(d), BOOST_SPEND);
+  d = applySpend(d, base - 10, base);                       // still inside the plan
+  assert.equal(creditSpendOf(d), BOOST_SPEND, 'plan-funded spend must not touch credit');
+  d = applySpend(d, 30, base);                              // 20 of this lands above the cap
+  assert.equal(Math.round(creditSpendOf(d)), BOOST_SPEND - 20);
+});
+
+t('spending it all takes the ceiling back to the plan', () => {
+  const base = PLANS.basic.spendCap;
+  let d = applyBoost({}, 'cs_3', 1);
+  d = applySpend(d, base + BOOST_SPEND, base);
+  assert.equal(creditSpendOf(d), 0);
+  assert.equal(spendCapFor(PLANS.basic, d), base);
+});
+
+t('rows written before the balance existed are read, not stranded', () => {
+  const legacy = { packMonth: M, packCount: 2 };             // bought this month, pre-migration shape
+  assert.equal(creditSpendOf(legacy), 2 * BOOST_SPEND);
 });
 
 console.log('\n' + pass + ' passed · ' + fail + ' failed\n');
