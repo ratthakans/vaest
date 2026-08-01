@@ -1481,7 +1481,7 @@
     catch(e){toast('Couldn’t revoke, try again')}}
   function openSettings(){renderTone();
     document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===getLang()));
-    const pr=getProfile();$('pfName').value=pr.name||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
+    const pr=getProfile();$('pfName').value=pr.name||'';$('pfStudio').value=pr.studio||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
     $('pvPrivate').checked=!!(cur()&&cur().private);renderTrash();
     const kb=Math.round(stateBytes()/1024);$('storeLine').innerHTML='Workspace state: <b style="color:var(--ink)">'+(kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB')+'</b>'+(kb>4096?' — consider trimming':'');
     setSetTab('profile');$('setView').classList.add('show')}
@@ -1525,8 +1525,42 @@
     const set=el=>{if(!el)return;if(p.pic){el.style.backgroundImage='url('+p.pic+')';el.classList.add('has');el.textContent=''}
       else{el.style.backgroundImage='';el.classList.remove('has');el.textContent=(p.name||(AUTH&&AUTH.email)||'?').trim()[0].toUpperCase()}};
     set(av);set(foot);if(txt&&!p.pic)txt.textContent=(p.name||(AUTH&&AUTH.email)||'?').trim()[0].toUpperCase();else if(txt)txt.textContent=''}
-  function saveProfile(){const p=getProfile();p.name=$('pfName').value.trim().slice(0,40);saveProfileObj(p);paintAvatar();
+  function saveProfile(){const p=getProfile();p.name=$('pfName').value.trim().slice(0,40);
+    p.studio=$('pfStudio').value.trim().slice(0,48);saveProfileObj(p);paintAvatar();
+    if($('doc')&&$('doc').innerHTML)showCanvas();   // the masthead carries the studio mark — repaint it
     const w=$('whoLbl');if(w)w.textContent=p.name||AUTH.email;toast('Profile saved')}
+  // Whose name goes on the document. A studio sends its own work under its own mark — and until
+  // now the export asserted "ORIONS.Agency" on the cover and in the footer of every file a
+  // customer handed to THEIR client, which is worse than carrying no mark at all. Unset means
+  // unmarked; the vendor's name belongs in the small "Made with" line, nowhere else.
+  const studioName=()=>String((getProfile().studio)||'').trim();
+  // The client this document is for. Sessions can sit in a project, and for a studio a project is
+  // a client engagement — so the project name is the default and a per-document override wins.
+  function clientName(s){
+    s=s||cur();if(!s)return '';
+    if(s.client)return String(s.client).trim();
+    const p=s.projectId&&projects.find(x=>x.id===s.projectId);
+    return p?String(p.name||'').trim():''}
+  let _shareMark='';     // the studio mark travels with a shared document (read-only view)
+  // The eyebrow, in one place: studio · for client. Empty when neither is set — a document with no
+  // mark can go under a letterhead; one carrying the wrong name has to be rebuilt.
+  function studioMark(s){
+    const st=studioName(),cl=clientName(s);
+    return [st,cl?('for '+cl):''].filter(Boolean).join(' · ')}
+  // Click the eyebrow to say who this is for. The studio name lives in Settings because it is the
+  // same on every document; the client changes per document, so it is edited where it is shown.
+  async function editStudioMark(){
+    const s=cur();if(!s)return;
+    if(!studioName()){
+      const v=await uiDialog({msg:'Your studio’s name — it goes on the cover and footer of everything you export.',
+        value:'',placeholder:'Studio name',ok:'Save'});
+      if(typeof v==='string'&&v.trim()){const p=getProfile();p.studio=v.trim().slice(0,48);saveProfileObj(p)}
+      else return;
+    }
+    const c=await uiDialog({msg:'Who is this document for? Shown as “'+studioName()+' · for …”, and left off if empty.',
+      value:clientName(s),placeholder:'Client or brand',ok:'Save'});
+    if(typeof c!=='string')return;
+    s.client=c.trim().slice(0,48);s.updatedAt=Date.now();save();showCanvas()}
   async function pfUpload(e){const f=(e.target.files||[])[0];e.target.value='';if(!f)return;
     try{const url=await imgToDataURL(f,128,.8);const p=getProfile();p.pic=url;saveProfileObj(p);paintAvatar();toast('Photo updated')}
     catch(err){toast('Couldn’t read that image')}}
@@ -2414,7 +2448,15 @@
     const trail=isBrief
       ? '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Brief compiled</span><span class="sep">→</span><span class="ft act next" onclick="reopenBrief()">Ask what’s missing</span><span class="sep">→</span><span class="ft act" onclick="toggleRefPanel()">Match a reference</span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="openRecast(event)">Recast <em>as a concept</em></span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>'
       : '<div class="flow-trail"><span class="ft done"><span class="ck">✓</span> Crystallized</span><span class="sep">→</span><span class="ft act next" onclick="hintSectionThink()">Think <em>in each section</em></span><span class="sep">→</span><span class="ft act" onclick="runMastering()">Refine</span><span class="sep">→</span><span class="ft act" onclick="openRecast(event)">Recast <em>for a room</em></span><span class="sep">→</span><span class="ft act" onclick="shareDoc()">Share <em>for comments</em></span><span class="sep">→</span><span class="ft act" onclick="toggleExp(event)">Export</span></div>';
-    let h='<div class="mast-head"><div class="mh-eye">ORIONS · VÆST'+(isBrief?' · BRIEF':'')+'</div>'
+    // The eyebrow is the studio's, not ours. It used to read "ORIONS · VÆST" on every canvas and
+    // every export — the vendor's name on a document a customer hands to their own client. It now
+    // reads the studio's name and who the work is for; with neither set it says nothing, because
+    // an unmarked document is honest and a wrongly-marked one is not.
+    const _mark=_shareId?(_shareMark||''):studioMark(s);
+    const eyebrow=_mark||(_shareId?'':'Set your studio in Settings');
+    let h='<div class="mast-head"><div class="mh-eye'+((!_mark&&!_shareId)?' unset':'')+'"'
+      +((_shareId)?'':' onclick="editStudioMark()" title="Studio and client — shown on every export"')+'>'
+      +esc(eyebrow)+(isBrief?' · BRIEF':'')+'</div>'
       +'<div class="mh-title" contenteditable="true" spellcheck="false" id="mhTitle">'+esc(docTitle)+'</div>'
       +'<div class="mh-meta"><span class="sl">/</span> '+secs.filter(x=>x.h!=='_intro').length+' sections · '+wordCount(md)+' words'+(_shareId?'':' · fully editable')+'</div>'
       +(_shareId?'':trail)
@@ -2894,11 +2936,27 @@
     'punchier':'a punchier version — every line tighter, sharper openings, same substance and structure',
     'board':'board-ready — crisp, skimmable, decision-oriented, minimal preamble',
     'thai':'the same document, fully in Thai — translate all of it, keep the structure, meaning and voice',
-    'english':'the same document, fully in English — translate all of it, keep the structure, meaning and voice'};
-  const RECAST_LABEL={'one-pager':'One-pager','exec':'Exec summary','punchier':'Punchier','board':'Board-ready','thai':'In Thai','english':'In English'};
+    'english':'the same document, fully in English — translate all of it, keep the structure, meaning and voice',
+    // A studio is paid for scope, not for thinking. A document without one is a point of view the
+    // client can read for free and take elsewhere; with one it is a proposal they have to answer.
+    // The hard rule is in the prompt: never invent a number. VÆST does not know this studio's
+    // rates, and a plausible-looking fee is the one hallucination that costs real money — so it
+    // lays out the table and leaves every figure as a marker the studio fills in.
+    'proposal':'a client-ready proposal. Keep all the thinking exactly as it stands, then add two '
+      +'sections at the end. First "Scope of work" — a markdown table of Deliverable · What it '
+      +'includes · Quantity · Unit, one row per real deliverable named in the document above, and '
+      +'nothing invented. Then "Timeline & fee" — phases with realistic durations, and a fee table '
+      +'whose amount column is filled ONLY with the marker “___” for the studio to complete. '
+      +'NEVER state, guess, estimate or imply a price, rate, day-rate, budget or total in any '
+      +'currency, anywhere, even if the document mentions one — leave every figure as “___”. '
+      +'End with a short Assumptions & exclusions list, because what is NOT included is the part '
+      +'that protects the studio.'};
+  const RECAST_LABEL={'one-pager':'One-pager','exec':'Exec summary','punchier':'Punchier','board':'Board-ready','thai':'In Thai','english':'In English','proposal':'Proposal · scope & fee'};
   function _recBtn(k){return '<button onclick="recast(\''+k+'\')">'+RECAST_LABEL[k]+'</button>'}
   function openRecast(e){
     showCtx(e,'<div class="cap">Recast the whole document as…</div>'
+      +_recBtn('proposal')
+      +'<div class="sep"></div>'
       +['one-pager','exec','punchier','board'].map(_recBtn).join('')
       +'<div class="sep"></div>'+['thai','english'].map(_recBtn).join('')
       +'<div class="sep"></div><input class="ctx-ask" placeholder="Recast as… (e.g. a press release)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();recastAsk(this)}else if(event.key!==\'Escape\')event.stopPropagation()">'
@@ -3095,9 +3153,12 @@
   function buildDocHTML(forPrint){
     const title=$('mhTitle')?$('mhTitle').innerText.trim():'Document';
     // E4 — a dated, addressed cover so the export reads as a real studio deliverable
-    const _s=cur();const _proj=_s&&_s.projectId&&projects.find(p=>p.id===_s.projectId);
+    const _s=cur();
+    const _exStudio=studioName(),_exClient=clientName(_s);
     let _date='';try{_date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){}
-    const _meta=(_proj?('Prepared for '+esc(_proj.name)+' · '):'')+(_date?_date+' · ':'')+'VÆST · Aesthetic Intelligence';
+    // "VÆST · Aesthetic Intelligence" used to sit in the meta line of the customer's own cover.
+    // The date and who it is for are theirs; the tool credit belongs at the foot, once.
+    const _meta=[_exClient?('Prepared for '+esc(_exClient)):'',_date].filter(Boolean).join(' · ');
     let body='';let n=0;
     document.querySelectorAll('#doc .sec').forEach(sec=>{
       const hEl=sec.querySelector('.sec-h');
@@ -3136,8 +3197,13 @@
     return '<!doctype html><html lang="'+docLang(title+' '+body)+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title>'
       +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet">'
       +'<style>'+CSS+'</style></head><body><div class="page">'
-      +'<div class="cover"><div class="eyebrow">ORIONS.Agency · VÆST</div><h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">'+_meta+'</div></div>'
-      +body+'<div class="foot">Generated by VÆST '+VERSION+' · ORIONS.Agency</div></div></body></html>'}
+      // The cover and the footer said "ORIONS.Agency" on every file a customer sent to their own
+      // client. Both carry the studio's mark now, and nothing at all when it is unset — a document
+      // with no mark can be put under a letterhead; one with the wrong mark has to be rebuilt.
+      // VÆST keeps a single quiet line at the foot, which is a tool credit, not a byline.
+      +'<div class="cover">'+(_exStudio?'<div class="eyebrow">'+esc(_exStudio)+(_exClient?(' · for '+esc(_exClient)):'')+'</div>':'')
+      +'<h1>'+esc(title)+'</h1><div class="rule"></div><div class="meta">'+_meta+'</div></div>'
+      +body+'<div class="foot">'+(_exStudio?esc(_exStudio)+' · ':'')+'Made with VÆST</div></div></body></html>'}
   function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
   function downloadMD(){$('expMenu').classList.remove('show');dl(new Blob([genMd()],{type:'text/markdown;charset=utf-8'}),docFilename()+'.md');toast('Downloaded .md')}
   function downloadDOC(){$('expMenu').classList.remove('show');
@@ -3163,7 +3229,7 @@
     try{await ensureAuth();
       const r=await fetch('/api/share',{method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+((AUTH&&AUTH.access_token)||'')},
-        body:JSON.stringify({action:'create',id:s.shareId,title:$('mhTitle')?$('mhTitle').innerText.trim():s.title,canvas:genMd()})});
+        body:JSON.stringify({action:'create',id:s.shareId,title:$('mhTitle')?$('mhTitle').innerText.trim():s.title,canvas:genMd(),mark:studioMark(s)})});
       if(!r.ok)throw new Error('share failed');
       save();const link=location.origin+'/app?s='+s.shareId;copyToClip(link);toast('Read-only link copied — paste to share')}
     catch(e){toast('Couldn’t create the link, try again')}}
@@ -3218,7 +3284,10 @@
     const page=land?'297mm 167mm':'210mm 297mm'; // 16:9-ish landscape / A4 portrait
     const esc2=t=>String(t==null?'':t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     const slideHTML=s=>{
-      if(s.kind==='cover')return '<section class="sl cover"><div class="sl-eye">ORIONS · VÆST</div><h1>'+esc2(s.title)+'</h1>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="rule"></div></section>';
+      // The deck is what goes on the wall in the room. Its title slide carried our name, which is
+      // the single worst place in the product for it to have been.
+      if(s.kind==='cover'){const _dm=[studioName(),clientName()?('for '+clientName()):''].filter(Boolean).join(' · ');
+        return '<section class="sl cover">'+(_dm?'<div class="sl-eye">'+esc2(_dm)+'</div>':'')+'<h1>'+esc2(s.title)+'</h1>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="rule"></div></section>'}
       if(s.kind==='quote')return '<section class="sl quote"><blockquote>“'+esc2(s.quote)+'”</blockquote>'+(s.by?'<cite>— '+esc2(s.by)+'</cite>':'')+'</section>';
       if(s.kind==='close')return '<section class="sl close"><div class="rule"></div><h2>'+esc2(s.title)+'</h2>'+(s.subtitle?'<p class="sub">'+esc2(s.subtitle)+'</p>':'')+'<div class="sl-foot">VÆST · ORIONS.Agency</div></section>';
       return '<section class="sl"><div class="sl-eye">'+esc2(s.title)+'</div><h2>'+esc2(s.title)+'</h2><ul>'+((s.bullets||[]).map(b=>'<li>'+esc2(b)+'</li>').join(''))+'</ul>'+(s.note?'<p class="note">'+esc2(s.note)+'</p>':'')+'</section>';
@@ -3327,6 +3396,8 @@
   async function openShareView(id){
     hideAuth();$('app').classList.add('rail-off');_shareId=id;
     const data=await loadShare(id);
+    // the client opening this link sees the studio's mark, not ours
+    _shareMark=String((data&&data.mark)||'').slice(0,100);
     $('home').style.display='none';$('cvView').style.display='';$('topbar').style.display='flex';
     document.querySelector('.main').classList.add('has-top');
     if(!data){

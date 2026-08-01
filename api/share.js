@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     if (!ID_RE.test(id)) { res.status(400).json({ error: 'bad id' }); return; }
     const data = await readShare(id);
     if (!data) { res.status(404).json({ error: 'not found' }); return; }
-    res.status(200).json({ title: data.title || '', canvas: data.canvas || '', comments: Array.isArray(data.comments) ? data.comments : [] });
+    res.status(200).json({ title: data.title || '', canvas: data.canvas || '', mark: data.mark || '', comments: Array.isArray(data.comments) ? data.comments : [] });
     return;
   }
 
@@ -66,6 +66,9 @@ export default async function handler(req, res) {
     const data = {
       title: clip(body.title, 300),
       canvas,
+      // The studio's own mark ("Studio · for Client"), so the person opening the link sees whose
+      // work it is. Never the owner's email — that stays withheld, as it always has.
+      mark: clip(body.mark, 100),
       by: user.email,
       comments: (existing && Array.isArray(existing.comments)) ? existing.comments : [],
     };

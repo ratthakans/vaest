@@ -279,6 +279,10 @@
   @media(max-width:720px){.doc{padding:56px 26px 100px}}
   .mast-head{padding-bottom:40px;margin-bottom:4px;border-bottom:1px solid transparent;border-image:var(--rule) 1}
   .mh-eye{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--mute);font-weight:500}
+  /* the eyebrow is now editable — a quiet affordance, not a button */
+  .mh-eye[onclick]{cursor:pointer;transition:color var(--base)}
+  .mh-eye[onclick]:hover{color:var(--dim)}
+  .mh-eye.unset{color:#5f5e59}.mh-eye.unset:hover{color:var(--cinnabar)}
   .mh-title{font-family:var(--body);font-style:italic;font-weight:500;font-size:clamp(31px,4vw,42px);line-height:1.12;
     letter-spacing:-.004em;margin-top:20px;outline:none;text-wrap:balance;border-radius:var(--r-xs);transition:background var(--base) var(--ease)}
   .mh-title:hover,.mh-title:focus{background:var(--soft)}
