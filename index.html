@@ -465,6 +465,18 @@
           <div class="set-note" style="margin:4px 0 10px">Never expires — carries over month to month · applies instantly</div>
           <div id="creditOpts" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
+        <!-- Team seats. Until now a Team plan billed by quantity and there was no way for the
+             second person to get in, so the studio paid for ten and used one. -->
+        <div id="teamRow" style="display:none;margin-top:20px">
+          <label class="set-lbl" for="teamAdd">Team</label>
+          <div class="set-note" id="teamSeats" style="margin:4px 0 10px"></div>
+          <div id="teamList"></div>
+          <div id="teamAddRow" style="display:none;gap:8px;margin-top:10px">
+            <input class="dlg-in" id="teamAdd" style="flex:1;margin:0" placeholder="colleague@studio.com"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();teamInvite()}">
+            <button class="dlg-ok" style="margin:0" onclick="teamInvite()">Add</button>
+          </div>
+        </div>
         <button class="set-link" id="billingLink" style="margin-top:14px;display:none" onclick="closeSettings();openPortal()">Manage billing / change plan →</button>
       </div>
       <div class="set-pane" data-sp="privacy">

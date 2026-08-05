@@ -963,6 +963,11 @@
      its own name. */
   .set-lbl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
   label.set-lbl{cursor:pointer}
+  .tm-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .tm-row:last-child{border-bottom:none}
+  .tm-e{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+  .tm-x{flex:none;width:22px;height:22px;border-radius:var(--r-xs);color:var(--mute);font-size:12px;transition:color var(--fast),background var(--fast)}
+  .tm-x:hover{color:var(--cinnabar);background:rgba(var(--cin-rgb),.1)}
   .set-note{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
   /* Summing source picker */
   .sum-src{margin-top:16px;display:flex;flex-direction:column;gap:2px;max-height:46vh;overflow-y:auto}

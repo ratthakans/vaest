@@ -1519,7 +1519,45 @@
       const b=$('apiKeyNew');if(b){b.style.display='none';b.innerHTML=''}
       renderApiKeys();toast('Key revoked')}
     catch(e){toast('Couldn’t revoke, try again')}}
-  function openSettings(){renderTone();
+  /* ═══ Team — seats that can be filled ═══
+     No invitation, no token, no expiry: the owner writes an address and that address has the plan
+     the moment it signs in. An invite link is a credential in an email, and this needs none —
+     access is resolved from the roster on every request, so removing someone is immediate too. */
+  async function renderTeam(){
+    const row=$('teamRow');if(!row)return;
+    row.style.display='none';
+    try{
+      if(!await ensureAuth())return;
+      const r=await fetch('/api/team',{headers:{Authorization:'Bearer '+AUTH.access_token}});
+      if(!r.ok)return;                                   // no team on this account — stay hidden
+      const d=await r.json();
+      row.style.display='';
+      $('teamSeats').textContent=d.canManage
+        ? (d.used+' of '+d.seats+' seats in use'+(d.left?' · '+d.left+' free':' · all taken'))
+        : 'On '+d.owner+'’s team · you share one usage pool';
+      $('teamList').innerHTML=(d.members||[]).map(m=>
+        '<div class="tm-row"><span class="tm-e">'+esc(m)+'</span>'
+        +(d.canManage?'<button class="tm-x" title="Remove from the team" onclick="teamRemove(\''+esc(m).replace(/'/g,"\\'")+'\')">✕</button>':'')
+        +'</div>').join('')||'<div class="set-note">Just you so far.</div>';
+      const ar=$('teamAddRow');if(ar)ar.style.display=(d.canManage&&d.left>0)?'flex':'none';
+    }catch(e){}}
+  async function teamInvite(){
+    const el=$('teamAdd');const email=(el.value||'').trim();if(!email)return;
+    try{if(!await ensureAuth())return;
+      const r=await fetch('/api/team',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+AUTH.access_token},
+        body:JSON.stringify({email})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok){toast(d.error||'Couldn’t add them');return}
+      el.value='';toast(email+' can sign in with the plan now');renderTeam();
+    }catch(e){toast('Couldn’t add them, try again')}}
+  async function teamRemove(email){
+    if(!await uiConfirm('Remove '+email+' from the team? They lose the plan immediately.',{ok:'Remove',danger:true}))return;
+    try{if(!await ensureAuth())return;
+      await fetch('/api/team?email='+encodeURIComponent(email),{method:'DELETE',headers:{Authorization:'Bearer '+AUTH.access_token}});
+      toast('Removed');renderTeam();
+    }catch(e){toast('Couldn’t remove them, try again')}}
+  function openSettings(){renderTone();renderTeam();
     document.querySelectorAll('#langBar button').forEach(b=>b.classList.toggle('on',(b.getAttribute('data-lang')||'')===getLang()));
     const pr=getProfile();$('pfName').value=pr.name||'';$('pfStudio').value=pr.studio||'';$('pfEmail').textContent='Signed in as '+(AUTH?AUTH.email:'');paintAvatar();
     $('pvPrivate').checked=!!(cur()&&cur().private);renderTrash();

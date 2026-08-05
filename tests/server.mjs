@@ -229,5 +229,25 @@ t('a paying customer keeps access when the plan name cannot be resolved', () => 
   assert.equal(subIsActive(null), false);
 });
 
+console.log('\nSeats you can actually fill\n');
+
+const team = await import('../lib/team.js');
+
+t('a ten-seat plan holds the owner plus nine', () => {
+  assert.equal(team.seatsLeft(10, { members: [] }), 9);
+  assert.equal(team.seatsLeft(10, { members: new Array(9).fill('x') }), 0);
+  assert.equal(team.seatsLeft(1, { members: [] }), 0);      // individual: the seat is yours
+  assert.equal(team.seatsLeft(undefined, { members: [] }), 0);
+});
+
+t('seats and the pool scale together, so ten seats is ten times ONE allowance', () => {
+  // The trap this exists to avoid: seats become reachable, ten people each read their own usage
+  // row, and each of them holds the ten-times quota — a hundred times what was sold. resolveAccess
+  // hands back a meterKey for exactly this reason, and for a member it is the owner.
+  const ten = scaleForSeats({ name: 'pro', ...PLANS.pro }, 10);
+  assert.equal(ten.docs, PLANS.pro.docs * 10);
+  assert.equal(ten.spendCap, PLANS.pro.spendCap * 10);
+});
+
 console.log('\n' + pass + ' passed · ' + fail + ' failed\n');
 if (fail) process.exit(1);

@@ -390,7 +390,13 @@ export default async function handler(req, res) {
 
   // the two independent reads run in parallel — and the usage row is read ONCE here, then
   // handed to every gate below (spend/refine/doc), instead of each gate re-fetching it.
-  const [access, ud] = await Promise.all([resolveAccess(user.email), readUsageData(user.email)]);
+  // Usage bills against access.meterKey, which is the team OWNER for a member and the caller for
+  // everyone else — one pool per subscription, which is what "billed per seat" has to mean. The
+  // speculative read stays parallel because it is right for every account that is not on someone
+  // else's team; only a member pays for the second one.
+  let [access, ud] = await Promise.all([resolveAccess(user.email), readUsageData(user.email)]);
+  const meter = access.meterKey || user.email;
+  if (meter !== user.email) ud = await readUsageData(meter);
   const _month = new Date().toISOString().slice(0, 7);
   const u = { month: _month, used: ud.month === _month ? (ud.used || 0) : 0 };
   // ── Free tier ── a signed-in account with no plan keeps the Galdr idea chat (capped),
@@ -446,7 +452,7 @@ export default async function handler(req, res) {
   // nobody subscribes on their fortieth message, they subscribe on their third. The smaller
   // allowance is what pays for the better engine — same ฿/account either way.
   const FREE_MONTHLY_CAP = parseInt(process.env.FREE_MONTHLY_CAP || '', 10) || 150_000;
-  const cap = freeTier ? FREE_MONTHLY_CAP : (access.plan && access.plan.capTokens) || capFor(user.email);
+  const cap = freeTier ? FREE_MONTHLY_CAP : (access.plan && access.plan.capTokens) || capFor(meter);
   if (u.used >= cap) {
     if (freeTier) { res.status(402).json({ error: 'Your free Galdr allowance is used up this month — pick a plan for the whole studio', paywall: true }); return; }
     res.status(429).json({ error: `Fair-use limit reached this month (${Math.round(u.used/1000)}K tokens) — ping the ORIONS team` });
@@ -475,7 +481,7 @@ export default async function handler(req, res) {
   const countsRefine = mode === 'mastering';
   if (countsRefine) {
     try {
-      const q = await checkRefineQuota(user.email, plan, ud);
+      const q = await checkRefineQuota(meter, plan, ud);
       if (!q.ok) {
         const msg = q.planHasRefine
           ? 'This month’s Refine allowance is used up — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade.'
@@ -494,7 +500,7 @@ export default async function handler(req, res) {
   const countsDoc = mode === 'summing' || mode === 'briefdoc' || mode === 'briefalign' || mode === 'recast';
   if (countsDoc && !freeTier) { // free accounts never reach here — Crystallize is gated above
     try {
-      const q = await checkDocQuota(user.email, plan, ud);
+      const q = await checkDocQuota(meter, plan, ud);
       if (!q.ok) {
         res.status(429).json({ error: 'You’ve reached this month’s usage limit — it refreshes on the 1st. Add a usage credit pack in Settings, or upgrade for more.' });
         return;
@@ -556,7 +562,7 @@ export default async function handler(req, res) {
       // counters. Runs through updateUsage so a credit pack applied by /api/confirm or the
       // Stripe webhook mid-stream can't be clobbered by this write: on a lost race we
       // re-read and re-apply the deltas to the winner's row instead of overwriting it.
-      await updateUsage(user.email, (d0) => {
+      await updateUsage(meter, (d0) => {
         let nextData = { ...d0, month: u.month, used: (d0.month === u.month ? (d0.used || 0) : 0) + inTok + outTok };
         // base cap passed so spend above the plan's own ceiling draws down purchased headroom
         nextData = applySpend(nextData, costTHB(bucket, inTok, outTok), plan && plan.spendCap); // the 30%-floor meter
