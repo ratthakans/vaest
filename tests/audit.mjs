@@ -182,6 +182,38 @@ t('no version literal in the marketing markup either', () => {
   if (stale.length) throw new Error(`home.html says ${fmt([...new Set(stale)])}, app.js says ${v}`);
 });
 
+console.log('\nEvery control says what it is\n');
+
+// 31 form controls, zero <label for>, and three aria-labels. The rest were named by placeholder,
+// which is not a name: it disappears the moment you focus the field, several screen readers skip
+// it, and a file input has none at all — so eight "Add files" controls announced as nothing.
+const controls = [...HTML.matchAll(/<(input|textarea|select)\b([^>]*)>/g)]
+  .map(m => ({ el: m[1], attrs: m[2], id: (m[2].match(/id="([^"]+)"/) || [])[1] || '' }))
+  .filter(c => !/\bhidden\b|type="hidden"/.test(c.attrs));
+// a <label> that WRAPS a control names it too — the mechanism my first pass at this missed, which
+// is how I came to add a second, worse name to four fields that already had a good one.
+const wrapped = new Set([...HTML.matchAll(/<label\b[^>]*>[\s\S]{0,400}?<\/label>/g)]
+  .flatMap(m => [...m[0].matchAll(/<(?:input|textarea|select)[^>]*id="([^"]+)"/g)].map(x => x[1])));
+const nameSources = c => [
+  /aria-label=/.test(c.attrs) && 'aria-label',
+  /aria-labelledby=/.test(c.attrs) && 'aria-labelledby',
+  c.id && new RegExp(`<label[^>]*for="${c.id}"`).test(HTML) && 'label[for]',
+  wrapped.has(c.id) && 'wrapping label',
+].filter(Boolean);
+
+t('every visible form control has an accessible name', () => {
+  const bare = controls.filter(c => nameSources(c).length === 0).map(c => c.id || `<${c.el}>`);
+  if (bare.length) throw new Error(`no name a screen reader can read: ${fmt(bare)} — a placeholder is not a name`);
+});
+
+t('no control carries two competing names', () => {
+  // aria-label OVERRIDES a wrapping label rather than adding to it, so a redundant one is not
+  // harmless — it replaces the better text. "How your studio sounds" became "Voice" that way.
+  const doubled = controls.filter(c => nameSources(c).length > 1)
+    .map(c => `${c.id} (${nameSources(c).join(' + ')})`);
+  if (doubled.length) throw new Error(`two names, and the weaker one wins: ${fmt(doubled)}`);
+});
+
 console.log('\nType — a weight you did not load is a weight you did not choose\n');
 
 // This trap has now bitten twice. CLAUDE.md records the first: `font-weight:650` against an axis

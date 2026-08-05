@@ -958,7 +958,11 @@
   .chip.paste b{color:var(--cinnabar);font-weight:700}
   .paste-body{padding:14px 18px 20px;max-height:56vh;overflow-y:auto}
   .paste-body pre{white-space:pre-wrap;word-break:break-word;font-family:var(--ui);font-size:13px;line-height:1.75;color:#e6e4de}
-  .set-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+  /* display:block is load-bearing now: this class sits on a <div> in some places and a <label> in
+     others, and a label is inline — without it the margin collapses and the field rides up beside
+     its own name. */
+  .set-lbl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+  label.set-lbl{cursor:pointer}
   .set-note{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
   /* Summing source picker */
   .sum-src{margin-top:16px;display:flex;flex-direction:column;gap:2px;max-height:46vh;overflow-y:auto}
