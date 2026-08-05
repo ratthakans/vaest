@@ -182,6 +182,55 @@ t('no version literal in the marketing markup either', () => {
   if (stale.length) throw new Error(`home.html says ${fmt([...new Set(stale)])}, app.js says ${v}`);
 });
 
+console.log('\nType — a weight you did not load is a weight you did not choose\n');
+
+// This trap has now bitten twice. CLAUDE.md records the first: `font-weight:650` against an axis
+// of 400/500/600/700 snapped up to 700, "so the whole site rendered fully bold while the CSS
+// claimed 650". It came back with new numbers — 550 nine times and 750 once, against an Inter axis
+// of 500/600/700/800 — so .tb.locked, a DISABLED button, rendered exactly as heavy as the active
+// one beside it. A browser never reports this: it silently picks the nearest weight it has and the
+// design reads as sloppy for a reason nobody can see in the file.
+const axes = f => {                                     // family → the weights actually fetched
+  const out = {};
+  for (const m of f.matchAll(/family=([^&"']+)/g)) {
+    const [name, spec = ''] = m[1].split(':');
+    const w = [...spec.matchAll(/(\d{3})(?=[;,\s]|$)/g)].map(x => +x[1]);
+    out[name.replace(/\+/g, ' ')] = new Set(w);
+  }
+  return out;
+};
+const APP_AXES = axes(HTML);
+const ALL_W = new Set(Object.values(APP_AXES).flatMap(s => [...s]));
+
+t('every font-weight in app.css exists in some loaded axis', () => {
+  const used = [...CSS.matchAll(/font-weight:\s*(\d{3})/g)].map(m => +m[1]);
+  const orphans = [...new Set(used)].filter(w => !ALL_W.has(w));
+  if (orphans.length) throw new Error(
+    `no loaded family provides ${fmt(orphans.map(String))} — the browser will snap to its nearest, `
+    + `so the file says one thing and the screen shows another. Loaded: ${[...ALL_W].sort().join(', ')}`);
+});
+
+t('a rule that names Inter uses a weight Inter actually has', () => {
+  // The union check above cannot catch this: 400 is loaded — by Plex Mono and the serifs — but not
+  // by Inter, so `font-family:var(--ui); font-weight:400` renders 500 while claiming 400.
+  const inter = APP_AXES['Inter'] || new Set();
+  const bad = [];
+  for (const rule of CSS.split(/[{}]/)) {
+    if (!/font-family:\s*var\(--ui\)/.test(rule)) continue;
+    const w = (rule.match(/font-weight:\s*(\d{3})/) || [])[1];
+    if (w && !inter.has(+w)) bad.push(w);
+  }
+  if (bad.length) throw new Error(`Inter has ${[...inter].sort().join('/')}, these ask for ${fmt([...new Set(bad)])}`);
+});
+
+t('no weight is downloaded that nothing uses', () => {
+  // Inter shipped an 800 axis on every load and no rule ever asked for it — bytes spent on a
+  // weight that never appeared on screen.
+  const used = new Set([...CSS.matchAll(/font-weight:\s*(\d{3})/g)].map(m => +m[1]));
+  const idle = [...(APP_AXES['Inter'] || [])].filter(w => !used.has(w));
+  if (idle.length) throw new Error(`Inter loads ${fmt(idle.map(String))} for nothing — drop it from the font link`);
+});
+
 console.log('\nLaw #4 — serif is the writing voice, and never pure white\n');
 
 t('no pure white on a reading surface', () => {

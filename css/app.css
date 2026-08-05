@@ -95,12 +95,12 @@
     .top .tb:not(.dark):not(.accent){font-size:0;gap:0;padding:8px 9px}
     .top .tb:not(.dark):not(.accent) svg{font-size:13px}
   }
-  .tb{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-sm);font-size:13px;font-weight:550;color:var(--dim);white-space:nowrap}
+  .tb{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--dim);white-space:nowrap}
   .tb:hover{background:rgba(255,255,255,.05);color:var(--ink)}
   .tb.dark{background:var(--ink);color:var(--on-ink);font-weight:600}
   .tb.dark:hover{background:#fff}
   /* plan-locked control (e.g. Refine on Basic) — dimmed + a small PRO tag */
-  .tb.locked{background:transparent;color:var(--mute);font-weight:550;border:1px solid var(--line)}
+  .tb.locked{background:transparent;color:var(--mute);font-weight:500;border:1px solid var(--line)}
   .tb.locked:hover{background:rgba(255,255,255,.04);color:var(--dim)}
   .tb.locked::after{content:"PRO";font-family:var(--mono,ui-monospace,monospace);font-size:8px;letter-spacing:.12em;padding:1px 5px;border:1px solid currentColor;border-radius:var(--r-pill);opacity:.85;margin-left:2px}
   .tb.accent{color:var(--ink);font-weight:600;border:1px solid var(--line2)}
@@ -116,7 +116,7 @@
     padding:6px;min-width:200px;box-shadow:var(--pop);display:none;z-index:40;transform-origin:top right;animation:popIn .24s var(--ease)}
   @keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-4px)}to{opacity:1;transform:none}}
   .exp-menu.show{display:block}
-  .exp-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:var(--r-sm);font-size:13.5px;font-weight:550;text-align:left;transition:.12s}
+  .exp-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:var(--r-sm);font-size:13.5px;font-weight:500;text-align:left;transition:.12s}
   .exp-item:hover{background:rgba(255,255,255,.05)}
   .exp-item .mo{font-family:var(--mono);font-size:10px;color:var(--mute);margin-left:auto}
 
@@ -454,7 +454,7 @@
   .mast-top{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#0c0c0e;color:var(--ink);border-bottom:1px solid var(--line)}
   .mast-hd{display:flex;flex-direction:column;gap:4px;min-width:0}
   .mast-ttl{font-size:13px;font-weight:600;letter-spacing:.01em}
-  .mast-sub{font-family:var(--ui);font-size:11.5px;font-weight:400;line-height:1.45;color:var(--dim);max-width:56ch}
+  .mast-sub{font-family:var(--ui);font-size:11.5px;font-weight:500;line-height:1.45;color:var(--dim);max-width:56ch}
   .mast-count{margin-left:auto;flex:none;padding-top:2px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
   .mi{display:flex;gap:12px;padding:15px 16px;border-top:1px solid var(--line)}
   .mi:first-of-type{border-top:none}
@@ -587,7 +587,7 @@
   .ctx{position:fixed;background:rgba(24,24,27,.92);backdrop-filter:blur(20px) saturate(1.25);-webkit-backdrop-filter:blur(20px) saturate(1.25);border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:var(--r-ml);padding:5px;
     min-width:176px;box-shadow:var(--pop);z-index:100;display:none}
   .ctx.show{display:block;animation:popIn var(--base) var(--ease)}
-  .ctx button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:var(--r-xs);font-size:13px;font-weight:550}
+  .ctx button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:var(--r-xs);font-size:13px;font-weight:500}
   .ctx button:hover{background:rgba(255,255,255,.05)}
   .ctx button.danger{color:var(--cin-d)}
   .ctx .sep{height:1px;background:var(--line);margin:4px 6px}
@@ -602,7 +602,7 @@
   .sel-bar.show{display:flex;animation:selIn .18s var(--ease)}
   .sel-bar.below{transform:translate(-50%,0)}
   @keyframes selIn{from{opacity:0;transform:translate(-50%,-100%) scale(.94)}to{opacity:1}}
-  .sel-bar button{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:550;color:#e6e2da;
+  .sel-bar button{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:#e6e2da;
     padding:7px 11px;border-radius:var(--r-sm);white-space:nowrap;transition:background .12s,color .12s}
   .sel-bar button:hover{background:rgba(245,243,238,.13);color:var(--ink)}
   .sel-bar .sb-div{width:1px;height:15px;background:rgba(245,243,238,.15);margin:0 3px;flex:none}
@@ -694,7 +694,7 @@
      is currently for, and this sits above it as the calmer, faster alternative */
   .auth-goog{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
     padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:var(--r-lg);
-    font-family:var(--ui);font-size:14px;font-weight:550;color:var(--ink);background:rgba(255,255,255,.04);
+    font-family:var(--ui);font-size:14px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.04);
     transition:border-color var(--base) var(--ease),background var(--base) var(--ease)}
   .auth-goog:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.075)}
   .auth-goog svg{flex:none}
@@ -768,7 +768,7 @@
   @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
   .kpi{background:var(--app);border:1px solid var(--line);border-radius:var(--r-ml);padding:14px 15px}
   .kpi .kn{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-  .kpi .kv{font-size:22px;font-weight:750;letter-spacing:-.02em;margin-top:5px}
+  .kpi .kv{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:5px}
   .kpi .kv small{font-size:12px;font-weight:500;color:var(--mute)}
   .st-tbl{width:100%;border-collapse:collapse;font-size:13px}
   .st-tbl th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:500;padding:8px 10px 8px 0;border-bottom:1px solid var(--line2)}
@@ -957,7 +957,7 @@
   .sum-r{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-md);cursor:pointer;transition:background .14s var(--ease)}
   .sum-r:hover{background:rgba(255,255,255,.05)}
   .sum-r input{flex:none;width:16px;height:16px;accent-color:var(--cinnabar);cursor:pointer}
-  .sum-nm{font-size:13.5px;color:var(--ink);font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .sum-nm{font-size:13.5px;color:var(--ink);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .sum-r.on-topic .sum-nm{font-family:var(--mono);font-size:12px;letter-spacing:.02em}
   .sum-sub{margin-left:auto;flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--mute);text-transform:uppercase}
   .set-link{font-size:13px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
@@ -1223,7 +1223,7 @@
 
   /* tone preset */
   .tone{display:flex;align-items:center;gap:3px;margin-top:16px;padding:3px;background:rgba(255,255,255,.04);border-radius:var(--r-ml);width:fit-content}
-  .tone button{font-size:12.5px;font-weight:550;color:var(--dim);padding:7px 13px;border-radius:var(--r-sm);transition:.16s var(--ease)}
+  .tone button{font-size:12.5px;font-weight:500;color:var(--dim);padding:7px 13px;border-radius:var(--r-sm);transition:.16s var(--ease)}
   .tone button:hover{color:var(--ink)}
   .tone button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.52)}
 
