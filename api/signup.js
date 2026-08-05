@@ -43,8 +43,15 @@ export default async function handler(req, res) {
   // endpoint creates users pre-confirmed (email_confirm: true skips the ownership round-trip),
   // so without this gate anyone could POST x@orions.agency and mint themselves an unlimited
   // account. Entitled addresses are provisioned by the studio, never self-served.
+  // The distinct 403 was an oracle: it told an unauthenticated caller which addresses are
+  // internal or comped, one probe at a time. The rate limit above slows that down; it does not
+  // stop it. Answering with the same 409 an existing account gets removes the extra class
+  // entirely — and it is also the truer answer, because a provisioned address DOES already have
+  // an account, so "sign in instead" is what that person should actually do. Logged, so the team
+  // still sees the attempt.
   if (isInternal(e) || INVITED.has(e) || Object.prototype.hasOwnProperty.call(PLAN_MAP, e)) {
-    res.status(403).json({ error: 'This address is provisioned by the studio — ask us to set it up, or sign in if it already exists.' });
+    console.error('signup attempt on a provisioned address:', e);
+    res.status(409).json({ error: 'An account with this email already exists — sign in instead' });
     return;
   }
 

@@ -592,6 +592,14 @@
   function stopGen(){if(_abort){_abort.abort();_abort=null}}
   function notifyDone(what){if(_origTitle===null)_origTitle=document.title;document.title='✓ '+what+' done — VÆST'}
   addEventListener('visibilitychange',()=>{if(!document.hidden&&_origTitle!==null){document.title=_origTitle;_origTitle=null}});
+  /* The stream carries two out-of-band markers, and both used to be matched as bare substrings
+     anywhere in the text — so any document that CONTAINED one was cut short at that point, or
+     threw a fabricated error. Asking VÆST how the streaming protocol works was enough to do it.
+     Both are written by the server as the final line and in one exact shape; matching that shape,
+     anchored to the end, is the difference between a protocol and a coincidence. */
+  const USAGE_RE=/\n\[\[USAGE\]\](\d+),(\d+),([a-z-]+)\s*$/;
+  const ERROR_RE=/\n\[\[ERROR\]\]([^\n]*)$/;   // one line, and the last one — [\s\S]* still spanned prose
+  const USAGE_SCAN=120;   // the trailer is short; scan a tail comfortably longer than it can be
   async function streamAPI(mode,messages,system,onText){
     const headers={'Content-Type':'application/json'};
     if(ANON){
@@ -621,9 +629,12 @@
     const reader=r.body.getReader(),dec=new TextDecoder();let full='',stopped=false,usIdx=-1;
     try{for(;;){const {done,value}=await reader.read();if(done)break;
       const prevLen=full.length;full+=dec.decode(value,{stream:true});
-      // the [[USAGE]] trailer lands only at the very end — scan just the fresh tail (with an
-      // 8-char overlap for a marker split across chunks) instead of re-splitting the whole buffer
-      if(usIdx<0){const at=full.indexOf('[[USAGE]]',Math.max(0,prevLen-8));if(at>=0)usIdx=at}
+      // The trailer is written last, on its own line, in one exact shape. Matching the plain
+      // string anywhere in the buffer meant the document could truncate itself: ask VÆST to
+      // explain the streaming protocol, or Refine a document that quotes it, and the reply
+      // vanished from its first mention onward. Anchor to the end and require the real format.
+      if(usIdx<0){const at=full.slice(Math.max(0,prevLen-USAGE_SCAN)).search(USAGE_RE);
+        if(at>=0)usIdx=Math.max(0,prevLen-USAGE_SCAN)+at}
       if(onText)onText(usIdx>=0?full.slice(0,usIdx):full)}}
     catch(e){
       if(e.name==='AbortError'){stopped=true;toast('Stopped — kept what streamed so far')}
@@ -633,14 +644,14 @@
       // partial text; an interrupted stream is the same situation without the button, so it
       // takes the same path. Below a sentence or so there is nothing worth keeping, and handing
       // the message back to retry is the better answer.
-      else if(full.replace(/\[\[USAGE\]\][\s\S]*$/,'').trim().length>40){
+      else if(full.replace(USAGE_RE,'').trim().length>40){
         stopped=true;toast('Connection dropped — kept what had arrived. Ask again to carry on.')}
       else throw e}
     finally{_abort=null}
-    if(stopped){const u=full.indexOf('[[USAGE]]');return (u>=0?full.slice(0,u):full).trim()}
-    const i=full.indexOf('[[ERROR]]');if(i>=0)throw new Error(full.slice(i+9).trim()||'server error');
+    if(stopped){const u=full.search(USAGE_RE);return (u>=0?full.slice(0,u):full).trim()}
+    const em=full.match(ERROR_RE);if(em)throw new Error(em[1].trim()||'server error');
     // split tokens per call → record per-document cost (session)
-    const um=full.match(/\[\[USAGE\]\](\d+),(\d+),([^\s]+)/);
+    const um=full.match(USAGE_RE);
     if(um){full=full.slice(0,um.index);const tks=(+um[1])+(+um[2]);
       const s=cur();if(s&&tks){s.tok=s.tok||{odin:0,norrsken:0};const b=um[3]==='norrsken'?'norrsken':/^galdr/.test(um[3])?'idea':'odin';s.tok[b]=(s.tok[b]||0)+tks;s.ops=(s.ops||0)+1;schedulePersistLight()}}
     return full.trim()}

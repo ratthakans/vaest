@@ -29,6 +29,13 @@ export default async function handler(req, res) {
   // ── GET: public read of a share (owner email intentionally withheld) ──
   if (req.method === 'GET') {
     if (!ID_RE.test(id)) { res.status(400).json({ error: 'bad id' }); return; }
+    // Only the comment path was limited, so reading was unthrottled — and a share id is the ONLY
+    // thing standing between a stranger and a client's document. The ids are 128 bits of CSPRNG
+    // and are not guessable at any rate, but an unlimited read endpoint is also an unlimited way
+    // to hammer the database with someone else's service key. Generous: a real reader loads a page
+    // and its comment refreshes, not sixty a minute.
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
+    if (await rateLimit('shareread:' + ip, 60, 60)) { res.status(429).json({ error: 'slow down' }); return; }
     const data = await readShare(id);
     if (!data) { res.status(404).json({ error: 'not found' }); return; }
     res.status(200).json({ title: data.title || '', canvas: data.canvas || '', mark: data.mark || '', comments: Array.isArray(data.comments) ? data.comments : [] });

@@ -1,4 +1,4 @@
-import { SERVICE_KEY, sbFetch, readRow, writeRow, deleteRow, verifyUser } from '../lib/plans.js';
+import { SERVICE_KEY, sbFetch, readRow, deleteRow, verifyUser } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
 
@@ -60,19 +60,12 @@ export default async function handler(req, res) {
     // endpoint that exists because PDPA gives them the right to ask. Deletion is only reached when
     // no active Stripe subscription remains (checked above), so nothing live is being orphaned.
     await deleteRow('sub:' + user.email);
-    // Error reports are keyed by day and shared across accounts, so erasure means editing rows
-    // rather than dropping them. Bounded to the retention window that matters and best-effort:
-    // a log sweep must never be the reason a person cannot leave.
-    try {
-      const day = 86400000;
-      for (let i = 0; i < 30; i++) {
-        const key = 'errlog:' + new Date(Date.now() - i * day).toISOString().slice(0, 10);
-        const row = await readRow(key);
-        const list = (row && row.list) || [];
-        const kept = list.filter(x => x && x.email !== user.email);
-        if (kept.length !== list.length) await writeRow(key, { list: kept });
-      }
-    } catch (e) { console.error('errlog sweep failed for', user.email, e?.message || e); }
+    // No error-log sweep, on purpose. The first version of this walked 30 days of log rows looking
+    // for the address — then api/log.js was sharded by hour to fix a contention problem, which
+    // would have made that 720 reads on a request that is someone leaving. A sweep covering only
+    // part of the window while claiming erasure is worse than none, so the address stopped being
+    // written instead: api/log.js records a hash. Entries written before that change still carry
+    // one, and age out with their rows.
 
     // last, because it is the one step that cannot be walked back
     const r = await sbFetch(`/auth/v1/admin/users/${encodeURIComponent(user.id)}`, {
