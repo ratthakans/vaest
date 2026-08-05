@@ -231,6 +231,53 @@ t('no weight is downloaded that nothing uses', () => {
   if (idle.length) throw new Error(`Inter loads ${fmt(idle.map(String))} for nothing — drop it from the font link`);
 });
 
+// Two scales, deliberately. Interface chrome is set for density — a label, a button, a list row —
+// and answers to a tight ladder. Prose is set for reading measure and for the script it carries:
+// CLAUDE.md records the canvas being taken to 16.5px on 1.88 leading because Thai stacks a tone
+// mark above a vowel above the base, and no interface-density scale should get a vote on that.
+// Twenty-eight sizes were in play, nine of them between 12 and 16 — steps of half a pixel, which
+// the eye cannot resolve, so hierarchy built on them was hierarchy that did not exist.
+const UI_SCALE = [9, 10, 11, 12, 13, 15, 17, 20, 26];
+const PROSE_SCALE = [9.5, 11.5, 13.5, 14, 14.5, 15.5, 16, 16.5, 17.5, 18.5, 22, 27];
+
+t('font sizes come from the UI scale or the prose scale, never from nowhere', () => {
+  const bad = [];
+  for (const m of CSS.matchAll(/([^{}]*)\{([^}]*)\}/g)) {
+    const f = m[2].match(/font-size:\s*([0-9.]+)px/);
+    if (!f) continue;
+    const v = +f[1];
+    if (UI_SCALE.includes(v) || PROSE_SCALE.includes(v)) continue;
+    bad.push(v + 'px (' + m[1].trim().split('\n').pop().trim().slice(0, 30) + ')');
+  }
+  if (bad.length) throw new Error(`off both scales: ${fmt(bad)} — extend a scale on purpose or use a step that exists`);
+});
+
+t('the spacing vocabulary does not grow', () => {
+  // 44 distinct padding/margin/gap values across 773 uses, 190 of them odd numbers. That is a
+  // continuum, not a scale — but unlike type and motion it cannot be collapsed without eyes on the
+  // result: a padding rounded by 1px widens a box by 2, and the rail is a fixed 284px with several
+  // layers nested inside it. Changing 190 sites blind is how a sweep meant to tidy things ends up
+  // wrapping a toolbar.
+  //
+  // So this is a ratchet, not a fix, and it is honest about it: the count may fall, never rise.
+  // Lower the number as the sweep happens — with staging up, and someone looking.
+  const LIMIT = 44;
+  const vals = new Set();
+  for (const m of CSS.matchAll(/(?:padding|margin|gap|row-gap|column-gap)(?:-(?:top|right|bottom|left))?:\s*([^;}]+)/g))
+    for (const n of m[1].matchAll(/(-?\d+)px/g)) vals.add(+n[1]);
+  if (vals.size > LIMIT) throw new Error(
+    `${vals.size} distinct spacing values, up from ${LIMIT} — reuse one that exists, or lower the limit if you removed some`);
+});
+
+t('transitions use the duration scale, not a hand-typed number', () => {
+  // Twenty-six durations were in play and --base/--slow already existed, used 49 times against 70
+  // literals — the scale was there and simply losing. A difference of one frame at 60Hz is not a
+  // decision anyone made; it is a decision nobody noticed they were making.
+  const bad = [...CSS.matchAll(/transition:([^;}]+)/g)]
+    .flatMap(m => [...m[1].matchAll(/(?<![\w.-])(\d*\.?\d+)s\b/g)].map(x => x[1] + 's'));
+  if (bad.length) throw new Error(`literal durations: ${fmt([...new Set(bad)])} — use --fast/--base/--slow/--xslow`);
+});
+
 console.log('\nLaw #4 — serif is the writing voice, and never pure white\n');
 
 t('no pure white on a reading surface', () => {
