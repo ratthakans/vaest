@@ -182,6 +182,16 @@ t('no version literal in the marketing markup either', () => {
   if (stale.length) throw new Error(`home.html says ${fmt([...new Set(stale)])}, app.js says ${v}`);
 });
 
+t('every third-party script loaded at runtime is pinned to a hash', () => {
+  // These run on the same origin as the session token and every document on the canvas. Without
+  // SRI, trusting them is trusting a CDN not to be compromised — on a product that promises the
+  // work stays private. A version bump in the URL that forgets the hash lands here.
+  const urls = [...APP.matchAll(/loadScript\('(https:\/\/[^']+)'/g)].map(m => m[1]);
+  const pinned = new Set([...APP.matchAll(/'(https:\/\/[^']+)'\s*:\s*'sha(?:256|384|512)-/g)].map(m => m[1]));
+  const bare = urls.filter(u => !pinned.has(u));
+  if (bare.length) throw new Error(`no integrity hash: ${fmt(bare)} — add it to SRI`);
+});
+
 console.log('\nEvery control says what it is\n');
 
 // 31 form controls, zero <label for>, and three aria-labels. The rest were named by placeholder,

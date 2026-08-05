@@ -1,5 +1,5 @@
 import { verifyUser, readUsageData, packsLeft, MAX_PACKS_PER_MONTH } from '../lib/plans.js';
-import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub, subIsActive, resolveAccess } from '../lib/billing.js';
+import { getStripe, PRICES, TEAM_PRICES, SELF_SERVE_PLANS, readSub, subIsActive, resolveAccess, safeOrigin } from '../lib/billing.js';
 
 // Create a Stripe Checkout Session (subscription mode) for the signed-in user.
 // Body: { plan: 'basic'|'pro'|'director', kind?: 'individual'|'team', seats?: number }
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     if (left <= 0) { res.status(429).json({ error: `You’ve added the maximum ${MAX_PACKS_PER_MONTH} credit packs this month — upgrade your plan for more.` }); return; }
     if (want > left) { res.status(429).json({ error: `Only ${left} more credit pack${left > 1 ? 's' : ''} available this month — upgrade for more.` }); return; }
     const packs = want;
-    const origin2 = req.headers.origin || 'https://vaest.orions.agency';
+    const origin2 = safeOrigin(req);
     try {
       const sub = await readSub(user.email);
       const customerField = sub && sub.customerId ? { customer: sub.customerId } : { customer_email: user.email };
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   if (!priceId) { res.status(503).json({ error: `no price configured for ${kind} ${plan}` }); return; }
   const quantity = isTeam ? Math.max(2, Math.min(500, parseInt(seats, 10) || 2)) : 1;
 
-  const origin = req.headers.origin || 'https://vaest.orions.agency';
+  const origin = safeOrigin(req);
 
   try {
     // reuse the customer we stored from a prior sub, else let Checkout create one by email

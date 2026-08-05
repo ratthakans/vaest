@@ -335,6 +335,21 @@ export default async function handler(req, res) {
     // ceiling only ever bought head-room for abuse — and that head-room is what forced the
     // trial onto the cheapest engine. Tightening it is what pays for the better one.
     if (await rateLimit('anon:' + ip, 12, 3600)) { res.status(429).json({ error: 'You’ve used the free trial for now — sign up to keep going', signup: true }); return; }
+    // Per-IP was the only limit, and an IP is free. The anonymous path is never metered — it does
+    // not touch the usage row at all, by design, because it is customer acquisition — so nothing
+    // anywhere counted the total. At 12/hour and 2,048 output tokens the cost is a few baht per IP
+    // per hour, which is fine, and unbounded across IPs, which is not: there was no number to look
+    // at and no switch to throw.
+    //
+    // One global daily ceiling, deliberately generous — an honest day of real visitors is nowhere
+    // near it, so the only thing it can stop is the thing it exists to stop. Fails open like every
+    // other limiter: a KV blip must never close the front door.
+    const ANON_DAILY = parseInt(process.env.ANON_DAILY_CAP || '', 10) || 3000;
+    if (await rateLimit('anon:global:' + new Date().toISOString().slice(0, 10), ANON_DAILY, 86400)) {
+      console.error('anon global daily cap hit —', ANON_DAILY, 'trial messages today');
+      res.status(429).json({ error: 'The free trial is busy right now — sign up and it’s yours immediately.', signup: true });
+      return;
+    }
     // anonymous can't push large or image context — text-only, last few turns, capped length
     const trimmed = messages.slice(-8).map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',

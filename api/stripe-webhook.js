@@ -22,10 +22,22 @@ async function upsertFromSubscription(stripe, sub, evCreated) {
 
   const item = sub.items && sub.items.data && sub.items.data[0];
   const priceId = item && item.price && item.price.id;
-  const plan = planForPrice(priceId) || (sub.metadata && sub.metadata.plan) || null;
 
   // out-of-order guard: ignore an event older than the one we last applied to this sub
   const prev = await readSub(email);
+
+  // planForPrice maps a Stripe price id back to a plan using the STRIPE_PRICE_* env vars. If one
+  // is unset, or a price is swapped in the Stripe dashboard without updating them, this used to
+  // resolve to null — and subIsActive() requires a plan, so a customer whose card had just been
+  // charged was silently paywalled by a config drift they could not see and we were not told
+  // about. A subscription.updated event carries no metadata.plan either, so the second fallback
+  // does not cover the case that actually happens.
+  //
+  // Keeping the plan we already had is the safe direction: the person is paying. Losing the plan
+  // name should never cost them the access they bought.
+  const plan = planForPrice(priceId) || (sub.metadata && sub.metadata.plan) || (prev && prev.plan) || null;
+  if (!plan) console.error('webhook: NO PLAN for', email, '— price', priceId, 'is not in STRIPE_PRICE_*; they will be paywalled while paying');
+  else if (!planForPrice(priceId)) console.error('webhook: price', priceId, 'unmapped, kept plan', plan, 'for', email, '— check STRIPE_PRICE_*');
   if (prev && prev.subId === sub.id && prev.evAt && evCreated && evCreated < prev.evAt) {
     return;
   }

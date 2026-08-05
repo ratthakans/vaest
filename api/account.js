@@ -1,4 +1,4 @@
-import { SERVICE_KEY, sbFetch, readRow, deleteRow, verifyUser } from '../lib/plans.js';
+import { SERVICE_KEY, sbFetch, readRow, writeRow, deleteRow, verifyUser } from '../lib/plans.js';
 import { resolveAccess } from '../lib/billing.js';
 import { rateLimit } from '../lib/ratelimit.js';
 
@@ -55,6 +55,24 @@ export default async function handler(req, res) {
 
     await deleteRow(user.email);          // the workspace
     await deleteRow('usage:' + user.email); // meter + spend history
+    // The subscription row survived every deletion until now — it holds the address, the Stripe
+    // customer id and the billing history of someone who has just asked to be erased, on the one
+    // endpoint that exists because PDPA gives them the right to ask. Deletion is only reached when
+    // no active Stripe subscription remains (checked above), so nothing live is being orphaned.
+    await deleteRow('sub:' + user.email);
+    // Error reports are keyed by day and shared across accounts, so erasure means editing rows
+    // rather than dropping them. Bounded to the retention window that matters and best-effort:
+    // a log sweep must never be the reason a person cannot leave.
+    try {
+      const day = 86400000;
+      for (let i = 0; i < 30; i++) {
+        const key = 'errlog:' + new Date(Date.now() - i * day).toISOString().slice(0, 10);
+        const row = await readRow(key);
+        const list = (row && row.list) || [];
+        const kept = list.filter(x => x && x.email !== user.email);
+        if (kept.length !== list.length) await writeRow(key, { list: kept });
+      }
+    } catch (e) { console.error('errlog sweep failed for', user.email, e?.message || e); }
 
     // last, because it is the one step that cannot be walked back
     const r = await sbFetch(`/auth/v1/admin/users/${encodeURIComponent(user.id)}`, {

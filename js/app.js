@@ -647,8 +647,29 @@
   let _tt2;function schedulePersistLight(){clearTimeout(_tt2);_tt2=setTimeout(()=>save(),900)}
 
   /* ═══ files — multi-format ═══ */
+  /* Three third-party readers are pulled from CDNs at runtime and given the same origin as the
+     Supabase session token and every document on the canvas. They arrived with no integrity check
+     at all, so a compromised CDN — or anything able to answer for one — could run whatever it
+     liked in here, on a product whose footer promises the work stays private.
+
+     Subresource Integrity makes the browser verify the bytes against a hash before executing. The
+     hashes below were taken from the pinned versions actually in use; a file that does not match
+     simply does not run, and the flow reports that it could not read the file rather than
+     executing something unknown. crossOrigin is required for SRI to apply to a cross-origin
+     script. Update the hash whenever the version in the URL changes — the audit checks that every
+     runtime script has one. */
+  const SRI={
+    'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js':'sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz',
+    'https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js':'sha384-gx12pQMMYnabkTgbCHqqrT65RwDnXI/f/dU2H9JUmT0KUeiMF5bf+yroQBmX0Nuk',
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js':'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e'};
+  /* Not covered, and saying so rather than implying otherwise: pdf.worker.min.js is fetched by
+     pdf.js itself through GlobalWorkerOptions.workerSrc, so nothing here can attach an integrity
+     attribute to it. It runs in a worker — no DOM, no session token — which bounds the damage but
+     does not remove it. Self-hosting the three readers is the fix that closes this properly. */
   function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[data-l="'+src+'"]'))return res();
-    const s=document.createElement('script');s.src=src;s.dataset.l=src;s.onload=res;s.onerror=()=>rej(new Error('Couldn’t load the file reader'));document.head.appendChild(s)})}
+    const s=document.createElement('script');s.src=src;s.dataset.l=src;
+    if(SRI[src]){s.integrity=SRI[src];s.crossOrigin='anonymous'}
+    s.onload=res;s.onerror=()=>rej(new Error('Couldn’t load the file reader'));document.head.appendChild(s)})}
   const readText=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||''));r.onerror=rej;r.readAsText(f)});
   const readBuf=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(f)});
   async function extractFile(f){

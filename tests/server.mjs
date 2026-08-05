@@ -203,5 +203,31 @@ t('rows written before the balance existed are read, not stranded', () => {
   assert.equal(creditSpendOf(legacy), 2 * BOOST_SPEND);
 });
 
+console.log('\nOrigin — a header is a claim, not a fact\n');
+
+const { safeOrigin, subIsActive } = await import('../lib/billing.js');
+
+t('an origin we did not authorise never becomes a redirect target', () => {
+  // The sign-up confirmation mail lands on this URL and Supabase appends the session tokens to it,
+  // so an attacker-supplied Origin would have mailed a stranger a link handing over their own new
+  // session. It was held shut only by a Supabase dashboard setting this code cannot see or set.
+  const at = o => safeOrigin({ headers: { origin: o } });
+  assert.equal(at('https://evil.example'), 'https://vaest.orions.agency');
+  assert.equal(at('https://vaest.orions.agency.evil.com'), 'https://vaest.orions.agency');
+  assert.equal(at(''), 'https://vaest.orions.agency');
+  assert.equal(at('https://vaest.orions.agency'), 'https://vaest.orions.agency');
+  assert.equal(at('http://localhost:3000'), 'http://localhost:3000');
+  assert.equal(at('https://vaest-orions-x1y2-ratthakans.vercel.app'), 'https://vaest-orions-x1y2-ratthakans.vercel.app');
+});
+
+t('a paying customer keeps access when the plan name cannot be resolved', () => {
+  // planForPrice returns null when STRIPE_PRICE_* drifts from the dashboard. Access used to hinge
+  // on the plan name, so a config change nobody could see revoked a live, paid subscription.
+  assert.equal(subIsActive({ status: 'active', plan: null }), true);
+  assert.equal(subIsActive({ status: 'past_due', plan: undefined }), true);
+  assert.equal(subIsActive({ status: 'canceled', plan: 'pro' }), false);
+  assert.equal(subIsActive(null), false);
+});
+
 console.log('\n' + pass + ' passed · ' + fail + ' failed\n');
 if (fail) process.exit(1);

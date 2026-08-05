@@ -1,5 +1,6 @@
 import { SB, sbFetch, isInternal, INVITED, PLAN_MAP } from '../lib/plans.js';
 import { rateLimit } from '../lib/ratelimit.js';
+import { safeOrigin } from '../lib/billing.js';
 
 // basic shape check — also rejects a ':' so an email can never collide with the vaest_state
 // keyspace prefixes (usage:/sub:/share:/apikey:/errlog:) that key privileged rows
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
   // Rate-limit FIRST, before the entitlement gate below — otherwise the distinct 403 for an
   // entitled address turns this into an unauthenticated oracle for probing who is internal or
   // on the invite list.
-  const origin = req.headers.origin || 'https://vaest.orions.agency';
+  // The confirmation mail's landing URL. Supabase appends the session tokens to it.
+  const origin = safeOrigin(req);
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
   if (await rateLimit('signup:' + ip, 8, 60)) { res.status(429).json({ error: 'Too many sign-ups — wait a moment and try again' }); return; }
 
