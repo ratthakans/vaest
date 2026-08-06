@@ -1,0 +1,20 @@
+<!-- Horizontal lockup — mark + wordmark, as it appears in the product's own navigation.
+     Proportions taken from there: mark 22, gap 11, wordmark Inter 700 at 16 with .12em tracking.
+     The wordmark is drawn as live text, so it needs Inter installed; vaest-lockup-outlined.svg is
+     the same thing with the letters converted to paths, for anywhere that cannot be relied on.
+     Clear space: one mark-width on every side. Never set the lockup below 88px wide — under that
+     the slash stops reading as a slash and becomes a smudge; use the mark alone instead. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 22" width="132" height="22" role="img" aria-label="VÆST">
+  <defs>
+    <linearGradient id="vaest-prism-lockup" gradientUnits="userSpaceOnUse" x1="14.025" y1="4.4" x2="7.975" y2="17.6">
+      <stop offset="0" stop-color="#4fc3ff"/>
+      <stop offset=".5" stop-color="#dff4ff"/>
+      <stop offset="1" stop-color="#eb5939"/>
+    </linearGradient>
+  </defs>
+  <rect width="22" height="22" rx="4.95" fill="#141417"/>
+  <rect width="22" height="22" rx="4.95" fill="none" stroke="#ffffff" stroke-opacity=".14" stroke-width=".55"/>
+  <path d="M14.025 4.4 7.975 17.6" stroke="url(#vaest-prism-lockup)" stroke-width="1.98" stroke-linecap="round"/>
+  <text x="33" y="16.4" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="16"
+        letter-spacing="1.92" fill="#f2f1ee">VÆST</text>
+</svg>

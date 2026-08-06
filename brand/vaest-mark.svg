@@ -1,0 +1,15 @@
+<!-- VÆST — the mark. A single slash, dispersing cold to warm along its own length.
+     Geometry is proportional: container 40, corner radius 9 (22.5%), stroke 3.6 (9%),
+     the slash running from 25.5,8 to 14.5,32. Scale the viewBox, never the numbers. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="VÆST">
+  <defs>
+    <linearGradient id="vaest-prism" gradientUnits="userSpaceOnUse" x1="25.5" y1="8" x2="14.5" y2="32">
+      <stop offset="0" stop-color="#4fc3ff"/>
+      <stop offset=".5" stop-color="#dff4ff"/>
+      <stop offset="1" stop-color="#eb5939"/>
+    </linearGradient>
+  </defs>
+  <rect width="40" height="40" rx="9" fill="#141417"/>
+  <rect width="40" height="40" rx="9" fill="none" stroke="#ffffff" stroke-opacity=".14"/>
+  <path d="M25.5 8 14.5 32" stroke="url(#vaest-prism)" stroke-width="3.6" stroke-linecap="round"/>
+</svg>
