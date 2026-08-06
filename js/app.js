@@ -74,7 +74,21 @@
   function mdTitle(t){return String(t||'')
     .replace(/^#+\s*/,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1')
     .replace(/[*_`>#~]/g,'').replace(/\s+/g,' ').trim().slice(0,52)||'Note'}
+  /* Which database this client talks to. These are the production values and they stay the
+     defaults, so nothing changes if /api/config never answers — but they are no longer the only
+     possibility. Compiled in, they were the reason a staging deployment could not exist: any
+     second environment wrote to live customers' rows. loadConfig() runs first in init(). */
   const SB={url:'https://yyhqcqlylnoukmovrpwo.supabase.co',key:'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',who:LEGACY_WHO};
+  async function loadConfig(){
+    try{
+      const r=await fetch('/api/config',{cache:'no-store'});
+      if(!r.ok)return;
+      const c=await r.json();
+      // Only accept a complete, well-formed answer — a half-applied config would point auth at one
+      // project and data at another, which is worse than the baked-in default being wrong.
+      if(c&&/^https:\/\/[\w-]+\.supabase\.co$/.test(c.supabaseUrl||'')&&/^sb_publishable_/.test(c.supabaseKey||'')){
+        SB.url=c.supabaseUrl;SB.key=c.supabaseKey}
+    }catch(e){}}
   let projects=[],sessions=[],currentSid=null,usage=0,profile={},_busy=false,_renaming=false;
   let library=[]; // MD library — saved chat answers, kept as .md
   let _ctxTrimmed=0; // how many picked chats had to be cut to fit the shared context budget
@@ -3598,6 +3612,9 @@
     if(files.length)await embedImages(secEl,files);
   }
   (async function init(){
+    // First, before anything reads SB — catchOAuthReturn, detectRecovery and loadAuth all talk to
+    // it within the next few lines.
+    await loadConfig();
     $('doc').addEventListener('input',schedulePersist);initScrollSpy();
     $('doc').addEventListener('paste',handleDocPaste);
     // suggestions live in the input placeholders now, not as starter buttons

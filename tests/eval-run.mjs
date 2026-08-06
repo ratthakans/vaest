@@ -17,7 +17,12 @@ if (/vaest\.orions\.agency/.test(API)) {
   console.warn('\n⚠️  Running against PRODUCTION — real engine spend, metered against a real account.');
   console.warn('   Ctrl-C now if that was not deliberate.\n');
 }
-const SB = { url: 'https://yyhqcqlylnoukmovrpwo.supabase.co', key: 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM' };
+// Follows the same env vars as the server, so pointing VAEST_API at staging and pointing this at
+// staging's project are one decision rather than two.
+const SB = {
+  url: process.env.SUPABASE_URL || 'https://yyhqcqlylnoukmovrpwo.supabase.co',
+  key: process.env.SUPABASE_ANON_KEY || 'sb_publishable_baZ9N1npPznt4zjsOJ69_w_kGEHq7aM',
+};
 
 const BRIEFS = [
   {

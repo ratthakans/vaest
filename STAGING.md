@@ -40,7 +40,9 @@ value so it overrides the Production one:
 | `STRIPE_SECRET_KEY` | `sk_test_…` — the single most important line here |
 | `STRIPE_WEBHOOK_SECRET` | the test-mode endpoint's `whsec_…` |
 | `STRIPE_PRICE_*` | the price ids from **test** mode (different ids, same plans) |
-| `SUPABASE_SERVICE_ROLE_KEY` | a second Supabase project's key — see step 3 |
+| `SUPABASE_URL` | the second project's URL — see step 3 |
+| `SUPABASE_ANON_KEY` | its publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | its service-role key |
 | `ANTHROPIC_API_KEY` | a separate key, so staging spend is visible on its own line |
 | `GEMINI_API_KEY` | same reasoning |
 
@@ -48,10 +50,14 @@ Leave `KV_*` unset on Preview: the in-memory limiter is the right choice for a l
 
 ## 3 · A second Supabase project
 
-Staging must not read or write customer rows. Create a second project, run `supabase-rls.sql`
-against it, and put its URL and publishable key behind an env lookup rather than the constants in
-`lib/plans.js` and `js/app.js` — they are hardcoded today, which is the one code change this
-requires and the reason it is step 3 and not step 1.
+Staging must not read or write customer rows. Create a second project and run `supabase-rls.sql`
+against it — that is the whole step now.
+
+The code change this used to require is done: `SUPABASE_URL` and `SUPABASE_ANON_KEY` are read from
+the environment, defaulting to production so nothing moves unless you set them. `js/app.js` is a
+static file with no build step, so the browser cannot be handed a value at deploy time; it asks
+`/api/config` once at boot and keeps its compiled-in production defaults if the answer never
+arrives. Set the two vars on Preview scope and the client follows the server.
 
 ## 4 · Point the eval at it
 
